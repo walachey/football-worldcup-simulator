@@ -1,0 +1,146 @@
+# extends "base_layout.html"
+# block head
+{{ super() }}
+<script lang="javascript">
+$(document).ready(
+	function() 
+    { 
+        $("#teamstable").tablesorter(); 
+		$("#nav_create").toggleClass("active");
+    } 
+);
+function onTypeChosen(type_id)
+{
+	// animate some buttons and show next selection widget
+	$("#choose_type").toggleClass("selectionbox-info selectionbox-ok", 500);
+	$("#choose_type > h2").hide("blind");
+	$("#choose_type #type_" + type_id.toString()).toggleClass("btn-default btn-success");
+	$("#choose_rules").show("blind");
+	
+	// fetch rule information
+	$.ajax(
+		{
+			url:"json/rules/tournament:" + type_id.toString(),
+			dataType: "json",
+			data: { get_param: 'value' }, 
+			success: function(data) { populateRuleSelectionDialog(data); }
+		}
+		);
+			
+}
+
+function showRuleSelectionDialog()
+{
+	$("#rule_selection_dialog").dialog(
+	{
+		//autoOpen: false,
+		height: "auto",
+		width: "auto",
+		modal: true,
+		title: "Choose the active rules",
+		buttons: 
+			{
+				 Close: function() { $( this ).dialog( "close" ); }
+			}
+	});
+}
+
+function populateRuleSelectionDialog(json_results)
+{
+	if (json_results == null) return;
+	var rule_list = $("#rule_selection_dialog > table");
+
+	$(json_results.rules).each(
+								function(index, item)
+								{
+									rule_list.append(
+										'<tr class="btn btn-default" onclick="javascript:onRuleSelected(' + item.id + ', \'' + item.name + '\', \'' + item.desc + '\');">' +
+										'<td>' + item.name + '</td>' + 
+										'<td>' + item.desc + '</td>' +
+										'</tr>'
+										);
+								}
+							);
+							
+	$("#add_rule_button").toggleClass("btn-default btn-primary");
+}
+
+function onRuleSelected(id, name, description)
+{
+	var element_name = "rule_" + id.toString();
+	// do not add rules twice
+	if ($("#" + element_name).length) return;
+	
+	var element = '<tr id="' + element_name + '" class="rule_row">' +
+					'<td><input class="' + element_name + '" value="1">' + '</input></td>' +
+					'<td>' + name + '</td>' +
+					'<td>' + description + '</td>' +
+					'</tr>';
+	$("#rules").append(element);
+	// with at least one rule, allow finishing the adding process
+	$("#end_rule_selection_button").toggleClass("btn-default btn-primary");
+}
+
+function endRuleSelection()
+{
+	// no rules? nope nope nope
+	if ($("#rules tr").length <= 1)
+	{
+		$("#rules").effect("shake");
+		return;
+	}
+	// do validation of all inputs
+	var regexp = new RegExp("^[0-9]*\\.?[0-9]*$");
+	var valid = true;
+	$(".rule_row").each(
+						function (index, item)
+						{
+							var input_field = $(item).find("input");
+							if (!regexp.test(input_field.val()))
+							{
+								valid = false;
+								$(input_field).effect("shake");
+							}
+						}
+					);
+	if (!valid) return;
+	
+	// some effects
+	$("#choose_rules").toggleClass("selectionbox-info selectionbox-ok", 500);
+	$("#choose_rules > .headpart").hide("blind");
+}
+
+</script>
+# endblock
+
+# block contents
+	<h1>New Tournament <small>Create a new tournament with user-defined settings.</small></h1>
+	## Select the tournament type first, this is by default the only and first active widget.
+	<div id="choose_type" class="container selectionbox-info">
+	<h2>Choose the tournament type first:</h2>
+	# for type in types
+		<div id="{{ "type_"~type.id }}" class="col-md-6 btn btn-default" onclick="javascript:onTypeChosen({{ type.id }})">
+		<div class="container">
+		<div class="col-xs-1"><img src="{{ url_for('static', filename='img/icons/'~type.icon) }}" width="64px"></img></div>
+		<div class="col-xs-1"><span class="h3 text-center">{{ type.name }}<br/><small>{{ type.description }}</small></span></div>
+		</div></div>
+	# endfor
+	</div>
+	
+	## When a tournament type was set, the remaining data can be fetched, first the rule stuff.
+	
+	## The actual rule selection dialog (not shown on page-load).
+	<div id="rule_selection_dialog" style="display:none">
+	<table class="table table-hover tablesorter-green">
+	</table></div>
+	## The rule selection widget.
+	<div id="choose_rules" class="container selectionbox-info" style="display:none;">
+	<div class="headpart"><h2>Choose the active rules:</h2>
+	<div id="add_rule_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:showRuleSelectionDialog();">Add Rule</div>
+	<div id="end_rule_selection_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:endRuleSelection();">End rule selection.</div>
+	</div>
+	<table id="rules" class="table table-hover tablesorter-green">
+	<tr><th>Relative Weight</th><th>Rule Name</th><th>Description</th></tr>
+	</table>
+	</div>
+# endblock

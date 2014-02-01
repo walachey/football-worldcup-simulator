@@ -1,0 +1,30 @@
+body {
+  padding-top: 50px;
+}
+.starter-template {
+  padding: 40px 15px;
+  text-align: center;
+}
+
+.small {
+	font-size:0.75em;
+}
+
+.selectionbox-info {
+	margin-top: 25px;
+	border: 1px solid yellow;
+	border-radius: 10px;
+	padding-top: 25px;
+	padding-bottom: 25px;
+	background-color:#ffffee;
+}
+
+.selectionbox-ok {
+	margin-top: 25px;
+	border: 1px solid green;
+	border-radius: 10px;
+	padding-top: 25px;
+	padding-bottom: 25px;
+	background-color:#eeffee;
+	pointer-events: none;
+}
