@@ -76,8 +76,12 @@ db.session.add(TournamentType("World Cup", "The standard FIFA World Cup.", 32, "
 db.session.commit()
 
 # get the objects we just added (now with correct ID)
+elo_rule = RuleType.query.filter_by(name="ELO").first()
+assert elo_rule != None
 elo = ScoreType.query.filter_by(name="ELO").first()
 assert elo != None
+
+elo_rule.score_types.append(elo)
 
 # and finish the team setup
 for team_data in all_teams:

@@ -39,7 +39,7 @@ class WCSConfiguration:
 		
 		import logging
 		file_handler = logging.FileHandler(self.log_file_name)
-		file_handler.setLevel(logging.WARNING)
+		file_handler.setLevel(logging.DEBUG)
 		flask_application.logger.addHandler(file_handler)
 
 

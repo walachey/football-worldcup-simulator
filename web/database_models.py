@@ -3,9 +3,9 @@ from configuration import main_configuration as config
 from flask import Flask
 from flask import abort, redirect, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.declarative import declarative_base
 import base64, random
 import string
-
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config.database_connection_string
@@ -72,11 +72,17 @@ class Participation(db.Model):
 	def __repr__(self):
 		return "[Participation of " + str(self.team_id) + " in play-off " + str(self.tournament_id) + "]"
 
+rule_score_table = db.Table("rule2scores", db.metadata,
+	db.Column("rule_type_id", db.Integer, db.ForeignKey("rule_types.id")),
+	db.Column("score_type_id", db.Integer, db.ForeignKey("score_types.id"))
+	)
+		
 class RuleType(db.Model):
 	__tablename__ = "rule_types"
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(128), unique=False)
 	description = db.Column(db.String(512), unique=False)
+	score_types = db.relationship("ScoreType", secondary=rule_score_table)
 	
 	def __init__(self, name, description):
 		self.name = name

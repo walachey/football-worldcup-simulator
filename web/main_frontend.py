@@ -58,5 +58,37 @@ def rules_json(id):
 			rules.append(rule.toDictionary())
 		return json.dumps({'rules':rules})
 
+@app.route('/json/teams', methods=['POST'])
+def teams_json():
+	info = json.loads(request.form["info"])
+	print "INFO____________________________________"
+	print info
+	# we also return the maximum amount of players for the correct table layout
+	tournament = TournamentType.query.filter_by(id=info["tournament"]).first()
+	# we need to get all existing teams and for every team all the scores that are needed for the rules
+	all_team_data = {'teams':[], 'team_count':tournament.team_count}
+	all_score_data = {}
+	
+	# collect all score types for the active rules
+	for rule in info["rules"]:
+		rule_type = RuleType.query.filter_by(id=rule).first()
+		for score_type in rule_type.score_types:
+			all_score_data[str(score_type.id)] = {"name":score_type.name, "desc":score_type.description}
+		
+	# now the teams
+	all_teams = Team.query.all()
+	for team in all_teams:
+		team_data = {'name':team.name, 'country_code':team.country_code, 'scores': {}}
+		
+		# for every passed rule-type-ID fetch the fitting scores for this team
+		for rule in info["rules"]:
+			team_scores = Score.query.filter_by(team_id=team.id, tournament_id=None, type_id=rule).all()
+			for score in team_scores:
+				team_data["scores"][str(score.type_id)] = score.value;
+		all_team_data["teams"].append(team_data)
+	all_team_data["scores"] = all_score_data;
+	print all_team_data
+	return json.dumps(all_team_data)
+	
 if __name__ == '__main__':
 	app.run(host=config.flask_host, port=config.flask_port)
