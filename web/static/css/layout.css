@@ -28,3 +28,9 @@ body {
 	background-color:#eeffee;
 	pointer-events: none;
 }
+
+.ui-effects-transfer { border: 2px dotted gray; }
+
+.ui-progressbar-value {
+	background-color: #cceecc;
+}

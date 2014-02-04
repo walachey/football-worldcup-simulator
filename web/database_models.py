@@ -39,9 +39,13 @@ class Tournament(db.Model):
 	__tablename__ = "tournaments"
 	id = db.Column(db.Integer, primary_key=True)
 	state = db.Column(db.SmallInteger, unique=False, default=TournamentState.pending)
-	
+	hash = db.Column(db.Integer)
 	#tournament_type = db.relationship('TournamentType', backref=db.backref('tournaments', lazy='dynamic'))
 	type_id = db.Column(db.Integer, db.ForeignKey('tournament_types.id'))
+	
+	def __init__(self, type_id, hash):
+		self.type_id = type_id
+		self.hash = hash
 	
 	def __repr__(self):
 		return "[Play-Off " + str(self.id) + " - type " + str(self.type_id) + "]"
@@ -69,6 +73,11 @@ class Participation(db.Model):
 	#team = db.relationship('Team', backref=db.backref('participations', lazy='dynamic'))
 	team_id = db.Column(db.Integer, db.ForeignKey('teams.id'))
 	
+	def __init__(self, tournament_id, team_id, order):
+		self.tournament_id = tournament_id
+		self.team_id = team_id
+		self.order = order
+		
 	def __repr__(self):
 		return "[Participation of " + str(self.team_id) + " in play-off " + str(self.tournament_id) + "]"
 
@@ -93,7 +102,23 @@ class RuleType(db.Model):
 	
 	def toDictionary(self):
 		return {'id':self.id, 'name':self.name, 'desc':self.description}
+
+class Rule(db.Model):
+	__tablename__ = "rules"
+	id = db.Column(db.Integer, primary_key=True)
+	type_id = db.Column(db.Integer, db.ForeignKey('rule_types.id'))
+	weight = db.Column(db.Float, unique=False)
+	
+	tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
 		
+	def __init__(self, tournament_id, type_id, weight):
+		self.tournament_id = tournament_id
+		self.type_id = type_id
+		self.weight = weight
+	
+	def __repr__(self):
+		return "[Rule " + str(self.type_id) + " set to " + str(self.weight) + "]"
+	
 class ScoreType(db.Model):
 	__tablename__ = "score_types"
 	id = db.Column(db.Integer, primary_key=True)

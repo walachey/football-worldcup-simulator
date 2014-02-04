@@ -195,10 +195,10 @@ function populateTeamView(rule_data, json_data)
 		if (team_index < json_data.team_count)
 		{
 			row = '<tr id="team_' + team_index + '">';
-			row += '<td class="btn btn-default" style="width:100%" onclick="javascript:changeTeam(' + team_index + ');"><span class="teamname">' + team.name + '</span></td>';
+			row += '<td class="btn btn-default" style="width:100%" onclick="javascript:changeTeam(' + team_index + ');"><span class="teamname">' + team.name + '</span><span class="teamid" style="display:none">' + team.id + '</span></td>';
 			row += score_string;
 			row += "</tr>";
-			$("#teams").append(row);
+			$("#teams > tbody").append(row);
 		}
 		// but always add to full team list in the selection dialog
 		row = '<tr onclick="javascript:onTeamSelected(' + team_index + ');">';
@@ -220,11 +220,15 @@ function onTeamSelected(index_to)
 	team_data = getTeamData();
 	team = team_data[index_to];
 	scores = team.scores;
+	var row_name = "#team_" + index_from.toString();
+	var pending_row = $(row_name);
+	$("#team_selection_dialog").effect("transfer", {to:row_name, className:"ui-effects-transfer"});
 	$("#team_selection_dialog").dialog("close");
-	pending_row = $("#team_" + index_from.toString());
-	pending_row.effect("pulsate");
+	
+	
 	// set new team name in first field
-	pending_row.find(".teamname").first().html(team_data[index_to].name);
+	pending_row.find(".teamname").html(team_data[index_to].name);
+	pending_row.find(".teamid").html(index_to);
 	// and refresh score values, as well
 	$(pending_row.find(".score")).each(
 		function (index, item)
@@ -249,6 +253,92 @@ function changeTeam(index)
 				 Close: function() { $( this ).dialog( "close" ); }
 			}
 	});
+}
+
+function endTeamSelection()
+{
+	// some effects
+	$("#choose_teams").toggleClass("selectionbox-info selectionbox-ok", 500);
+	$("#choose_teams > .headpart").hide("blind");
+	$("#finish_setup").show("blind");
+}
+
+function startTournament()
+{
+	$("#finish_setup").toggleClass("selectionbox-info selectionbox-ok", 500);
+	$("#finish_setup > .headpart").hide("blind");
+	
+	var progress_bar = $("#starting_progressbar");
+	var progress_bar_value = progress_bar.find(".ui-progressbar-value");
+	progress_bar.progressbar({value:false});
+	progress_bar.show("fade");
+	
+	// generate JSON object with all the necessary information for the server
+	var json_object = {};
+	json_object.tournament_type = getSelectedTournamentTypeID();
+	json_object.rules = [];
+	
+	// figure out active rules and respective weights
+	console.log($("#rules").length);
+	$("#rules > tbody > tr").each(
+		function (index, item)
+		{
+			var input_box = $(item).find("input");
+			if (input_box == null) return;
+			
+			var rule_object = {};
+			rule_object.id = input_box.attr("name");
+			rule_object.weight = input_box.val();
+			json_object.rules.push(rule_object);
+			console.log("rule " + rule_object.id + " with weight " + rule_object.weight);
+		}
+	);
+	
+	json_object.teams = [];
+	// figure out active teams and put into list
+	$("#teams > tbody > tr").each(
+		function (index, item)
+		{
+			var team_object = {};
+			team_object.id = $(item).find(".teamid").html();
+			json_object.teams.push(team_object);
+			
+			console.log("team " + team_object.id);
+		}
+	);
+	
+	failfunc = function(message) 
+		{
+			progress_bar.hide("fade");
+			$("#finish_setup > .headpart").show("blind");
+			$("#finish_setup").toggleClass("selectionbox-info selectionbox-ok", 500);
+			alert (message);
+			return;
+		}
+	
+	// AJAX is go
+	$.ajax(
+	{
+		type: "POST",
+		url:"json/register_tournament",
+		dataType: "json",
+		data: { get_param: 'value', info: JSON.stringify(json_object) },
+		timeout: 10000,
+		success: function(data) 
+			{
+				if (data.status == "FAIL")
+				{
+					return failfunc(data.message);
+				}
+				else if (data.status == "OK")
+				{
+					progress_bar.hide("fade");
+					alert(data.message);
+				}
+			},
+		error: function() { return failfunc("An error occured. Try again."); }
+	}
+	);
 }
 
 </script>
@@ -281,7 +371,7 @@ function changeTeam(index)
 	<div id="end_rule_selection_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:endRuleSelection();">End Rule Selection</div>
 	</div>
 	<table id="rules" class="table table-hover tablesorter-green">
-	<tr><th>Relative Weight</th><th>Rule Name</th><th>Description</th></tr>
+	<thead><tr><th>Relative Weight</th><th>Rule Name</th><th>Description</th></tr></thead>
 	</table>
 	</div>
 	
@@ -295,11 +385,18 @@ function changeTeam(index)
 	
 	<div id="choose_teams" class="container selectionbox-info" style="display:none;">
 	<div class="headpart"><h2>Customize the teams:</h2>
-	<div id="add_rule_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:showRuleSelectionDialog();">Add Rule</div>
-	<div id="end_rule_selection_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:endRuleSelection();">End Rule Selection</div>
+	<div id="end_team_selection_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:endTeamSelection();">End Team Selection</div>
 	</div>
 	<table id="teams" class="table table-hover tablesorter-green">
 	## The columns are not known at this point. They will be added via JS later.
 	</table>
+	</div>
+	
+	## User confirmation before starting the tournament.
+	<div id="finish_setup" class="container selectionbox-info" style="display:none;">
+	<div class="headpart"><h2>You are done with the setup!</h2>
+	<div class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:startTournament();">Start the Tournament Simulation</div>
+	</div>
+	<div id="starting_progressbar" style="width:100%;display:none;"></div>
 	</div>
 # endblock

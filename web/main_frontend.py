@@ -61,8 +61,6 @@ def rules_json(id):
 @app.route('/json/teams', methods=['POST'])
 def teams_json():
 	info = json.loads(request.form["info"])
-	print "INFO____________________________________"
-	print info
 	# we also return the maximum amount of players for the correct table layout
 	tournament = TournamentType.query.filter_by(id=info["tournament"]).first()
 	# we need to get all existing teams and for every team all the scores that are needed for the rules
@@ -78,7 +76,7 @@ def teams_json():
 	# now the teams
 	all_teams = Team.query.all()
 	for team in all_teams:
-		team_data = {'name':team.name, 'country_code':team.country_code, 'scores': {}}
+		team_data = {'id':team.id, 'name':team.name, 'country_code':team.country_code, 'scores': {}}
 		
 		# for every passed rule-type-ID fetch the fitting scores for this team
 		for rule in info["rules"]:
@@ -87,8 +85,79 @@ def teams_json():
 				team_data["scores"][str(score.type_id)] = score.value;
 		all_team_data["teams"].append(team_data)
 	all_team_data["scores"] = all_score_data;
-	print all_team_data
+	# print all_team_data
 	return json.dumps(all_team_data)
 	
+@app.route('/json/register_tournament', methods=['POST'])
+def register_tournament_json():
+	info = json.loads(request.form["info"])
+	hash_code = hash(repr(info))
+	print "INFO____________________________________"
+	print info
+	print "HASH____________________________________\t" + str(hash_code)
+	
+	return_value = {"status":"OK", "message":"Your tournament has been created!"}
+	def abort(message):
+		return_value["status"] = "FAIL"
+		return_value["message"] = message
+		return json.dumps(return_value)
+		
+	try:
+		# check valid tournament type
+		tournament_type = TournamentType.query.filter_by(id=int(info["tournament_type"])).first()
+		if not tournament_type:
+			raise Exception("No valid tournament type selected.")
+		# check all teams
+		all_teams = []
+		for team_data in info["teams"]:
+			team = Team.query.filter_by(id=int(team_data["id"])).first()
+			if not team:
+				raise Exception("Invalid team selected.")
+			if team in all_teams:
+				raise Exception("Selected team twice.")
+			all_teams.append(team)
+		# every tournament type has an obligatory team count
+		if len(all_teams) != tournament_type.team_count:
+			abort("Selected an invalid amount of teams.")
+		# and every tournament needs active rules
+		all_rules = []
+		for rule_data in info["rules"]:
+			rule = RuleType.query.filter_by(id=int(rule_data["id"])).first()
+			if not rule:
+				abort("Invalid rule selected.")
+			for (old_rule, old_weight) in all_rules:
+				if old_rule == rule:
+					raise Exception("Selected rule twice.")
+			all_rules.append((rule, float(rule_data["weight"])))
+		if len(all_rules) == 0:
+			raise Exception("You need to have active rules.")
+		
+	except ValueError:
+		abort("Type check failed.")
+	except Exception as e:
+		abort(e.msg)
+		
+	# all checks passed
+	# we can now create a new tournament execution request
+	tournament = Tournament(tournament_type.id, hash_code)
+	db.session.add(tournament)
+	# commit so that we have a correct ID
+	db.session.commit()
+	print "new tournament of id " + str(tournament.id)
+	# make the teams join the tournament
+	for i in range(0, len(all_teams)):
+		team = all_teams[i]
+		participation = Participation(tournament.id, team.id, i + 1)
+		db.session.add(participation)
+	# active rule setup
+	for (rule_type, weight) in all_rules:
+		rule = Rule(tournament.id, rule_type.id, weight)
+		db.session.add(rule)
+	
+	# tournament is go
+	db.session.commit()
+	
+	return json.dumps(return_value)
+
 if __name__ == '__main__':
 	app.run(host=config.flask_host, port=config.flask_port)
