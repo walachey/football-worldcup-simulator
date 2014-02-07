@@ -138,6 +138,7 @@ class ScoreType(db.Model):
 	def __repr__(self):
 		return "[Score " + self.name + "]"
 
+		
 class Score(db.Model):
 	__tablename__ = "scores"
 	id = db.Column(db.Integer, primary_key=True)
@@ -157,3 +158,47 @@ class Score(db.Model):
 	def __repr__(self):
 		return "[Rating " + str(self.id) + " for play-off " + str(self.tournament_id) + " of team " + str(self.team_id) + "]"
 	
+	# returns the score value for a team
+	# this can either the the global value or the tournament-specific one
+	@staticmethod
+	def getForTournament(type_id, tournament_id, team_id):
+		local_score = Score.query.filter_by(type_id=type_id, tournament_id=tournament_id, team_id=team_id).first()
+		if local_score:
+			return local_score
+		return Score.query.filter_by(type_id=type_id, team_id=team_id).first()
+
+
+
+class ResultPlaceType(db.Model):
+	__tablename__ = "result_place_types"
+	id = db.Column(db.Integer, primary_key=True)
+	place = db.Column(db.SmallInteger, unique=False)
+	name = db.Column(db.String(64), unique=False)
+	
+	tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
+	
+	def __init__(self, tournament_id, place, name):
+		self.place = place
+		self.name = name
+		self.tournament_id = tournament_id
+	
+	def __repr__(self):
+		return "[Place " + self.name + " tournament " + str(self.tournament_id) + "]"
+	
+class ResultPlace(db.Model):
+	__tablename__ = "result_places"
+	id = db.Column(db.Integer, primary_key=True)
+	place = db.Column(db.SmallInteger, unique=False)
+	percentage = db.Column(db.Float, unique=False)
+	
+	tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
+	team_id = db.Column(db.Integer, db.ForeignKey('teams.id'))
+	
+	def __init__(self, tournament_id, team_id, place, percentage):
+		self.tournament_id = tournament_id
+		self.team_id = team_id
+		self.place = place
+		self.percentage = percentage
+	
+	def __repr__(self):
+		return "[Ranked team " + str(self.team_id) + " on " + str(self.place) + " ~" + str(self.percentage) + "]"

@@ -14,6 +14,11 @@ class WCSConfiguration:
 	# session configuration
 	session_secret_key = "hello i am a pretty secret key"
 	
+	# for running the actual simulation
+	simulation_path = "../simulation/Debug/"
+	simulation_program_name = "WorldCupSimulator.exe"
+	simulation_thread_count = 8
+	
 	# debugging
 	is_debug_mode_enabled = True
 	log_file_name = "WCSLog.log"
@@ -42,5 +47,7 @@ class WCSConfiguration:
 		file_handler.setLevel(logging.DEBUG)
 		flask_application.logger.addHandler(file_handler)
 
+	def getCompleteSimulationProgramPath(self):
+		return self.simulation_path + self.simulation_program_name
 
 main_configuration = WCSConfiguration()

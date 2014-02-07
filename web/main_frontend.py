@@ -1,6 +1,7 @@
 # local includes
 from configuration import main_configuration as config
 from database_models import *
+import dispatcher
 
 # third-party includes
 from flask import abort, redirect, url_for, render_template, flash, request, session, make_response, Response
@@ -14,6 +15,7 @@ from email.mime.text import MIMEText
 import socket # for catching socket.error
 
 app = config.getFlaskApp()
+simulation_dispatcher = dispatcher.Dispatcher(db, config)
 
 @app.route('/')
 def index_view():
@@ -156,6 +158,7 @@ def register_tournament_json():
 	
 	# tournament is go
 	db.session.commit()
+	simulation_dispatcher.checkDispatchment()
 	
 	return json.dumps(return_value)
 
