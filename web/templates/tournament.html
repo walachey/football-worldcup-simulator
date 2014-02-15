@@ -1,0 +1,53 @@
+# extends "base_layout.html"
+# block head
+{{ super() }}
+<script lang="javascript">
+
+$(document).ready(
+	function() 
+    {  
+		$("#nav_tournament").toggleClass("active");
+    } 
+);
+</script>
+<style>
+.bar {
+	text-align:center;
+	margin:-1px;
+	border:1px solid black;
+	height:1.5em;
+	position: relative;
+	vertical-align: baseline;
+	display: inline-block;
+	overflow: hidden;
+}
+.barcontainer {
+	width:100%;
+	padding:0px;
+	margin:0px;
+	overflow: hidden;
+}
+</style>
+# endblock
+
+# block contents
+<table id="tournamenttable" class="tablesorter-green">
+<thead><tr>
+<th>Team</th><th>Distribution</th>
+</tr></thead>
+<tbody>
+# for team in teams
+	<tr>
+	<td>{{ team.name }}</td>
+	<td>
+	<div class="barcontainer">
+	# for result in team.results
+		<div class="bar" style="width:{{ result.percentage }}%;background-color:{{ result.color }};"><strong>{{ result.name ~ " (" ~ result.percentage ~ "%)" }}</strong></div>
+	# endfor
+	</div>
+	</td>
+	</tr>
+# endfor
+</tbody>
+</table>
+# endblock

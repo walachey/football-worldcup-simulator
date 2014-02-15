@@ -81,6 +81,7 @@ void Simulation::fillRankResults(json_spirit::Array &ranks)
 
 void Simulation::fillTeamResults(json_spirit::Array &teamList)
 {
+	double testCounter = 1.0;
 	for (auto iter = teams.begin(); iter != teams.end(); ++iter)
 	{
 		Team &team = *iter;
@@ -88,8 +89,10 @@ void Simulation::fillTeamResults(json_spirit::Array &teamList)
 		teamData.push_back(json_spirit::Pair("id", team.id));
 		teamData.push_back(json_spirit::Pair("ranks", json_spirit::Array()));
 		json_spirit::Array &ranks = teamData.back().value_.get_array();
-		ranks.push_back(Result(0.5).toJSONObject());
-		ranks.push_back(Result(0.5).toJSONObject());
+		
+		testCounter *= 0.8;
+		ranks.push_back(Result(testCounter).toJSONObject());
+		ranks.push_back(Result(1.0 - testCounter).toJSONObject());
 
 		teamList.push_back(teamData);
 	}

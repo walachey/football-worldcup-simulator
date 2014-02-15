@@ -1,0 +1,31 @@
+# extends "base_layout.html"
+# block head
+{{ super() }}
+<script lang="javascript">
+
+$(document).ready(
+	function() 
+    {  
+		$("#nav_tournaments").toggleClass("active");
+    } 
+);
+</script>
+# endblock
+
+# block contents
+<table id="tournamentstable" class="tablesorter-green">
+<thead><tr>
+<th>Name</th><th>State</th>
+</tr></thead>
+<tbody>
+# for tournament in tournaments
+	<tr>
+	<td>
+		<a href="{{ url_for('tournament_view', id=tournament.id) }}">{{ tournament.name }}</a>
+	</td>
+	<td>{{ tournament.state }}</td>
+	</tr>
+# endfor
+</tbody>
+</table>
+# endblock

@@ -40,8 +40,9 @@ class Tournament(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	state = db.Column(db.SmallInteger, unique=False, default=TournamentState.pending)
 	hash = db.Column(db.Integer)
-	#tournament_type = db.relationship('TournamentType', backref=db.backref('tournaments', lazy='dynamic'))
+	
 	type_id = db.Column(db.Integer, db.ForeignKey('tournament_types.id'))
+	tournament_type = db.relationship('TournamentType')
 	
 	def __init__(self, type_id, hash):
 		self.type_id = type_id
@@ -50,6 +51,15 @@ class Tournament(db.Model):
 	def __repr__(self):
 		return "[Play-Off " + str(self.id) + " - type " + str(self.type_id) + "]"
 
+	def getStateName(self):
+		if self.state == TournamentState.pending:
+			return "pending"
+		if self.state == TournamentState.running:
+			return "running"
+		if self.state == TournamentState.finished:
+			return "finished"
+		return "unknown"
+		
 class Team(db.Model):
 	__tablename__ = "teams"
 	id = db.Column(db.Integer, primary_key=True)
@@ -62,6 +72,15 @@ class Team(db.Model):
 	
 	def __repr__(self):
 		return "[Team " + self.name + " from " + self.country_code + "]"
+	
+	@staticmethod
+	def getAllTeamsForTournament(tournament_id):
+		all_teams = []
+		for participation in Participation.query.filter_by(tournament_id=tournament_id):
+			team = Team.query.filter_by(id=participation.team_id).first()
+			all_teams.append(team)
+			
+		return all_teams
 
 class Participation(db.Model):
 	__tablename__ = "participations"

@@ -47,6 +47,46 @@ def teams_view():
 	
 	return render_template('teams.html', scores=all_score_data, teams=all_team_data)
 
+@app.route("/tournaments")
+def tournaments_view():
+	# get all tournaments including their states
+	all_tournaments = Tournament.query.all()
+	all_tournaments_data = []
+	for tournament in all_tournaments:
+		all_tournaments_data.append({
+			"name": tournament.tournament_type.name + " #" + str(tournament.id),
+			"state": tournament.getStateName(),
+			"id": tournament.id
+			})
+	return render_template('tournaments.html', tournaments=all_tournaments_data)
+
+@app.route("/tournament/<int:id>")
+def tournament_view(id):
+	tournament = Tournament.query.filter_by(id=id).first()
+		
+	all_teams = Team.getAllTeamsForTournament(tournament.id)
+	all_result_place_types = ResultPlaceType.query.filter_by(tournament_id=tournament.id).order_by(ResultPlaceType.place).all()
+	
+	colors = ['#dddd00', '#eeeeee', '#ee9900', '#000099', '#00eeee', '#ff0000']
+	color_count = len(colors)
+	
+	all_team_data = []
+	for team in all_teams:
+		team_data = {"name":team.name, "country_code":team.country_code}
+		results = []
+		color_counter = 0
+		for result_place_type in all_result_place_types:
+			result_place = ResultPlace.query.filter_by(tournament_id=tournament.id, team_id=team.id, place=result_place_type.place).first()
+			results.append({
+				"name":result_place_type.name, 
+				"percentage":int(100 * result_place.percentage),
+				"color":(colors[color_counter % color_count])
+				})
+			color_counter += 1
+		team_data["results"] = results
+		all_team_data.append(team_data)
+		
+	return render_template('tournament.html', teams=all_team_data)
 @app.route('/create')	
 def new_tournament_view():
 	all_tournament_types = TournamentType.query.all()
