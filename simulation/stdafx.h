@@ -7,6 +7,8 @@
 #define _STDAFX_H
 
 #include <vector>
+#include <string>
+#include <map>
 #include <stdio.h>
 #include <tchar.h>
 #include <iostream>

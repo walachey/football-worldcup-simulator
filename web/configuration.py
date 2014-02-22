@@ -18,10 +18,12 @@ class WCSConfiguration:
 	simulation_path = "../simulation/Debug/"
 	simulation_program_name = "WorldCupSimulator.exe"
 	simulation_thread_count = 8
+	simulation_run_count = 1000 # total runs per simulation
 	
 	# debugging
 	is_debug_mode_enabled = True
 	log_file_name = "WCSLog.log"
+	echo_sql = False
 	
 	def getFlaskApp(self):
 		app = Flask(self.flask_application_name, template_folder=self.flask_template_folder)

@@ -63,7 +63,12 @@ def tournaments_view():
 @app.route("/tournament/<int:id>")
 def tournament_view(id):
 	tournament = Tournament.query.filter_by(id=id).first()
-		
+	if not tournament:
+		abort(404)
+	if tournament.state == TournamentState.running:
+		return "Tournament still running.."
+	elif tournament.state == TournamentState.pending:
+		return "Tournament not yet started.."
 	all_teams = Team.getAllTeamsForTournament(tournament.id)
 	all_result_place_types = ResultPlaceType.query.filter_by(tournament_id=tournament.id).order_by(ResultPlaceType.place).all()
 	
@@ -84,14 +89,24 @@ def tournament_view(id):
 				})
 			color_counter += 1
 		team_data["results"] = results
+		
+		team_data["general"] = Result.query.filter_by(tournament_id=tournament.id, team_id=team.id).first()
 		all_team_data.append(team_data)
 		
 	return render_template('tournament.html', teams=all_team_data)
+	
 @app.route('/create')	
 def new_tournament_view():
 	all_tournament_types = TournamentType.query.all()
 	return render_template('create.html', types=all_tournament_types)
 
+@app.route('/create_simple')	
+def simple_new_tournament_view():
+	tournament_type = TournamentType.query.filter_by(internal_identifier="worldcup").first()
+	all_standard_rule_types = RuleType.query.filter_by(is_default_rule=True).all()
+	all_teams = Team.query.limit(tournament_type.team_count).all()
+	return render_template('create_simple.html', tournament_type=tournament_type, rules=all_standard_rule_types, teams=all_teams)
+	
 @app.route('/json/rules/tournament:<int:id>')
 def rules_json(id):
 		all_rules = RuleType.query.all()
@@ -142,27 +157,29 @@ def register_tournament_json():
 	def abort(message):
 		return_value["status"] = "FAIL"
 		return_value["message"] = message
+		print message
 		return json.dumps(return_value)
 		
+	all_rules = []
+	all_teams = []
+	
 	try:
 		# check valid tournament type
 		tournament_type = TournamentType.query.filter_by(id=int(info["tournament_type"])).first()
 		if not tournament_type:
 			raise Exception("No valid tournament type selected.")
 		# check all teams
-		all_teams = []
 		for team_data in info["teams"]:
 			team = Team.query.filter_by(id=int(team_data["id"])).first()
 			if not team:
-				raise Exception("Invalid team selected.")
+				raise Exception("Invalid team selected (ID " + str(team_data["id"]) + ").")
 			if team in all_teams:
 				raise Exception("Selected team twice.")
 			all_teams.append(team)
 		# every tournament type has an obligatory team count
 		if len(all_teams) != tournament_type.team_count:
-			abort("Selected an invalid amount of teams.")
+			return abort("Selected an invalid amount of teams.")
 		# and every tournament needs active rules
-		all_rules = []
 		for rule_data in info["rules"]:
 			rule = RuleType.query.filter_by(id=int(rule_data["id"])).first()
 			if not rule:
@@ -175,9 +192,9 @@ def register_tournament_json():
 			raise Exception("You need to have active rules.")
 		
 	except ValueError:
-		abort("Type check failed.")
+		return abort("Type check failed.")
 	except Exception as e:
-		abort(e.msg)
+		return abort(str(e))
 		
 	# all checks passed
 	# we can now create a new tournament execution request
@@ -186,6 +203,7 @@ def register_tournament_json():
 	# commit so that we have a correct ID
 	db.session.commit()
 	print "new tournament of id " + str(tournament.id)
+	return_value["tournament_id"] = tournament.id
 	# make the teams join the tournament
 	for i in range(0, len(all_teams)):
 		team = all_teams[i]
@@ -203,4 +221,5 @@ def register_tournament_json():
 	return json.dumps(return_value)
 
 if __name__ == '__main__':
-	app.run(host=config.flask_host, port=config.flask_port)
+	# "threaded=True" to fix an error with the IE9..
+	app.run(host=config.flask_host, port=config.flask_port, threaded=True)

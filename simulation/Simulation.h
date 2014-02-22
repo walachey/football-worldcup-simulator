@@ -1,4 +1,3 @@
-
 #ifndef _SIMULATION_H
 #define _SIMULATION_H
 
@@ -6,6 +5,8 @@
 
 #include "Team.h"
 #include "Rule.h"
+#include "Tournament.h"
+
 
 namespace sim
 {
@@ -19,11 +20,17 @@ public:
 	void setupTeams(json_spirit::Array &teamData);
 	void setupRules(json_spirit::Array &teamData);
 
+	int numberOfRuns;
 	int numberOfThreads;
 	int tournamentID;
+	std::string tournamentType;
 
 	std::vector<Team> teams;
 	std::vector<Rule> rules;
+	std::vector<Tournament*> tournaments;
+	std::vector<RankData> ranks;
+	// will only be filled after the simulation has finished
+	std::map<int, TeamResult> teamResults;
 
 	void execute();
 

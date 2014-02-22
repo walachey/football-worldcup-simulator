@@ -33,7 +33,7 @@ $(document).ready(
 # block contents
 <table id="tournamenttable" class="tablesorter-green">
 <thead><tr>
-<th>Team</th><th>Distribution</th>
+<th>Team</th><th>Distribution</th><th>Avg. Goals</th>
 </tr></thead>
 <tbody>
 # for team in teams
@@ -42,10 +42,13 @@ $(document).ready(
 	<td>
 	<div class="barcontainer">
 	# for result in team.results
-		<div class="bar" style="width:{{ result.percentage }}%;background-color:{{ result.color }};"><strong>{{ result.name ~ " (" ~ result.percentage ~ "%)" }}</strong></div>
+		# if result.percentage > 0.0
+			<div class="bar" style="width:{{ result.percentage }}%;background-color:{{ result.color }};"><strong>{{ result.name ~ " (" ~ result.percentage ~ "%)" }}</strong></div>
+		# endif
 	# endfor
 	</div>
 	</td>
+	<td>{{ team.general.average_goals|round(1) }}</td>
 	</tr>
 # endfor
 </tbody>

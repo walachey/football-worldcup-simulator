@@ -83,12 +83,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="json.h" />
+    <ClInclude Include="Match.h" />
     <ClInclude Include="Rule.h" />
     <ClInclude Include="Simulation.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Team.h" />
+    <ClInclude Include="Tournament.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Match.cpp" />
     <ClCompile Include="Rule.cpp" />
     <ClCompile Include="Simulation.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -97,6 +100,7 @@
     </ClCompile>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Team.cpp" />
+    <ClCompile Include="Tournament.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

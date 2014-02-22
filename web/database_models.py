@@ -10,6 +10,7 @@ import string
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config.database_connection_string
 db = SQLAlchemy(app)
+db.engine.echo = config.echo_sql
 
 nonURLChars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
 URLCharTranslation = ''.join('-' for c in nonURLChars)
@@ -22,12 +23,15 @@ class TournamentType(db.Model):
 	description = db.Column(db.String(512), unique=False)
 	icon = db.Column(db.String(128), unique=False)
 	team_count = db.Column(db.Integer, unique=False)
+	 # for communication with the simulator
+	internal_identifier = db.Column(db.String(128), unique=False)
 	
-	def __init__(self, name, description, team_count, icon):
+	def __init__(self, name, description, team_count, icon, internal_identifier):
 		self.name = name
 		self.description = description
 		self.team_count = team_count
 		self.icon = icon
+		self.internal_identifier = internal_identifier
 	
 	def __repr__(self):
 		return "[Tournament " + name + "]"
@@ -112,10 +116,25 @@ class RuleType(db.Model):
 	description = db.Column(db.String(512), unique=False)
 	score_types = db.relationship("ScoreType", secondary=rule_score_table)
 	
-	def __init__(self, name, description):
+	# for communication with the simulator
+	internal_function_identifier = db.Column(db.String(128), unique=False)
+	
+	# standard rules that are displayed in the quick-creation dialog
+	standard_weight = db.Column(db.Float, unique=False)
+	is_default_rule = db.Column(db.Boolean, unique=False)
+	
+	def __init__(self, name, description, internal_function_identifier):
 		self.name = name
 		self.description = description
+		self.internal_function_identifier = internal_function_identifier
+		
+		self.standard_weight = 0.0
+		self.is_default_rule = False
 	
+	def makeDefaultRule(self, standard_weight):
+		self.is_default_rule = True
+		self.standard_weight = standard_weight
+		
 	def __repr__(self):
 		return "[Rule " + self.name + "]"
 	
@@ -221,3 +240,19 @@ class ResultPlace(db.Model):
 	
 	def __repr__(self):
 		return "[Ranked team " + str(self.team_id) + " on " + str(self.place) + " ~" + str(self.percentage) + "]"
+		
+class Result(db.Model):
+	__tablename__ = "results"
+	id = db.Column(db.Integer, primary_key=True)
+	tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
+	team_id = db.Column(db.Integer, db.ForeignKey('teams.id'))
+	
+	average_goals = db.Column(db.Float, unique=False)
+	
+	def __init__(self, tournament_id, team_id, average_goals):
+		self.tournament_id = tournament_id
+		self.team_id = team_id
+		self.average_goals = average_goals
+		
+	def __repr__(self):
+		return "[Result " + str(self.id) + "]"

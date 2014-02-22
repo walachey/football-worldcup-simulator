@@ -68,16 +68,16 @@ for team_data in all_teams:
 # add new ELO rating score
 db.session.add(ScoreType("ELO", "The ELO score known from chess."))
 # add default ELO calculation rule
-db.session.add(RuleType("ELO", "Calculation using the ELO score."))
+elo_rule = RuleType("ELO", "Calculation using the ELO score.", "elo_binary")
+elo_rule.makeDefaultRule(1.0)
+db.session.add(elo_rule)
 # add default tournament types
-db.session.add(TournamentType("1 vs 1", "A simple 1 vs 1 test tournament.", 2, "TwoHandsIcon.png"))
-db.session.add(TournamentType("World Cup", "The standard FIFA World Cup.", 32, "StdLeagueIcon.png"))
+db.session.add(TournamentType("1 vs 1", "A simple 1 vs 1 test tournament.", 2, "TwoHandsIcon.png", "1v1"))
+db.session.add(TournamentType("World Cup", "The standard FIFA World Cup.", 32, "StdLeagueIcon.png", "worldcup"))
 # only after comitting will the objects have valid IDs assigned!
 db.session.commit()
 
 # get the objects we just added (now with correct ID)
-elo_rule = RuleType.query.filter_by(name="ELO").first()
-assert elo_rule != None
 elo = ScoreType.query.filter_by(name="ELO").first()
 assert elo != None
 

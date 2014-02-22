@@ -12,7 +12,7 @@ class Dispatcher():
 		self.config = config
 		
 	# looks for a pending tournament and starts a simulation if one is found
-	def checkDispatchment(self):
+	def checkDispatchment(self):		
 		open_tournament = Tournament.query.filter_by(state=TournamentState.pending).with_lockmode("update").first()
 		# no open jobs?
 		if not open_tournament:
@@ -24,12 +24,15 @@ class Dispatcher():
 		try:
 
 			json_object = self.toDictForSimulationInput(open_tournament)
+			open_tournament = None
 			dispatchment_thread = threading.Thread(target=self.dispatchJob, args=(json_object,))
 			dispatchment_thread.start()
 		except Exception as e:
 			print "EXCEPTION: " + str(e)
 			open_tournament.state = TournamentState.pending
-			self.db.session.commit()
+		finally:
+			self.db.session.close()
+			self.db.session.remove()
 	
 	# this should run in a different thread
 	def dispatchJob(self, json_object):
@@ -63,6 +66,8 @@ class Dispatcher():
 			tournament.state = TournamentState.pending
 		finally:
 			self.db.session.commit()
+			self.db.session.remove()
+			self.db.session.close()
 	
 	# creates a dictionary that can be used to create JSON from it and pass it to the simulation program
 	def toDictForSimulationInput(self, tournament):
@@ -70,7 +75,9 @@ class Dispatcher():
 		# this is the root of the tree with all global config settings for the simulation
 		dict = {
 			"thread_count": self.config.simulation_thread_count,
-			"tournament_id": tournament.id
+			"tournament_id": tournament.id,
+			"run_count": self.config.simulation_run_count,
+			"tournament_type": tournament.tournament_type.internal_identifier
 			}
 		
 		# get all active rules for this tournament and calculate needed scores
@@ -82,7 +89,8 @@ class Dispatcher():
 			rule_type = RuleType.query.filter_by(id=rule.type_id).first()
 			rule_data = {
 				"name": rule_type.name,
-				"weight": rule.weight
+				"weight": rule.weight,
+				"function": rule_type.internal_function_identifier
 				}
 			needed_score_types_data = []
 			for score_type in rule_type.score_types:
@@ -127,4 +135,8 @@ class Dispatcher():
 				result_place = ResultPlace(tournament.id, team_data["id"], rank_counter, result["percentage"])
 				self.db.session.add(result_place)
 				rank_counter += 1
+			# general results
+			average_goals = team_data["avg_goals"]
+			result = Result(tournament.id, team_data["id"], average_goals)
+			self.db.session.add(result)
 		self.db.session.commit()
