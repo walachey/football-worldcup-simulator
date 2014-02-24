@@ -12,12 +12,22 @@ app.config['SQLALCHEMY_DATABASE_URI'] = config.database_connection_string
 db = SQLAlchemy(app)
 db.engine.echo = config.echo_sql
 
+from sqlalchemy.orm import scoped_session, sessionmaker
+Session = scoped_session( sessionmaker() )
+Session.configure(bind=db.engine)
+def getSession():
+	session = Session()
+	session._model_changes = {}
+	return session
+
 nonURLChars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
 URLCharTranslation = ''.join('-' for c in nonURLChars)
 URLCharTranslationTable = string.maketrans(nonURLChars, URLCharTranslation)
 
 class TournamentType(db.Model):
 	__tablename__ = "tournament_types"
+	query = None
+	
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(128), unique=False)
 	description = db.Column(db.String(512), unique=False)
@@ -41,6 +51,8 @@ class TournamentState:
 
 class Tournament(db.Model):
 	__tablename__ = "tournaments"
+	query = None
+	
 	id = db.Column(db.Integer, primary_key=True)
 	state = db.Column(db.SmallInteger, unique=False, default=TournamentState.pending)
 	hash = db.Column(db.Integer)
@@ -66,6 +78,8 @@ class Tournament(db.Model):
 		
 class Team(db.Model):
 	__tablename__ = "teams"
+	query = None
+	
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(128), unique=False)
 	country_code = db.Column(db.String(3), unique=False)
@@ -79,15 +93,18 @@ class Team(db.Model):
 	
 	@staticmethod
 	def getAllTeamsForTournament(tournament_id):
+		session = getSession()
 		all_teams = []
-		for participation in Participation.query.filter_by(tournament_id=tournament_id):
-			team = Team.query.filter_by(id=participation.team_id).first()
+		for participation in session.query(Participation).filter_by(tournament_id=tournament_id):
+			team = session.query(Team).filter_by(id=participation.team_id).first()
 			all_teams.append(team)
 			
 		return all_teams
 
 class Participation(db.Model):
 	__tablename__ = "participations"
+	query = None
+	
 	id = db.Column(db.Integer, primary_key=True)
 	order = db.Column(db.Integer, unique=False)
 	
@@ -111,6 +128,8 @@ rule_score_table = db.Table("rule2scores", db.metadata,
 		
 class RuleType(db.Model):
 	__tablename__ = "rule_types"
+	query = None
+	
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(128), unique=False)
 	description = db.Column(db.String(512), unique=False)
@@ -143,6 +162,8 @@ class RuleType(db.Model):
 
 class Rule(db.Model):
 	__tablename__ = "rules"
+	query = None
+	
 	id = db.Column(db.Integer, primary_key=True)
 	type_id = db.Column(db.Integer, db.ForeignKey('rule_types.id'))
 	weight = db.Column(db.Float, unique=False)
@@ -159,6 +180,8 @@ class Rule(db.Model):
 	
 class ScoreType(db.Model):
 	__tablename__ = "score_types"
+	query = None
+	
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(128), unique=False)
 	description = db.Column(db.String(512), unique=False)
@@ -179,6 +202,8 @@ class ScoreType(db.Model):
 		
 class Score(db.Model):
 	__tablename__ = "scores"
+	query = None
+	
 	id = db.Column(db.Integer, primary_key=True)
 	type_id = db.Column(db.Integer, db.ForeignKey('score_types.id'))
 	value = db.Column(db.Float, unique=False)
@@ -200,15 +225,18 @@ class Score(db.Model):
 	# this can either the the global value or the tournament-specific one
 	@staticmethod
 	def getForTournament(type_id, tournament_id, team_id):
-		local_score = Score.query.filter_by(type_id=type_id, tournament_id=tournament_id, team_id=team_id).first()
+		session = getSession()
+		local_score = session.query(Score).filter_by(type_id=type_id, tournament_id=tournament_id, team_id=team_id).first()
 		if local_score:
 			return local_score
-		return Score.query.filter_by(type_id=type_id, team_id=team_id).first()
+		return session.query(Score).filter_by(type_id=type_id, team_id=team_id).first()
 
 
 
 class ResultPlaceType(db.Model):
 	__tablename__ = "result_place_types"
+	query = None
+	
 	id = db.Column(db.Integer, primary_key=True)
 	place = db.Column(db.SmallInteger, unique=False)
 	name = db.Column(db.String(64), unique=False)
@@ -225,6 +253,8 @@ class ResultPlaceType(db.Model):
 	
 class ResultPlace(db.Model):
 	__tablename__ = "result_places"
+	query = None
+	
 	id = db.Column(db.Integer, primary_key=True)
 	place = db.Column(db.SmallInteger, unique=False)
 	percentage = db.Column(db.Float, unique=False)
@@ -243,6 +273,8 @@ class ResultPlace(db.Model):
 		
 class Result(db.Model):
 	__tablename__ = "results"
+	query = None
+	
 	id = db.Column(db.Integer, primary_key=True)
 	tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
 	team_id = db.Column(db.Integer, db.ForeignKey('teams.id'))

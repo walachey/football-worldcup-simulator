@@ -5,6 +5,8 @@ from database_models import *
 db.drop_all()
 db.create_all()
 
+session = getSession()
+
 # the contents of this class will be split into different database tables
 class CompactTeamData:
 	name = None
@@ -64,31 +66,31 @@ all_teams = [
 # first step: insert teams into DB to get the IDs
 for team_data in all_teams:
 	team = Team(team_data.name, team_data.country_code)
-	db.session.add(team)
+	session.add(team)
 # add new ELO rating score
-db.session.add(ScoreType("ELO", "The ELO score known from chess."))
+session.add(ScoreType("ELO", "The ELO score known from chess."))
 # add default ELO calculation rule
 elo_rule = RuleType("ELO", "Calculation using the ELO score.", "elo_binary")
 elo_rule.makeDefaultRule(1.0)
-db.session.add(elo_rule)
+session.add(elo_rule)
 # add default tournament types
-db.session.add(TournamentType("1 vs 1", "A simple 1 vs 1 test tournament.", 2, "TwoHandsIcon.png", "1v1"))
-db.session.add(TournamentType("World Cup", "The standard FIFA World Cup.", 32, "StdLeagueIcon.png", "worldcup"))
+session.add(TournamentType("1 vs 1", "A simple 1 vs 1 test tournament.", 2, "TwoHandsIcon.png", "1v1"))
+session.add(TournamentType("World Cup", "The standard FIFA World Cup.", 32, "StdLeagueIcon.png", "worldcup"))
 # only after comitting will the objects have valid IDs assigned!
-db.session.commit()
+session.commit()
 
 # get the objects we just added (now with correct ID)
-elo = ScoreType.query.filter_by(name="ELO").first()
+elo = session.query(ScoreType).filter_by(name="ELO").first()
 assert elo != None
 
 elo_rule.score_types.append(elo)
 
 # and finish the team setup
 for team_data in all_teams:
-	team = Team.query.filter_by(country_code=team_data.country_code).first()
+	team = session.query(Team).filter_by(country_code=team_data.country_code).first()
 	assert team != None
 	
-	db.session.add(Score(elo.id, team.id, team_data.ELO))
+	session.add(Score(elo.id, team.id, team_data.ELO))
 
-db.session.commit()
+session.commit()
 print "..done"

@@ -39,7 +39,8 @@ function onTypeChosen(type_id)
 			url:"json/rules/tournament:" + type_id.toString(),
 			dataType: "json",
 			data: { get_param: 'value' }, 
-			success: function(data) { populateRuleSelectionDialog(data); }
+			success: function(data) { populateRuleSelectionDialog(data); },
+			error: function() {alert("An error occured!");}
 		}
 		);
 	
@@ -121,7 +122,8 @@ function endRuleSelection()
 		url:"json/teams",
 		dataType: "json",
 		data: { get_param: 'value', info: JSON.stringify(json_object) }, 
-		success: function(data) { populateTeamView(rule_data, data); }
+		success: function(data) { populateTeamView(rule_data, data); },
+		error: function() {alert("An error occured!");}
 	}
 	);
 }

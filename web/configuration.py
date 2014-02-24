@@ -13,6 +13,7 @@ class WCSConfiguration:
 	
 	# session configuration
 	session_secret_key = "hello i am a pretty secret key"
+	session_auto_timeout = 7200
 	
 	# for running the actual simulation
 	simulation_path = "../simulation/Debug/"
@@ -27,6 +28,8 @@ class WCSConfiguration:
 	
 	def getFlaskApp(self):
 		app = Flask(self.flask_application_name, template_folder=self.flask_template_folder)
+		if self.session_auto_timeout != None:
+			app.config["SQLALCHEMY_POOL_RECYCLE"] = self.session_auto_timeout
 		self.setupFlaskApplication(app)
 		return app
 	
