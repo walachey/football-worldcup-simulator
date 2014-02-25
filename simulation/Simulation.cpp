@@ -85,13 +85,18 @@ void Simulation::execute()
 
 
 	// and then join the results
-	for (auto &tournament : tournaments)
+	for (Tournament* &tournament : tournaments)
 	{
-		for (auto &team : teams)
+		for (auto &clusterToMerge : tournament->clusterTeamResults)
 		{
-			if (!teamResults.count(team.id))
-				teamResults.emplace(std::make_pair(team.id, TeamResult()));
-			teamResults[team.id].merge(tournament->teamResults[team.id]);
+			std::map<int, TeamResult> &cluster = clusterTeamResults[clusterToMerge.first];
+
+			for (auto &team : teams)
+			{
+				if (!cluster.count(team.id))
+					cluster.emplace(std::make_pair(team.id, TeamResult()));
+				cluster[team.id].merge(clusterToMerge.second[team.id]);
+			}
 		}
 	}
 }
@@ -105,9 +110,17 @@ json_spirit::Object Simulation::getJSONResults()
 	json_spirit::Array &ranks = root.back().value_.get_array();
 	fillRankResults(ranks);
 
-	root.push_back(json_spirit::Pair("teams", json_spirit::Array()));
-	json_spirit::Array &teams = root.back().value_.get_array();
-	fillTeamResults(teams);
+	root.push_back(json_spirit::Pair("matches", json_spirit::Object()));
+	json_spirit::Object &matches= root.back().value_.get_obj();
+	for (auto &cluster : clusterTeamResults)
+	{
+		matches.push_back(json_spirit::Pair(cluster.first, json_spirit::Object()));
+		json_spirit::Object &match = matches.back().value_.get_obj();
+
+		match.push_back(json_spirit::Pair("teams", json_spirit::Array()));
+		json_spirit::Array &teams = match.back().value_.get_array();
+		fillTeamResults(teams, cluster.first);
+	}
 
 	return root;
 }
@@ -118,15 +131,15 @@ void Simulation::fillRankResults(json_spirit::Array &ranks)
 		ranks.push_back(rankData.toJSONObject());
 }
 
-void Simulation::fillTeamResults(json_spirit::Array &teamList)
+void Simulation::fillTeamResults(json_spirit::Array &teamList, std::string cluster)
 {
 	for (auto &team : teams)
 	{
 		json_spirit::Object teamData;
 		teamData.push_back(json_spirit::Pair("id", team.id));
-		teamData.push_back(json_spirit::Pair("ranks", teamResults[team.id].rankDataToJSONArray(ranks)));
-		teamData.push_back(json_spirit::Pair("match_data", teamResults[team.id].toJSONObject()));
-		teamData.push_back(json_spirit::Pair("avg_goals", teamResults[team.id].getAvgGoals()));
+		teamData.push_back(json_spirit::Pair("ranks", clusterTeamResults[cluster][team.id].rankDataToJSONArray(ranks)));
+		teamData.push_back(json_spirit::Pair("match_data", clusterTeamResults[cluster][team.id].toJSONObject()));
+		teamData.push_back(json_spirit::Pair("avg_goals", clusterTeamResults[cluster][team.id].getAvgGoals()));
 		
 		teamList.push_back(teamData);
 	}

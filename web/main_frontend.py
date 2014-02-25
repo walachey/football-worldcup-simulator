@@ -1,3 +1,5 @@
+import sys
+
 # local includes
 from configuration import main_configuration as config
 from database_models import *
@@ -103,7 +105,12 @@ def tournament_view(id):
 		team_data["general"] = session.query(Result).filter_by(tournament_id=tournament.id, team_id=team.id).first()
 		all_team_data.append(team_data)
 	
+	custom_view_function = tournament.tournament_type.custom_view_function
 	Session.remove()
+	
+	# now allow for custom rendering
+	if custom_view_function:
+		return getattr(sys.modules[__name__], custom_view_function)(tournament, all_teams, all_result_place_types, all_team_data)
 	return render_template('tournament.html', teams=all_team_data)
 	
 @app.route('/create')	
@@ -244,6 +251,10 @@ def register_tournament_json():
 	Session.remove()
 	return json.dumps(return_value)
 
+# custom view function for FIFA style tournament
+def worldcup_view(tournament, all_teams, all_result_place_types, all_team_data):
+	return render_template('tournament_fifa.html', teams=all_team_data)
+	
 if __name__ == '__main__':
 	# "threaded=True" to fix an error with the IE9..
 	app.run(host=config.flask_host, port=config.flask_port, threaded=True)

@@ -35,13 +35,16 @@ class TournamentType(db.Model):
 	team_count = db.Column(db.Integer, unique=False)
 	 # for communication with the simulator
 	internal_identifier = db.Column(db.String(128), unique=False)
+	# for rendering the results
+	custom_view_function = db.Column(db.String(128), unique=False)
 	
-	def __init__(self, name, description, team_count, icon, internal_identifier):
+	def __init__(self, name, description, team_count, icon, internal_identifier, custom_view_function=None):
 		self.name = name
 		self.description = description
 		self.team_count = team_count
 		self.icon = icon
 		self.internal_identifier = internal_identifier
+		self.custom_view_function = custom_view_function
 	
 	def __repr__(self):
 		return "[Tournament " + name + "]"

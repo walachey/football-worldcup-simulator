@@ -3,6 +3,8 @@
 
 #include "json.h"
 
+#include "Match.h"
+
 #include <vector>
 #include <map>
 #include <string>
@@ -10,7 +12,6 @@
 
 namespace sim
 {
-
 class RankData
 {
 public:
@@ -26,6 +27,7 @@ class TeamResult
 {
 public:
 	TeamResult();
+	template <class CONT> TeamResult(CONT matches, int teamID);
 	~TeamResult();
 
 	void merge(TeamResult &other);
@@ -69,6 +71,7 @@ public:
 	}
 
 private:
+	int teamID;
 	void incMatchCount() { ++statisticalData[StatisticalDataKeys::TotalMatches]; }
 
 	enum StatisticalDataKeys
@@ -86,6 +89,33 @@ private:
 	static const size_t MAXPLACES = 256;
 	int placeHistogram[MAXPLACES];
 };
+
+// needs to be defined in the header file, due to template arguments
+template <class CONT> TeamResult::TeamResult(CONT matches, int teamID)
+{
+	TeamResult();
+	this->teamID = teamID;
+
+	for (MatchResult &match : matches)
+	{
+		for (int teamIndex = 0; teamIndex < 2; ++teamIndex)
+		{
+			const int &teamID = match.teams[teamIndex];
+			if (teamID != this->teamID) continue;
+
+			if (match.isWinner(teamIndex))
+				addWin();
+			else if (match.isLoser(teamIndex))
+				addLoss();
+			else addDraw();
+
+			// for goal count statistics
+			addGoals(match.goals[teamIndex], match.goals[1 - teamIndex]);
+			// for the general overview
+			addPlace(match.getPlaceForTeamIndex(teamIndex));
+		}
+	}
+}
 
 class Team
 {

@@ -103,7 +103,9 @@ function onRuleSelected(id, name, description)
 
 function endRuleSelection()
 {
-	if (!validateRuleSelection()) return;
+	var rule_ids = [];
+	var rule_data = {};
+	if (!validateRuleSelection(rule_ids, rule_data)) return;
 	
 	// some effects
 	$("#choose_rules").toggleClass("selectionbox-info selectionbox-ok", 500);

@@ -30,13 +30,13 @@ public:
 	std::vector<Tournament*> tournaments;
 	std::vector<RankData> ranks;
 	// will only be filled after the simulation has finished
-	std::map<int, TeamResult> teamResults;
+	std::map<std::string, std::map<int, TeamResult>> clusterTeamResults;
 
 	void execute();
 
 	json_spirit::Object getJSONResults();
 	void fillRankResults(json_spirit::Array &ranks);
-	void fillTeamResults(json_spirit::Array &teams);
+	void fillTeamResults(json_spirit::Array &teams, std::string cluster);
 };
 
 }

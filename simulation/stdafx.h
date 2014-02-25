@@ -6,6 +6,8 @@
 #ifndef _STDAFX_H
 #define _STDAFX_H
 
+#include <list>
+#include <algorithm>
 #include <vector>
 #include <string>
 #include <map>

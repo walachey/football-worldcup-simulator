@@ -10,6 +10,7 @@ TeamResult::TeamResult()
 		statisticalData[i] = 0;
 	for (size_t i = 0; i < MAXPLACES; ++i)
 		placeHistogram[i] = 0;
+	teamID = 0;
 }
 
 TeamResult::~TeamResult()

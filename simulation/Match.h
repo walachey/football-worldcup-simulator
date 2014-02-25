@@ -1,16 +1,15 @@
 #ifndef _MATCH_H
 #define _MATCH_H
 
-#include "Team.h"
-
 namespace sim
 {
 class Simulation;
+class Team;
 
 class MatchResult
 {
 public:
-	MatchResult(int teams[], int goals[], int places[])
+	MatchResult(std::string cluster, int teams[], int goals[], int places[], bool hadOvertime) : cluster(cluster), hadOvertime(hadOvertime)
 	{
 		for (size_t i = 0; i < 2; ++i)
 		{
@@ -21,6 +20,12 @@ public:
 			this->places[i] = places[i];
 	}
 	~MatchResult() {};
+
+	// for statistics pooling, one cluster could f.e. be one match in a tournament ladder
+	std::string cluster;
+
+	// for FIFA style tournaments, where the score depends on f.e. whether the match had an overtime
+	bool hadOvertime;
 
 	int teams[2];
 	int goals[2];
@@ -44,7 +49,7 @@ public:
 	Match();
 	~Match();
 
-	static MatchResult execute(Simulation *simulation, Team &left, Team &right);
+	static MatchResult execute(std::string cluster, Simulation *simulation, Team &left, Team &right, bool forceWinner = false);
 };
 
 }

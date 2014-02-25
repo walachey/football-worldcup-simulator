@@ -18,9 +18,9 @@ Match::~Match()
 }
 
 
-MatchResult Match::execute(Simulation *simulation, Team &left, Team &right)
+MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &left, Team &right, bool forceWinner)
 {
-	static unsigned SEED = std::chrono::system_clock::now().time_since_epoch().count();
+	static unsigned int SEED = (unsigned int)std::chrono::system_clock::now().time_since_epoch().count();
 	++SEED;
 	// apply all rules to figure out the correct odds
 	double weightedChanceSum = 0.0;
@@ -41,7 +41,8 @@ MatchResult Match::execute(Simulation *simulation, Team &left, Team &right)
 	int possibleGoals = 6;
 	auto goalRoller = std::bind(std::uniform_int_distribution<int>(0,1), std::mt19937(SEED));
 	auto sideRoller = std::bind(std::uniform_real_distribution<double>(0.0,1.0), std::mt19937(SEED));
-	while (--possibleGoals)
+
+	while (--possibleGoals > 0 || (forceWinner && goals[0] == goals[1]))
 	{
 		if (goalRoller() == 0) continue;
 		
@@ -50,7 +51,7 @@ MatchResult Match::execute(Simulation *simulation, Team &left, Team &right)
 		else goals[1]++;
 	}
 
-	return MatchResult(teams, goals, places);
+	return MatchResult(cluster, teams, goals, places, possibleGoals < 0);
 }
 
 }; // namespace sim

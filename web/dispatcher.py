@@ -135,7 +135,7 @@ class Dispatcher():
 			session.add(result_place_type)
 			rank_counter += 1
 		# then get the rank percentage for every team
-		for team_data in json_object["teams"]:
+		for team_data in json_object["matches"]["all"]["teams"]:
 			rank_counter = 0
 			for result in team_data["ranks"]:
 				result_place = ResultPlace(tournament.id, team_data["id"], rank_counter, result["percentage"])

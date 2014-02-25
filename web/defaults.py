@@ -75,7 +75,7 @@ elo_rule.makeDefaultRule(1.0)
 session.add(elo_rule)
 # add default tournament types
 session.add(TournamentType("1 vs 1", "A simple 1 vs 1 test tournament.", 2, "TwoHandsIcon.png", "1v1"))
-session.add(TournamentType("World Cup", "The standard FIFA World Cup.", 32, "StdLeagueIcon.png", "worldcup"))
+session.add(TournamentType("World Cup", "The standard FIFA World Cup.", 32, "StdLeagueIcon.png", "worldcup", "worldcup_view"))
 # only after comitting will the objects have valid IDs assigned!
 session.commit()
 

@@ -10,7 +10,8 @@ window.general_tournament_page_link = null;
 function getGeneralTournamentPageLink() { return window.general_tournament_page_link; }
 function setGeneralTournamentPageLink(to) { window.general_tournament_page_link = to; }
 
-function validateRuleSelection()
+// validates the rule input and (may) put the selected rules into an array passed as the /rule_ids/ argument. The remaining rule data will be put into the /rule_data/ object
+function validateRuleSelection(rule_ids, rule_data)
 {
 	// no rules? nope nope nope
 	if ($("#rules tr").length <= 1)
@@ -19,8 +20,10 @@ function validateRuleSelection()
 		return false;
 	}
 	// do validation of all inputs and get the selected rules' IDs at the same time
-	var rule_ids = [];
-	var rule_data = {}; // to fetch the name&description right now (will be needed for the team-view)
+	if (rule_ids == null)
+		rule_ids = [];
+	if (rule_data == null)
+		rule_data = {}; // to fetch the name&description right now (will be needed for the team-view)
 	var regexp = new RegExp("^[0-9]*\\.?[0-9]*$");
 	var valid = true;
 	$(".rule_row").each(

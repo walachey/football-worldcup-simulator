@@ -21,11 +21,13 @@ public:
 	Simulation *simulation;
 
 	int remainingRuns;
-	// maps the team id against a result object that aggregates the results
-	std::map<int, TeamResult> teamResults;
 	// just collects all results from matches
-	std::list<MatchResult> matchResults;
-	void addMatchResult(MatchResult &result) { matchResults.push_back(result); }
+	std::map<std::string, std::list<MatchResult>> clusterMatchResults;
+	// special cluster results for tournaments with special qualifiers etc.
+	// for every cluster, this maps the team id against a result object that aggregates the results
+	std::map<std::string, std::map<int, TeamResult>> clusterTeamResults;
+
+	void addMatchResult(MatchResult &result);
 	// starts the tournament. Called asynchronously
 	void start();
 
@@ -47,6 +49,39 @@ public:
 	OneVersusOneTournament(Simulation *sim, int runs) : Tournament(sim, runs) {}
 private:
 	virtual void execRun();
+};
+
+// aggregates the score for one team
+class FIFAStyleTournamentQualificationResult
+{
+public:
+	FIFAStyleTournamentQualificationResult() : score(0), goals(0), goalDifference(0) {}
+	FIFAStyleTournamentQualificationResult(Team *team) : FIFAStyleTournamentQualificationResult(), forTeam(team) {}
+	int score;
+	int goals;
+	int goalDifference;
+	Team *forTeam;
+
+	bool operator<(FIFAStyleTournamentQualificationResult &other)
+	{
+		if (this->score < other.score) return true;
+		if (this->goalDifference < other.goalDifference) return true;
+		if (this->goals < other.goals) return true;
+		return false;
+	}
+};
+
+class FIFAStyleTournament : public Tournament
+{
+public:
+	FIFAStyleTournament(Simulation *sim, int runs) : Tournament(sim, runs) {}
+private:
+	virtual void execRun();
+	// both functions will return the winner for the current stage
+	std::vector<Team*> runKnockout(int matches);
+	std::vector<Team*> runQualification();
+	// generates a name for clustering and result transmission
+	std::string getMatchClusterName(int knockoutStage, int matchNumber);
 };
 
 }
