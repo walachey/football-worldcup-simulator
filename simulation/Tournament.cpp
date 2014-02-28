@@ -87,8 +87,22 @@ void OneVersusOneTournament::execRun()
 	Team &teamOne = simulation->teams.at(0);
 	Team &teamTwo = simulation->teams.at(1);
 
-	MatchResult result(Match::execute("all", simulation, teamOne, teamTwo));
+	int places[] = { 1, 2, 100 };
+	MatchResult result(Match::execute("all", simulation, teamOne, teamTwo, false, places));
 	addMatchResult(result);
+}
+
+bool FIFAStyleTournamentQualificationResult::operator<(FIFAStyleTournamentQualificationResult &other)
+{
+	// std::cerr << "score " << this->score << "vs" << other.score << "\tgoaldif " << this->goalDifference << "vs" << other.goalDifference << "\tgoal " << this->goals << "vs" << other.goals << std::endl;
+	if (this->score < other.score) return true;
+	if (this->score > other.score) return false;
+
+	if (this->goalDifference < other.goalDifference) return true;
+	if (this->goalDifference > other.goalDifference) return false;
+
+	if (this->goals < other.goals) return true;
+	return false;
 }
 
 void FIFAStyleTournament::execRun()
@@ -114,7 +128,8 @@ std::vector<Team*> FIFAStyleTournament::runQualification()
 	assert (simulation->teams.size() % 4 == 0);
 	std::map<int, FIFAStyleTournamentQualificationResult> results;
 	std::vector<Team*> winners;
-
+	// no place stuff
+	int places[] = { 0, 0, 0 };
 	// round robin for every 4 teams
 	int bracketNumber = 0; // for generating cluster names
 	for (size_t i = 0; i < simulation->teams.size(); i += 4)
@@ -128,7 +143,7 @@ std::vector<Team*> FIFAStyleTournament::runQualification()
 				Team &teamTwo = simulation->teams.at(i + opponent);
 
 				std::string matchCluster = getMatchClusterName(0, bracketNumber);
-				MatchResult result(Match::execute(matchCluster, simulation, teamOne, teamTwo, false));
+				MatchResult result(Match::execute(matchCluster, simulation, teamOne, teamTwo, false, places));
 				addMatchResult(result);
 
 				for (size_t resultIndex = 0; resultIndex < 2; ++resultIndex)
@@ -160,7 +175,7 @@ std::vector<Team*> FIFAStyleTournament::runQualification()
 
 		// the top two teams advance into the next stage
 		int teamCounter = 0;
-		for (auto winningTeam = sortedResults.begin(); teamCounter < 2 && winningTeam != sortedResults.end(); ++i, ++winningTeam)
+		for (auto winningTeam = sortedResults.begin(); teamCounter < 2 && winningTeam != sortedResults.end(); ++teamCounter, ++winningTeam)
 			winners.push_back(winningTeam->forTeam);
 		assert (teamCounter == 2);
 	}
@@ -187,6 +202,13 @@ std::vector<Team*> FIFAStyleTournament::runKnockout(int matches)
 
 	// need an even amount of teams!
 	assert (competingTeams.size() % 2 == 0);
+	// if finale, the contesters will fight for 1 and 2 place, otherwise just the rest
+	int places[] = { 100, 100, 100 };
+	if (matches == 1)
+	{
+		places[0] = 1; 
+		places[1] = 2;
+	}
 	// for every two teams, run another match
 	std::vector<Team*> winners;
 	// only for generating a match ID
@@ -197,7 +219,7 @@ std::vector<Team*> FIFAStyleTournament::runKnockout(int matches)
 		Team &teamTwo = *competingTeams.at(i + 1);
 
 		std::string matchCluster = getMatchClusterName(matches, ++matchCount);
-		MatchResult result(Match::execute(matchCluster, simulation, teamOne, teamTwo, true));
+		MatchResult result(Match::execute(matchCluster, simulation, teamOne, teamTwo, true, places));
 		addMatchResult(result);
 
 		if (result.isWinner(0))

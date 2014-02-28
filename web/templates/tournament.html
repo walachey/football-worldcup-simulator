@@ -7,6 +7,9 @@ $(document).ready(
 	function() 
     {  
 		$("#nav_tournament").toggleClass("active");
+		$("#tournamenttable").tablesorter({
+			sortList: [[1, 1]]
+		}); 
     } 
 );
 </script>
@@ -15,7 +18,7 @@ $(document).ready(
 	text-align:center;
 	margin:-1px;
 	border:1px solid black;
-	height:1.5em;
+	height:2em;
 	position: relative;
 	vertical-align: baseline;
 	display: inline-block;
@@ -27,10 +30,19 @@ $(document).ready(
 	margin:0px;
 	overflow: hidden;
 }
+
+{{ '#' }}tournamenttable td {
+	padding: 0px;
+	height: 2em;
+	vertical-align:middle;
+	text-align:center;
+}
+
 </style>
 # endblock
 
 # block contents
+<h3>The result distribution</h3>
 <table id="tournamenttable" class="tablesorter-green">
 <thead><tr>
 <th>Team</th><th>Distribution</th><th>Avg. Goals</th>

@@ -38,6 +38,10 @@ json_spirit::Object TeamResult::toJSONObject()
 json_spirit::Array TeamResult::rankDataToJSONArray(std::vector<RankData> &rankData)
 {
 	json_spirit::Array ranks;
+	// calculate number of total ranked games first - this is not necessarily ==TotalMatches
+	int totalRankedGames = 0;
+	for (size_t i = 1; i < MAXPLACES; ++i)
+		totalRankedGames += placeHistogram[i];
 	// match all ranks
 	for (RankData &rank : rankData)
 	{
@@ -47,8 +51,9 @@ json_spirit::Array TeamResult::rankDataToJSONArray(std::vector<RankData> &rankDa
 			count += placeHistogram[i];
 		// safety
 		float value = 0.0f;
-		if (statisticalData[StatisticalDataKeys::TotalMatches] != 0)
-			value = (float)count / (float) statisticalData[StatisticalDataKeys::TotalMatches];
+		if (totalRankedGames != 0)
+			value = (float)count / (float)totalRankedGames;
+		assert(value <= 1.0f);
 		object.push_back(json_spirit::Pair("percentage", value));
 		ranks.push_back(object);
 	}

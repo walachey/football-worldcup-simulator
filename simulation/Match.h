@@ -49,7 +49,7 @@ public:
 	Match();
 	~Match();
 
-	static MatchResult execute(std::string cluster, Simulation *simulation, Team &left, Team &right, bool forceWinner = false);
+	static MatchResult execute(std::string cluster, Simulation *simulation, Team &left, Team &right, bool forceWinner, int places[]);
 };
 
 }

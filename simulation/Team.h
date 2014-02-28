@@ -66,6 +66,9 @@ public:
 
 	void addPlace(int place)
 	{
+		// 0 is a special marker for "not a ranked game"
+		if (place == 0) return;
+
 		assert (place > 0 && place < MAXPLACES);
 		placeHistogram[place] += 1;
 	}
@@ -91,9 +94,8 @@ private:
 };
 
 // needs to be defined in the header file, due to template arguments
-template <class CONT> TeamResult::TeamResult(CONT matches, int teamID)
+template <class CONT> TeamResult::TeamResult(CONT matches, int teamID) : TeamResult()
 {
-	TeamResult();
 	this->teamID = teamID;
 
 	for (MatchResult &match : matches)

@@ -18,7 +18,7 @@ Match::~Match()
 }
 
 
-MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &left, Team &right, bool forceWinner)
+MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &left, Team &right, bool forceWinner, int places[])
 {
 	static unsigned int SEED = (unsigned int)std::chrono::system_clock::now().time_since_epoch().count();
 	++SEED;
@@ -36,7 +36,6 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 	// for now, make up results..
 	int teams[] = {left.id, right.id};
 	int goals[] = {0, 0};
-	int places[] = {1, 2, 100};
 
 	int possibleGoals = 6;
 	auto goalRoller = std::bind(std::uniform_int_distribution<int>(0,1), std::mt19937(SEED));

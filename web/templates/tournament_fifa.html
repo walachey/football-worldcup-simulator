@@ -1,0 +1,174 @@
+# extends "tournament.html"
+# block head
+{{ super() }}
+<script type="text/javascript" src="{{ url_for('static', filename='jquery.jsPlumb-1.5.5-min.js') }}"></script>
+<script lang="javascript">
+
+$(document).ready(
+	function() 
+    {  
+	
+		var elements = [null, [1, 2, 3, 4, 5, 6, 7, 8], [1, 2, 3, 4], [1, 2], [1]];
+		for (var from = 1; from < elements.length-1; ++from)
+		{
+			// connect to next element
+			var to = from + 1;
+			for (var from_elem_index = 0; from_elem_index < elements[from].length; ++from_elem_index)
+			{
+				var to_elem_index = Math.floor(from_elem_index / 2);
+				var from_id = "game_" + from + "_" + elements[from][from_elem_index];
+				var to_id = "game_" + to + "_" + elements[to][to_elem_index];
+				console.log(from_id + " " + to_id);
+				jsPlumb.connect({
+					source: from_id,
+					target: to_id,
+					anchors:["Right", "Left"],
+					endpoint:"Blank",
+					connector: "Flowchart"
+					});
+			}
+		}
+    } 
+);
+$(window).resize(function(){
+      jsPlumb.repaintEverything();
+  });
+
+jsPlumb.ready(function() {
+    
+});
+</script>
+
+<style>
+.all_games {
+	width: 100%;
+	min-width: 80em;
+	height: 34em;
+}
+
+.round {
+	width: 15em;
+	float: left;
+	margin-right: 5em;
+}
+
+.second {
+	right: 5em;
+}
+
+.quarter {
+	margin-top: 2.5em;
+}
+
+.quarter .spacer {
+	height: 5em;
+}
+.quarter .spacereach {
+	height: 5em;
+}
+
+.semi {
+	margin-top: 7em;
+}
+
+.semi .spacer {
+	height: 14em;
+}
+
+.final {
+	margin-top: 15.5em;
+	margin-right: 0em;
+}
+
+.game {
+	border-radius: 10px;
+	width: 100%;
+	border: 1px solid black;
+	background-color: light-grey;
+	color: grey;
+}
+.game > table {
+	overflow: hidden;
+	width: 90%;
+	height: 4em;
+	margin-left: 0.5em;
+	margin-right: 0.5em;
+}
+.game td {
+	text-align: center;
+	vertical-align: middle;
+}
+
+.game td.left {
+	text-align: right;
+}
+
+.game td.right {
+	text-align: left;
+}
+
+.game th {
+	text-align: center;
+	vertical-align: middle;
+	width: 10%;
+}
+.game th.head {
+	width: 40%;
+	color: black;
+}
+
+.spacer {
+	height: 1em;
+}
+</style>
+# endblock
+
+# block contents
+<h1>This is a FIFA style tournament.</h1>
+<div class="all_games">
+	<div class="round second pagination-centered">
+	# for game_number in range(1, 9)
+		<div class="game" id="{{"game_1_"~game_number}}">
+			<table><tr><th class="head">Left</th><th>vs</th><th class="head">Right</th></tr>
+			<tr><td class="left">1</td><td>:</td><td class="right">2</td></tr></table>
+		</div>
+		# if game_number % 2 == 0
+			<div class="spacer">&nbsp;</div>
+		# endif
+	# endfor
+	</div>
+	<div class="round quarter">
+	# for game_number in range(1, 5)
+		<div class="game" id="{{"game_2_"~game_number}}">
+			<table><tr><th class="head">Left</th><th>vs</th><th class="head">Right</th></tr>
+			<tr><td class="left">1</td><td>:</td><td class="right">2</td></tr></table>
+		</div>
+		# if game_number % 2 == 1
+			<div class="spacereach">&nbsp;</div>
+		# else
+			<div class="spacer">&nbsp;</div>
+		# endif
+	# endfor
+	</div>
+	<div class="round semi">
+	# for game_number in range(1, 3)
+		<div class="game" id="{{"game_3_"~game_number}}">
+			<table><tr><th class="head">Left</th><th>vs</th><th class="head">Right</th></tr>
+			<tr><td class="left">1</td><td>:</td><td class="right">2</td></tr></table>
+		</div>
+		# if game_number % 2 == 1
+			<div class="spacer">&nbsp;</div>
+		# endif
+	# endfor
+	</div>
+	<div class="round final">
+		<div class="game" id="game_4_1">
+			<table><tr><th class="head">Left</th><th>vs</th><th class="head">Right</th></tr>
+			<tr><td class="left">1</td><td>:</td><td class="right">2</td></tr></table>
+		</div>
+	</div>
+</div>
+<div>&nbsp;</div>
+<br>
+{{ super() }}
+# endblock

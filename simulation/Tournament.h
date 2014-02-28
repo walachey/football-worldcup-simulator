@@ -56,19 +56,16 @@ class FIFAStyleTournamentQualificationResult
 {
 public:
 	FIFAStyleTournamentQualificationResult() : score(0), goals(0), goalDifference(0) {}
-	FIFAStyleTournamentQualificationResult(Team *team) : FIFAStyleTournamentQualificationResult(), forTeam(team) {}
+	FIFAStyleTournamentQualificationResult(Team *team) : FIFAStyleTournamentQualificationResult()
+	{
+		this->forTeam = team;
+	}
 	int score;
 	int goals;
 	int goalDifference;
 	Team *forTeam;
 
-	bool operator<(FIFAStyleTournamentQualificationResult &other)
-	{
-		if (this->score < other.score) return true;
-		if (this->goalDifference < other.goalDifference) return true;
-		if (this->goals < other.goals) return true;
-		return false;
-	}
+	bool operator<(FIFAStyleTournamentQualificationResult &other);
 };
 
 class FIFAStyleTournament : public Tournament
