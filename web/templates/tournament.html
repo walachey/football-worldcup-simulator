@@ -8,6 +8,13 @@ $(document).ready(
     {  
 		$("#nav_tournament").toggleClass("active");
 		$("#tournamenttable").tablesorter({
+			textExtraction: function(node)
+				{                    
+					if ($(node).attr("sorter"))
+						return $(node).attr("sorter"); 
+					return $(node).text();
+				},
+			sortInitialOrder: 'desc',
 			sortList: [[1, 1]]
 		}); 
     } 
@@ -15,20 +22,21 @@ $(document).ready(
 </script>
 <style>
 .bar {
-	text-align:center;
-	margin:-1px;
-	border:1px solid black;
+	text-align: right;
+	padding:0px;
 	height:2em;
 	position: relative;
-	vertical-align: baseline;
 	display: inline-block;
+	float: left;
 	overflow: hidden;
+	
 }
 .barcontainer {
 	width:100%;
 	padding:0px;
 	margin:0px;
 	overflow: hidden;
+	height: 100%;
 }
 
 {{ '#' }}tournamenttable td {
@@ -45,22 +53,23 @@ $(document).ready(
 <h3>The result distribution</h3>
 <table id="tournamenttable" class="tablesorter-green">
 <thead><tr>
-<th>Team</th><th>Distribution</th><th>Avg. Goals</th>
+<th>Team</th><th>Distribution</th><th>Avg. Goals</th><th>1st or 2nd</th>
 </tr></thead>
 <tbody>
 # for team in teams
 	<tr>
 	<td>{{ team.name }}</td>
-	<td>
+	<td style="width:50%" sorter="{{ team.distribution_sorting_value }}">
 	<div class="barcontainer">
 	# for result in team.results
 		# if result.percentage > 0.0
-			<div class="bar" style="width:{{ result.percentage }}%;background-color:{{ result.color }};"><strong>{{ result.name ~ " (" ~ result.percentage ~ "%)" }}</strong></div>
+			<div class="bar" style="width:{{ result.percentage }}%;background-color:{{ result.color }};"><small>{{ result.percentage ~ "%" }}</small></div>
 		# endif
 	# endfor
 	</div>
 	</td>
 	<td>{{ team.general.average_goals|round(1) }}</td>
+	<td>{{ team.results[0].percentage + team.results[1].percentage }}%</td>
 	</tr>
 # endfor
 </tbody>

@@ -15,6 +15,8 @@ class Simulation;
 class Tournament
 {
 public:
+	static int NoPlace;
+
 	Tournament(Simulation *sim, int runs) : simulation(sim), remainingRuns(runs) { init(); };
 	~Tournament();
 
@@ -26,8 +28,10 @@ public:
 	// special cluster results for tournaments with special qualifiers etc.
 	// for every cluster, this maps the team id against a result object that aggregates the results
 	std::map<std::string, std::map<int, TeamResult>> clusterTeamResults;
-
+	// every played match should add its outcome
 	void addMatchResult(MatchResult &result);
+	// and once the place for a team is known, it should be added here, too
+	void addTeamPlace(int teamID, int place);
 	// starts the tournament. Called asynchronously
 	void start();
 

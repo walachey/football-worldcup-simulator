@@ -283,11 +283,13 @@ class Result(db.Model):
 	team_id = db.Column(db.Integer, db.ForeignKey('teams.id'))
 	
 	average_goals = db.Column(db.Float, unique=False)
+	average_place = db.Column(db.Float, unique=False)
 	
-	def __init__(self, tournament_id, team_id, average_goals):
+	def __init__(self, tournament_id, team_id, average_goals, average_place):
 		self.tournament_id = tournament_id
 		self.team_id = team_id
 		self.average_goals = average_goals
+		self.average_place = average_place
 		
 	def __repr__(self):
 		return "[Result " + str(self.id) + "]"

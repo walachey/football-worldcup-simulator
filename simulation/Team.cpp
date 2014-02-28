@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Team.h"
 
+#include "Tournament.h"
+
 namespace sim
 {
 
@@ -16,6 +18,29 @@ TeamResult::TeamResult()
 TeamResult::~TeamResult()
 {
 
+}
+
+double TeamResult::getAvgPlace()
+{
+	int totalPlaces = 0;
+	int weightedPlaces = 0;
+
+	for (int i = 0; i < Tournament::NoPlace; ++i)
+	{
+		totalPlaces += placeHistogram[i];
+		weightedPlaces += i * placeHistogram[i];
+	}
+
+	if (totalPlaces == 0) return 0.0;
+	return (double)(weightedPlaces) / (double)(totalPlaces);
+}
+
+int TeamResult::getTotalPlaceCount()
+{
+	int counter = 0;
+	for (size_t i = 0; i < MAXPLACES; ++i)
+		counter += placeHistogram[i];
+	return counter;
 }
 
 void TeamResult::merge(TeamResult &other)

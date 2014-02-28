@@ -143,6 +143,7 @@ class Dispatcher():
 				rank_counter += 1
 			# general results
 			average_goals = team_data["avg_goals"]
-			result = Result(tournament.id, team_data["id"], average_goals)
+			average_place = team_data["avg_place"]
+			result = Result(tournament.id, team_data["id"], average_goals, average_place)
 			session.add(result)
 		session.commit()

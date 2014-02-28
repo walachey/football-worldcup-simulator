@@ -40,6 +40,8 @@ public:
 		return (double)statisticalData[StatisticalDataKeys::TotalOwnGoals] / (double)statisticalData[StatisticalDataKeys::TotalMatches];
 	}
 
+	double getAvgPlace();
+
 	void addWin()
 	{
 		incMatchCount();
@@ -73,6 +75,8 @@ public:
 		placeHistogram[place] += 1;
 	}
 
+	// returns the total number of places given to this team - for plausibility checks
+	int getTotalPlaceCount();
 private:
 	int teamID;
 	void incMatchCount() { ++statisticalData[StatisticalDataKeys::TotalMatches]; }
@@ -114,7 +118,8 @@ template <class CONT> TeamResult::TeamResult(CONT matches, int teamID) : TeamRes
 			// for goal count statistics
 			addGoals(match.goals[teamIndex], match.goals[1 - teamIndex]);
 			// for the general overview
-			addPlace(match.getPlaceForTeamIndex(teamIndex));
+			// do not add places here, because match results do not necessarily have a good notion of a "place"
+			// addPlace(match.getPlaceForTeamIndex(teamIndex));
 		}
 	}
 }

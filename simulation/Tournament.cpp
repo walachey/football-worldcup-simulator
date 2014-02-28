@@ -7,6 +7,7 @@
 namespace sim
 {
 
+int Tournament::NoPlace = 100;
 
 Tournament::~Tournament()
 {
@@ -14,6 +15,17 @@ Tournament::~Tournament()
 
 void Tournament::init()
 {
+	//  prepare team results in cluster "all", that way a check when adding a place later can be omitted
+	auto &cluster = clusterTeamResults["all"];
+	for (auto &team : simulation->teams)
+	{
+		cluster.emplace(std::make_pair(team.id, TeamResult()));
+	}
+}
+
+void Tournament::addTeamPlace(int teamID, int place)
+{
+	clusterTeamResults["all"][teamID].addPlace(place);
 }
 
 void Tournament::addMatchResult(MatchResult &result)
@@ -70,13 +82,28 @@ Tournament* Tournament::newOfType(std::string type, Simulation *sim, int runs)
 
 void Tournament::calculateTeamResults()
 {
+	// quick check over places - for plausibility only
+	int totalPlaceCount = 0;
+	for (auto &pair : clusterTeamResults["all"])
+	{
+		totalPlaceCount += pair.second.getTotalPlaceCount();
+	}
+	assert(totalPlaceCount == remainingRuns * simulation->teams.size());
+
 	// now calculate team results for the clusters -> local results
 	for (auto &cluster : clusterMatchResults)
 	{
 		std::map<int, TeamResult> &clusterResult = clusterTeamResults[cluster.first];
 		
 		for (auto &team : simulation->teams)
-			clusterResult.emplace(std::make_pair(team.id, TeamResult(cluster.second, team.id)));
+		{
+			// aggregate results from matches
+			TeamResult results(cluster.second, team.id);
+			// .. and merge into existing team data, which probably already has stuff like places etc. set
+			if (clusterResult.count(team.id))
+				clusterResult[team.id].merge(results);
+			else clusterResult[team.id] = results;
+		}
 	}
 }
 
@@ -87,9 +114,23 @@ void OneVersusOneTournament::execRun()
 	Team &teamOne = simulation->teams.at(0);
 	Team &teamTwo = simulation->teams.at(1);
 
-	int places[] = { 1, 2, 100 };
-	MatchResult result(Match::execute("all", simulation, teamOne, teamTwo, false, places));
+	MatchResult result(Match::execute("all", simulation, teamOne, teamTwo, false));
 	addMatchResult(result);
+
+	int places[] = { 1, 2 };
+	
+	if (result.isLoser(0))
+	{
+		places[0] = 2;
+		places[1] = 1;
+	}
+	else if (result.isDraw())
+	{
+		places[0] = 100;
+		places[1] = 100;
+	}
+	addTeamPlace(teamOne.id, places[0]);
+	addTeamPlace(teamTwo.id, places[1]);
 }
 
 bool FIFAStyleTournamentQualificationResult::operator<(FIFAStyleTournamentQualificationResult &other)
@@ -126,30 +167,33 @@ std::string FIFAStyleTournament::getMatchClusterName(int knockoutStage, int matc
 std::vector<Team*> FIFAStyleTournament::runQualification()
 {
 	assert (simulation->teams.size() % 4 == 0);
-	std::map<int, FIFAStyleTournamentQualificationResult> results;
 	std::vector<Team*> winners;
-	// no place stuff
-	int places[] = { 0, 0, 0 };
+
 	// round robin for every 4 teams
 	int bracketNumber = 0; // for generating cluster names
+	int matchCounter = 0; // for plausibility
 	for (size_t i = 0; i < simulation->teams.size(); i += 4)
 	{
+		// fresh results for every group
+		std::map<int, FIFAStyleTournamentQualificationResult> results;
 		++bracketNumber;
+		assert(bracketNumber <= 8);
 		for (size_t t = 0; t < 4; ++t)
 		{
 			for (size_t opponent = t + 1; opponent < 4; ++opponent)
 			{
 				Team &teamOne = simulation->teams.at(i + t);
 				Team &teamTwo = simulation->teams.at(i + opponent);
+				matchCounter += 1;
 
 				std::string matchCluster = getMatchClusterName(0, bracketNumber);
-				MatchResult result(Match::execute(matchCluster, simulation, teamOne, teamTwo, false, places));
+				MatchResult result(Match::execute(matchCluster, simulation, teamOne, teamTwo, false));
 				addMatchResult(result);
 
 				for (size_t resultIndex = 0; resultIndex < 2; ++resultIndex)
 				{
 					Team &team = (resultIndex == 0) ? teamOne : teamTwo;
-					Team &opposingTeam = (resultIndex == 1) ? teamOne : teamTwo;
+					Team &opposingTeam = (resultIndex == 0) ? teamTwo : teamOne;
 
 					if (!results.count(team.id))
 						results[team.id] = FIFAStyleTournamentQualificationResult(&team);
@@ -172,6 +216,7 @@ std::vector<Team*> FIFAStyleTournament::runQualification()
 		for (auto &mapping : results)
 			sortedResults.push_back(mapping.second);
 		sortedResults.sort();
+		sortedResults.reverse();
 
 		// the top two teams advance into the next stage
 		int teamCounter = 0;
@@ -180,6 +225,23 @@ std::vector<Team*> FIFAStyleTournament::runQualification()
 		assert (teamCounter == 2);
 	}
 
+	assert(matchCounter == 3 * 2 * 8);
+
+	// we now have all the winners and thus, the losers
+	// assign places to the losers - they are OUT
+	int teamPlaceCounter = 0; // for plausibility
+	for (auto &team : simulation->teams)
+	{
+		bool isWinner = std::find(winners.begin(), winners.end(), &team) != winners.end();;
+
+		if (!isWinner)
+		{
+			addTeamPlace(team.id, Tournament::NoPlace);
+			teamPlaceCounter += 1;
+		}
+	}
+
+	assert(teamPlaceCounter == 16);
 	assert (winners.size() == 16);
 	return winners;
 }
@@ -202,15 +264,12 @@ std::vector<Team*> FIFAStyleTournament::runKnockout(int matches)
 
 	// need an even amount of teams!
 	assert (competingTeams.size() % 2 == 0);
-	// if finale, the contesters will fight for 1 and 2 place, otherwise just the rest
-	int places[] = { 100, 100, 100 };
-	if (matches == 1)
-	{
-		places[0] = 1; 
-		places[1] = 2;
-	}
 	// for every two teams, run another match
 	std::vector<Team*> winners;
+	// for fighting out the match for the third and fourth place
+	const bool isSemiFinal = matches == 2;
+	std::vector<Team*> semiFinalists;
+
 	// only for generating a match ID
 	int matchCount = 0;
 	for (size_t i = 0; i < competingTeams.size(); i += 2)
@@ -219,18 +278,76 @@ std::vector<Team*> FIFAStyleTournament::runKnockout(int matches)
 		Team &teamTwo = *competingTeams.at(i + 1);
 
 		std::string matchCluster = getMatchClusterName(matches, ++matchCount);
-		MatchResult result(Match::execute(matchCluster, simulation, teamOne, teamTwo, true, places));
+		MatchResult result(Match::execute(matchCluster, simulation, teamOne, teamTwo, true));
 		addMatchResult(result);
 
 		if (result.isWinner(0))
+		{
 			winners.push_back(&teamOne);
+			if (isSemiFinal) semiFinalists.push_back(&teamTwo);
+		}
 		else
 		{
 			assert (result.isWinner(1)); // no draws!
 			winners.push_back(&teamTwo);
+			if (isSemiFinal) semiFinalists.push_back(&teamOne);
 		}
 	}
 	assert (winners.size() == matches);
+
+	// assign places for teams
+	const bool isFinal = matches == 1;
+	int teamPlaceCounter = 0; // for plausibility
+	if (!isSemiFinal)
+	{
+		for (auto &team : competingTeams)
+		{
+			bool isWinner = std::find(winners.begin(), winners.end(), team) != winners.end();
+
+			if (isFinal)
+			{
+				if (isWinner) addTeamPlace(team->id, 1);
+				else addTeamPlace(team->id, 2);
+
+				teamPlaceCounter += 1;
+			}
+			else if (!isWinner) // neither finals nor semi-finals
+			{
+				addTeamPlace(team->id, Tournament::NoPlace);
+				teamPlaceCounter += 1;
+			}
+			
+		}
+	}
+
+	// in the semi finals, we will have to figure out the places with a match again
+	if (isSemiFinal)
+	{
+		assert(semiFinalists.size() == 2);
+		Team &teamOne = *semiFinalists.at(0);
+		Team &teamTwo = *semiFinalists.at(1);
+
+		std::string matchCluster = getMatchClusterName(1, 2); // second match of the "finale" cluster
+		MatchResult result(Match::execute(matchCluster, simulation, teamOne, teamTwo, true));
+		addMatchResult(result);
+
+		if (result.isWinner(0))
+		{
+			addTeamPlace(teamOne.id, 3);
+			addTeamPlace(teamTwo.id, 4);
+		}
+		else
+		{
+			assert(!result.isDraw());
+			addTeamPlace(teamOne.id, 4);
+			addTeamPlace(teamTwo.id, 3);
+		}
+		teamPlaceCounter += 2;
+	}
+
+	assert(!isFinal || teamPlaceCounter == 2);
+	assert(!isSemiFinal || teamPlaceCounter == 2);
+	assert((isFinal || isSemiFinal) || (teamPlaceCounter == competingTeams.size() - winners.size()));
 	return winners;
 }
 

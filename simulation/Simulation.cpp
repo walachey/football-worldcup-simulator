@@ -58,14 +58,17 @@ void Simulation::setupRules(json_spirit::Array &ruleData)
 
 void Simulation::execute()
 {
+	// 16 threads for one tournament sound impractical
+	int realThreadCount = std::min(numberOfThreads, numberOfRuns);
+
 	std::vector<std::thread> threads;
-	threads.resize(numberOfThreads);
-	tournaments.resize(numberOfThreads);
+	threads.resize(realThreadCount);
+	tournaments.resize(realThreadCount);
 
 	int remainingRuns = numberOfRuns;
-	int runsPerThread = numberOfRuns / numberOfThreads;
+	int runsPerThread = numberOfRuns / realThreadCount;
 
-	for (int i = 0; i < numberOfThreads; ++i, remainingRuns -= runsPerThread)
+	for (int i = 0; i < realThreadCount; ++i, remainingRuns -= runsPerThread)
 	{
 		int runsForTournament = std::min(remainingRuns, runsPerThread);
 		tournaments[i] = Tournament::newOfType(tournamentType, this, runsForTournament);
@@ -79,9 +82,11 @@ void Simulation::execute()
 	}
 
 	// setup rank data
-	ranks.push_back(RankData("winner", 1, 1));
-	ranks.push_back(RankData("loser", 2, 2));
-	ranks.push_back(RankData("rest", 3, 100));
+	ranks.push_back(RankData("first", 1, 1));
+	ranks.push_back(RankData("second", 2, 2));
+	ranks.push_back(RankData("third", 3, 3));
+	ranks.push_back(RankData("fourth", 4, 4));
+	ranks.push_back(RankData("rest", 5, 100));
 
 
 	// and then join the results
@@ -94,8 +99,9 @@ void Simulation::execute()
 			for (auto &team : teams)
 			{
 				if (!cluster.count(team.id))
-					cluster.emplace(std::make_pair(team.id, TeamResult()));
-				cluster[team.id].merge(clusterToMerge.second[team.id]);
+					cluster.emplace(std::make_pair(team.id, TeamResult(clusterToMerge.second[team.id])));
+				else
+					cluster[team.id].merge(clusterToMerge.second[team.id]);
 			}
 		}
 	}
@@ -137,9 +143,14 @@ void Simulation::fillTeamResults(json_spirit::Array &teamList, std::string clust
 	{
 		json_spirit::Object teamData;
 		teamData.push_back(json_spirit::Pair("id", team.id));
-		teamData.push_back(json_spirit::Pair("ranks", clusterTeamResults[cluster][team.id].rankDataToJSONArray(ranks)));
+		if (cluster == "all")
+		{
+			teamData.push_back(json_spirit::Pair("ranks", clusterTeamResults[cluster][team.id].rankDataToJSONArray(ranks)));
+			teamData.push_back(json_spirit::Pair("avg_place", clusterTeamResults[cluster][team.id].getAvgPlace()));
+		}
 		teamData.push_back(json_spirit::Pair("match_data", clusterTeamResults[cluster][team.id].toJSONObject()));
 		teamData.push_back(json_spirit::Pair("avg_goals", clusterTeamResults[cluster][team.id].getAvgGoals()));
+		
 		
 		teamList.push_back(teamData);
 	}

@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 		simulation.execute();
 
 		json_spirit::Object results = simulation.getJSONResults();
-		std::string json = json_spirit::write(results, json_spirit::remove_trailing_zeros);
+		std::string json = json_spirit::write(results, json_spirit::remove_trailing_zeros | json_spirit::pretty_print);
 		std::cout << json << std::endl;
 	}
 #ifdef EXCEPTIONDEBUG

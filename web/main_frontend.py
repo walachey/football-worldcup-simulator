@@ -84,7 +84,7 @@ def tournament_view(id):
 	all_teams = Team.getAllTeamsForTournament(tournament.id)
 	all_result_place_types = session.query(ResultPlaceType).filter_by(tournament_id=tournament.id).order_by(ResultPlaceType.place).all()
 	
-	colors = ['#dddd00', '#eeeeee', '#ee9900', '#000099', '#00eeee', '#ff0000']
+	colors = ['#dddd00', '#eeeeee', '#ee9900', '#000099', '#cccccc', '#bbbbbb']
 	color_count = len(colors)
 	
 	all_team_data = []
@@ -92,15 +92,24 @@ def tournament_view(id):
 		team_data = {"name":team.name, "country_code":team.country_code}
 		results = []
 		color_counter = 0
+		percentage_count = 0
+		distribution_sorting_value = 1.0
 		for result_place_type in all_result_place_types:
 			result_place = session.query(ResultPlace).filter_by(tournament_id=tournament.id, team_id=team.id, place=result_place_type.place).first()
+			percentage = int(100 * result_place.percentage)
+			distribution_sorting_value = distribution_sorting_value * 10.0 + result_place.percentage
+			percentage_count += percentage
 			results.append({
 				"name":result_place_type.name, 
-				"percentage":int(100 * result_place.percentage),
+				"percentage":percentage,
 				"color":(colors[color_counter % color_count])
 				})
 			color_counter += 1
+		# add rounding errors to the percentage of the last place (usually "draw" or "rest")..
+		if percentage_count != 100:
+			results[-1]["percentage"] += 100 - percentage_count
 		team_data["results"] = results
+		team_data["distribution_sorting_value"] = distribution_sorting_value
 		
 		team_data["general"] = session.query(Result).filter_by(tournament_id=tournament.id, team_id=team.id).first()
 		all_team_data.append(team_data)
