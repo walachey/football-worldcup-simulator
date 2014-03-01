@@ -93,17 +93,23 @@ void Tournament::calculateTeamResults()
 	// now calculate team results for the clusters -> local results
 	for (auto &cluster : clusterMatchResults)
 	{
-		std::map<int, TeamResult> &clusterResult = clusterTeamResults[cluster.first];
+		// first the team results
+		std::map<int, TeamResult> &clusterTeamResult = clusterTeamResults[cluster.first];
 		
 		for (auto &team : simulation->teams)
 		{
 			// aggregate results from matches
 			TeamResult results(cluster.second, team.id);
 			// .. and merge into existing team data, which probably already has stuff like places etc. set
-			if (clusterResult.count(team.id))
-				clusterResult[team.id].merge(results);
-			else clusterResult[team.id] = results;
+			if (clusterTeamResult.count(team.id))
+				clusterTeamResult[team.id].merge(results);
+			else clusterTeamResult[team.id] = results;
 		}
+
+		// and then the single match results
+		MatchResultStatisticsList &list = clusterMatchResultStatisticsLists[cluster.first];
+		for (auto &match : cluster.second)
+			list.addMatch(match);
 	}
 }
 
@@ -115,6 +121,8 @@ void OneVersusOneTournament::execRun()
 	Team &teamTwo = simulation->teams.at(1);
 
 	MatchResult result(Match::execute("all", simulation, teamOne, teamTwo, false));
+	result.bofRound = 1;
+	result.gameInRound = 1;
 	addMatchResult(result);
 
 	int places[] = { 1, 2 };
@@ -157,10 +165,8 @@ std::string FIFAStyleTournament::getMatchClusterName(int knockoutStage, int matc
 {
 	std::ostringstream os;
 	if (knockoutStage > 0)
-		os << "BOF" << knockoutStage << "_";
-	else os << "QUALI_";
-	char matchID = 'A' + matchNumber - 1;
-	os << matchID;
+		os << "game_" << knockoutStage << "_" << matchNumber;
+	else os << "QUALI_" << (char)('A' + matchNumber - 1);
 	return os.str();
 }
 
@@ -188,6 +194,8 @@ std::vector<Team*> FIFAStyleTournament::runQualification()
 
 				std::string matchCluster = getMatchClusterName(0, bracketNumber);
 				MatchResult result(Match::execute(matchCluster, simulation, teamOne, teamTwo, false));
+				result.bofRound = 16;
+				result.gameInRound = bracketNumber;
 				addMatchResult(result);
 
 				for (size_t resultIndex = 0; resultIndex < 2; ++resultIndex)
@@ -279,6 +287,8 @@ std::vector<Team*> FIFAStyleTournament::runKnockout(int matches)
 
 		std::string matchCluster = getMatchClusterName(matches, ++matchCount);
 		MatchResult result(Match::execute(matchCluster, simulation, teamOne, teamTwo, true));
+		result.bofRound = matches;
+		result.gameInRound = matchCount;
 		addMatchResult(result);
 
 		if (result.isWinner(0))
@@ -329,6 +339,8 @@ std::vector<Team*> FIFAStyleTournament::runKnockout(int matches)
 
 		std::string matchCluster = getMatchClusterName(1, 2); // second match of the "finale" cluster
 		MatchResult result(Match::execute(matchCluster, simulation, teamOne, teamTwo, true));
+		result.bofRound = 1;
+		result.gameInRound = 2;
 		addMatchResult(result);
 
 		if (result.isWinner(0))

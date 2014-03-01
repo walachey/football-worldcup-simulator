@@ -293,3 +293,67 @@ class Result(db.Model):
 		
 	def __repr__(self):
 		return "[Result " + str(self.id) + "]"
+		
+class MatchResult(db.Model):
+	__tablename__ = "match_results"
+	query = None
+	
+	id = db.Column(db.Integer, primary_key=True)
+	tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
+	team_left_id = db.Column(db.Integer, db.ForeignKey('teams.id'))
+	team_right_id = db.Column(db.Integer, db.ForeignKey('teams.id'))
+	
+	bof_round = db.Column(db.Integer, unique=False)
+	game_in_round = db.Column(db.Integer, unique=False)
+	
+	average_goals_left = db.Column(db.Float, unique=False)
+	average_goals_right = db.Column(db.Float, unique=False)
+	number_of_games = db.Column(db.Integer, unique=False)
+	
+	# optimization, the most frequent result will always be shown first
+	most_frequent = db.Column(db.Boolean, unique=False)
+	
+	def __init__(self, tournament_id, bof_round, game_in_round, teams, goals, number_of_games):
+		self.tournament_id = tournament_id
+		self.bof_round = bof_round
+		self.game_in_round = game_in_round
+		(self.team_left_id, self.team_right_id) = teams
+		(self.average_goals_left, self.average_goals_right) = goals
+		self.number_of_games = number_of_games
+		self.most_frequent = False
+		
+		# and normalize
+		if self.number_of_games != 0:
+			(self.average_goals_left, self.average_goals_right) = (self.average_goals_left / float(self.number_of_games), self.average_goals_right / float(self.number_of_games))
+	
+	def getMatchName(self):
+		return "game_" + str(self.bof_round) + "_" + str(self.game_in_round)
+	
+	def __repr__(self):
+		return "[MatchResult " + self.match_name + " - " + self.team_left_id + " vs " + self.team_right_id + "]"
+		
+	def toDictionary(self):
+		return {
+			"teams": [self.team_left_id, self.team_right_id],
+			"goals": [self.average_goals_left, self.average_goals_right]
+		}
+	
+	# returns a list with all matches that lead to this match
+	# usually, this method is called on a finals game and returns the complete brackets
+	def resolveBrackets(self):
+		session = getSession() # no need to clean up, since this will not create a duplicate object but just return the currently active one (which will be cleaned up by a parent function)
+		
+		resolved = [self]
+		# best of 32? nothing more to resolve..
+		if self.bof_round == 16:
+			return resolved
+		# get all (two) matches that lead to this match
+		for team_id in [self.team_left_id, self.team_right_id]:
+			parent_match = session.query(MatchResult)\
+				.filter(MatchResult.tournament_id==self.tournament_id, MatchResult.bof_round==self.bof_round*2)\
+				.filter((MatchResult.team_left_id==team_id) | (MatchResult.team_right_id==team_id))\
+				.order_by(MatchResult.number_of_games.desc())\
+				.first()
+			for previous_match in parent_match.resolveBrackets():
+				resolved.append(previous_match)
+		return resolved

@@ -119,7 +119,7 @@ def tournament_view(id):
 	
 	# now allow for custom rendering
 	if custom_view_function:
-		return getattr(sys.modules[__name__], custom_view_function)(tournament, all_teams, all_result_place_types, all_team_data)
+		return getattr(sys.modules[__name__], custom_view_function)(id, all_teams, all_result_place_types, all_team_data)
 	return render_template('tournament.html', teams=all_team_data)
 	
 @app.route('/create')	
@@ -261,8 +261,28 @@ def register_tournament_json():
 	return json.dumps(return_value)
 
 # custom view function for FIFA style tournament
-def worldcup_view(tournament, all_teams, all_result_place_types, all_team_data):
-	return render_template('tournament_fifa.html', teams=all_team_data)
+def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_data):
+	# get match data for this tournament
+	session = getSession()
+	# get finals
+	finals = session.query(MatchResult).filter_by(tournament_id=tournament_id, bof_round=1, game_in_round=1).first()
+	# now get list of all matches that lead to those finals
+	most_frequent_match_results = finals.resolveBrackets()
+	match_dict = {}
+	#most_frequent_match_results = session.query(MatchResult).filter_by(tournament_id=tournament_id, most_frequent=True).all()
+	for result in most_frequent_match_results:
+		# no need for "all" result..
+		if result.bof_round == 0:
+			continue
+		match_dict[result.getMatchName()] = result.toDictionary()
+	Session.remove()
+	
+	# create a quick lookup table for team names
+	team_lookup = {}
+	for team in all_teams:
+		team_lookup[team.id] = team.name
+	
+	return render_template('tournament_fifa.html', teams=all_team_data, matches=json.dumps(match_dict), team_lookup=json.dumps(team_lookup))
 	
 if __name__ == '__main__':
 	# "threaded=True" to fix an error with the IE9..

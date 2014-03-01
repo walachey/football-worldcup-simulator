@@ -28,6 +28,8 @@ public:
 	// special cluster results for tournaments with special qualifiers etc.
 	// for every cluster, this maps the team id against a result object that aggregates the results
 	std::map<std::string, std::map<int, TeamResult>> clusterTeamResults;
+	// aggregates the statistics for a cluster of matches
+	std::map<std::string, MatchResultStatisticsList> clusterMatchResultStatisticsLists;
 	// every played match should add its outcome
 	void addMatchResult(MatchResult &result);
 	// and once the place for a team is known, it should be added here, too

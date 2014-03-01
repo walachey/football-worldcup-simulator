@@ -92,6 +92,7 @@ void Simulation::execute()
 	// and then join the results
 	for (Tournament* &tournament : tournaments)
 	{
+		// first the team data
 		for (auto &clusterToMerge : tournament->clusterTeamResults)
 		{
 			std::map<int, TeamResult> &cluster = clusterTeamResults[clusterToMerge.first];
@@ -103,6 +104,12 @@ void Simulation::execute()
 				else
 					cluster[team.id].merge(clusterToMerge.second[team.id]);
 			}
+		}
+
+		// and then the match cluster statistics
+		for (auto &clusterToMerge : tournament->clusterMatchResultStatisticsLists)
+		{
+			clusterMatchResultStatisticsLists[clusterToMerge.first].merge(clusterToMerge.second);
 		}
 	}
 }
@@ -126,6 +133,21 @@ json_spirit::Object Simulation::getJSONResults()
 		match.push_back(json_spirit::Pair("teams", json_spirit::Array()));
 		json_spirit::Array &teams = match.back().value_.get_array();
 		fillTeamResults(teams, cluster.first);
+
+		match.push_back(json_spirit::Pair("results", json_spirit::Array()));
+		json_spirit::Array &results = match.back().value_.get_array();
+		fillMatchResults(results, cluster.first);
+
+		if (cluster.first != "all")
+		{
+			match.push_back(json_spirit::Pair("bof_round", clusterMatchResultStatisticsLists[cluster.first].bofRound));
+			match.push_back(json_spirit::Pair("game_in_round", clusterMatchResultStatisticsLists[cluster.first].gameInRound));
+		}
+		else
+		{
+			match.push_back(json_spirit::Pair("bof_round", 0));
+			match.push_back(json_spirit::Pair("game_in_round", 0));
+		}
 	}
 
 	return root;
@@ -135,6 +157,11 @@ void Simulation::fillRankResults(json_spirit::Array &ranks)
 {
 	for (RankData &rankData : this->ranks)
 		ranks.push_back(rankData.toJSONObject());
+}
+
+void Simulation::fillMatchResults(json_spirit::Array &results, std::string cluster)
+{
+	results = clusterMatchResultStatisticsLists[cluster].toJSONArray();
 }
 
 void Simulation::fillTeamResults(json_spirit::Array &teamList, std::string cluster)

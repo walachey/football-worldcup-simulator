@@ -8,6 +8,88 @@
 namespace sim
 {
 
+void MatchResultStatisticsList::addMatch(const MatchResult &match)
+{
+	int teamIDOne = std::min(match.teams[0], match.teams[1]);
+	int teamIDTwo = std::max(match.teams[0], match.teams[1]);
+
+	std::pair<int, int> teamPair = std::make_pair(teamIDOne, teamIDTwo);
+	if (!results.count(teamPair))
+	{
+		results.emplace(teamPair, MatchResultStatistics(teamIDOne, teamIDTwo));
+		assert(match.bofRound > 0);
+		this->bofRound = match.bofRound;
+		this->gameInRound = match.gameInRound;
+	}
+	MatchResultStatistics &clusterResult = results[teamPair];
+	clusterResult.addMatch(match);
+}
+
+void MatchResultStatisticsList::merge(MatchResultStatisticsList &other)
+{
+	for (auto &result : other.results)
+	{
+		const std::pair<int, int> &teamPair = result.first;
+		if (!results.count(teamPair))
+			results.emplace(teamPair, MatchResultStatistics(result.second));
+		else
+			results[teamPair].merge(result.second);
+	}
+	this->bofRound = other.bofRound;
+	this->gameInRound = other.gameInRound;
+}
+
+json_spirit::Array MatchResultStatisticsList::toJSONArray()
+{
+	json_spirit::Array data;
+
+	// sort our results by count
+	std::list<MatchResultStatistics> sorted;
+	for (auto &result : results)
+		sorted.push_back(result.second);
+	sorted.sort();
+	sorted.reverse();
+
+	// ..and add to data
+	for (MatchResultStatistics &stats : sorted)
+		data.push_back(stats.toJSONObject());
+
+	return data;
+}
+
+json_spirit::Object MatchResultStatistics::toJSONObject()
+{
+	json_spirit::Object object;
+	object.push_back(json_spirit::Pair("teams", json_spirit::Array({ teams[0], teams[1] })));
+	object.push_back(json_spirit::Pair("goals", json_spirit::Array({ goals[0], goals[1] })));
+	object.push_back(json_spirit::Pair("count", count));
+	return object;
+}
+
+void MatchResultStatistics::addMatch(const MatchResult &result)
+{
+	int first = 0, second = 1;
+	// team IDs will always be sorted ascending
+	if (result.teams[0] > result.teams[1])
+	{
+		first = 1;
+		second = 0;
+	}
+	this->goals[0] += result.goals[first];
+	this->goals[1] += result.goals[second];
+	count += 1;
+}
+
+void MatchResultStatistics::merge(const MatchResultStatistics &other)
+{
+	assert(this->teams[0] == other.teams[0] && this->teams[1] == other.teams[1]);
+	for (int i = 0; i < 2; ++i)
+	{
+		this->goals[i] += other.goals[i];
+	}
+	this->count += other.count;
+}
+
 Match::Match()
 {
 }

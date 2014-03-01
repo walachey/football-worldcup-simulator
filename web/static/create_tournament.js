@@ -61,7 +61,6 @@ function startTournament()
 	json_object.rules = [];
 	
 	// figure out active rules and respective weights
-	console.log($("#rules").length);
 	$("#rules > tbody > tr").each(
 		function (index, item)
 		{
@@ -72,7 +71,7 @@ function startTournament()
 			rule_object.id = input_box.attr("name");
 			rule_object.weight = input_box.val();
 			json_object.rules.push(rule_object);
-			console.log("rule " + rule_object.id + " with weight " + rule_object.weight);
+			// console.log("rule " + rule_object.id + " with weight " + rule_object.weight);
 		}
 	);
 	
@@ -84,8 +83,6 @@ function startTournament()
 			var team_object = {};
 			team_object.id = $(item).find(".teamid").html();
 			json_object.teams.push(team_object);
-			
-			console.log("team " + team_object.id);
 		}
 	);
 	

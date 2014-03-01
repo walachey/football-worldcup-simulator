@@ -8,6 +8,7 @@ $(document).ready(
 	function() 
     {  
 	
+		var best_of = [null, 8, 4, 2, 1];
 		var elements = [null, [1, 2, 3, 4, 5, 6, 7, 8], [1, 2, 3, 4], [1, 2], [1]];
 		for (var from = 1; from < elements.length-1; ++from)
 		{
@@ -16,9 +17,9 @@ $(document).ready(
 			for (var from_elem_index = 0; from_elem_index < elements[from].length; ++from_elem_index)
 			{
 				var to_elem_index = Math.floor(from_elem_index / 2);
-				var from_id = "game_" + from + "_" + elements[from][from_elem_index];
-				var to_id = "game_" + to + "_" + elements[to][to_elem_index];
-				console.log(from_id + " " + to_id);
+				var from_id = "game_" + best_of[from] + "_" + elements[from][from_elem_index];
+				var to_id = "game_" + best_of[to] + "_" + elements[to][to_elem_index];
+
 				jsPlumb.connect({
 					source: from_id,
 					target: to_id,
@@ -28,6 +29,8 @@ $(document).ready(
 					});
 			}
 		}
+		
+		fillBrackets({{ matches|safe }}, {{ team_lookup|safe }});
     } 
 );
 $(window).resize(function(){
@@ -37,6 +40,23 @@ $(window).resize(function(){
 jsPlumb.ready(function() {
     
 });
+
+function fillBrackets(json_data, team_lookup)
+{
+	for (var match_name in json_data)
+	{
+		if (!json_data.hasOwnProperty(match_name)) continue;
+		var data = json_data[match_name];
+		var element_name = '#' + match_name;
+		var element = $(element_name);
+		if (!element) continue;
+		element.find("th.head.left").html(team_lookup[data.teams[0]]);
+		element.find("th.head.right").html(team_lookup[data.teams[1]]);
+		
+		element.find("td.left").html(data.goals[0].toFixed(2));
+		element.find("td.right").html(data.goals[1].toFixed(2));
+	}
+}
 </script>
 
 <style>
@@ -87,6 +107,7 @@ jsPlumb.ready(function() {
 	background-color: light-grey;
 	color: grey;
 }
+
 .game > table {
 	overflow: hidden;
 	width: 90%;
@@ -128,8 +149,8 @@ jsPlumb.ready(function() {
 <div class="all_games">
 	<div class="round second pagination-centered">
 	# for game_number in range(1, 9)
-		<div class="game" id="{{"game_1_"~game_number}}">
-			<table><tr><th class="head">Left</th><th>vs</th><th class="head">Right</th></tr>
+		<div class="game" id="{{"game_8_"~game_number}}">
+			<table><tr><th class="head left">Left</th><th>vs</th><th class="head right">Right</th></tr>
 			<tr><td class="left">1</td><td>:</td><td class="right">2</td></tr></table>
 		</div>
 		# if game_number % 2 == 0
@@ -139,8 +160,8 @@ jsPlumb.ready(function() {
 	</div>
 	<div class="round quarter">
 	# for game_number in range(1, 5)
-		<div class="game" id="{{"game_2_"~game_number}}">
-			<table><tr><th class="head">Left</th><th>vs</th><th class="head">Right</th></tr>
+		<div class="game" id="{{"game_4_"~game_number}}">
+			<table><tr><th class="head left">Left</th><th>vs</th><th class="head right">Right</th></tr>
 			<tr><td class="left">1</td><td>:</td><td class="right">2</td></tr></table>
 		</div>
 		# if game_number % 2 == 1
@@ -152,8 +173,8 @@ jsPlumb.ready(function() {
 	</div>
 	<div class="round semi">
 	# for game_number in range(1, 3)
-		<div class="game" id="{{"game_3_"~game_number}}">
-			<table><tr><th class="head">Left</th><th>vs</th><th class="head">Right</th></tr>
+		<div class="game" id="{{"game_2_"~game_number}}">
+			<table><tr><th class="head left">Left</th><th>vs</th><th class="head right">Right</th></tr>
 			<tr><td class="left">1</td><td>:</td><td class="right">2</td></tr></table>
 		</div>
 		# if game_number % 2 == 1
@@ -162,8 +183,8 @@ jsPlumb.ready(function() {
 	# endfor
 	</div>
 	<div class="round final">
-		<div class="game" id="game_4_1">
-			<table><tr><th class="head">Left</th><th>vs</th><th class="head">Right</th></tr>
+		<div class="game" id="game_1_1">
+			<table><tr><th class="head left">Left</th><th>vs</th><th class="head right">Right</th></tr>
 			<tr><td class="left">1</td><td>:</td><td class="right">2</td></tr></table>
 		</div>
 	</div>

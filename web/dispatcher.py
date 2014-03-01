@@ -146,4 +146,16 @@ class Dispatcher():
 			average_place = team_data["avg_place"]
 			result = Result(tournament.id, team_data["id"], average_goals, average_place)
 			session.add(result)
+		# then all the match cluster results
+		for match_name in json_object["matches"]:
+			first_result = True
+			bof_round = json_object["matches"][match_name]["bof_round"]
+			game_in_round = json_object["matches"][match_name]["game_in_round"]
+			for match in json_object["matches"][match_name]["results"]:
+				result = MatchResult(tournament.id, bof_round, game_in_round, tuple(match["teams"]), tuple(match["goals"]), match["count"])
+				# the list is sorted, so the first result is the most probable one
+				if first_result:
+					first_result = False
+					result.most_frequent = True
+				session.add(result)
 		session.commit()
