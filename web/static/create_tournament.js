@@ -34,7 +34,7 @@ function validateRuleSelection(rule_ids, rule_data)
 							rule_ids.push(parseInt(input_field.attr("name"), 10));
 							rule_data[input_field.attr("name")] = {name: $(item).children("td").eq(1).text(), desc: $(item).children("td").eq(2).text()};
 							// validation of input
-							if (!regexp.test(input_field.val()))
+							if (!input_field.val() || !regexp.test(input_field.val()))
 							{
 								valid = false;
 								$(input_field).effect("shake");

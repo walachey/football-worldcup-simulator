@@ -2,7 +2,6 @@
 # block head
 {{ super() }}
 <script lang="javascript">
-
 $(document).ready(
 	function() 
     { 
@@ -18,7 +17,7 @@ $(document).ready(
 <thead><tr>
 <th>Flag</th><th>Team</th>
 # for score in scores
-	<th>{{ score }}</th>
+	<th title="{{ score.desc }}">{{ score.name }}</th>
 # endfor
 </tr></thead>
 <tbody>
@@ -26,11 +25,12 @@ $(document).ready(
 	<tr>
 	<td><img style="border:1px solid black" src="{{ url_for('static', filename='img/flags/'~team.country_code~'.png') }}"></img></td><td>{{ team.name }}</td>
 	# for score in team.scores
-		<td>{{ score }}</td>
+		<td>{{ score|int }}</td>
 	# endfor
 	</tr>
 # endfor
 </tbody>
 </table>
 <p class="small"><b>Acknowledgements for the ELO ratings</b> go to the <nobr><a href="http://www.eloratings.net/">World Football Elo Ratings web site</a></nobr> as well as <nobr><a href="http://www.world-results.net/">Advanced Satellite Consulting</a></nobr>.</p>
+<p class="small"><b>Acknowledgements for the monetary team values</b> go to <nobr><a href="http://www.transfermarkt.co.uk/">transfermarkt.co.uk</a></nobr>.</p>
 # endblock

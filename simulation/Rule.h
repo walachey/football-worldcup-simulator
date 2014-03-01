@@ -29,7 +29,9 @@ public:
 private:
 	double (Rule::*calculationFunction) (Team &left, Team &right);
 	double calc_elo_binary(Team &left, Team &right);
-	double calc_dummy(Team &left, Team &right) { return 0.0; };
+	double calc_fifa_binary(Team &left, Team &right);
+	double calc_value_binary(Team &left, Team &right);
+	double calc_dummy(Team &left, Team &right) { return 0.5; };
 };
 
 }

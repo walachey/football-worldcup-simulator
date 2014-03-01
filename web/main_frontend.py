@@ -31,7 +31,7 @@ def teams_view():
 	all_score_types = session.query(ScoreType).filter_by(tournament_id=None).order_by(ScoreType.id).all()
 	all_score_data = []
 	for score_type in all_score_types:
-		all_score_data.append(score_type.name)
+		all_score_data.append({"name":score_type.name, "desc":score_type.description})
 	
 	# get all global teams from DB
 	all_teams = session.query(Team).all()
@@ -224,7 +224,10 @@ def register_tournament_json():
 			for (old_rule, old_weight) in all_rules:
 				if old_rule == rule:
 					raise Exception("Selected rule twice.")
-			all_rules.append((rule, float(rule_data["weight"])))
+			rule_weight = float(rule_data["weight"])
+			if rule_weight == 0.0:
+				continue
+			all_rules.append((rule, rule_weight)) # add as tuple
 		if len(all_rules) == 0:
 			raise Exception("You need to have active rules.")
 		

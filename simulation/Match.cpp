@@ -124,6 +124,8 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 			chanceRightVsLeft = weightedChanceSum / weightTotalSum;
 	}
 
+	assert(!(chanceLeftVsRight == 0.0 && chanceRightVsLeft == 0.0));
+
 	// for now, make up results..
 	int teams[] = {left.id, right.id};
 	int goals[] = {0, 0};

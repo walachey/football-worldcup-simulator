@@ -19,7 +19,7 @@ class WCSConfiguration:
 	simulation_path = "../simulation/Debug/"
 	simulation_program_name = "WorldCupSimulator.exe"
 	simulation_thread_count = 8
-	simulation_run_count = 1000 # total runs per simulation
+	simulation_run_count = 500 # total runs per simulation
 	
 	# debugging
 	is_debug_mode_enabled = True

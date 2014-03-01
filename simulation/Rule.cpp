@@ -45,6 +45,10 @@ void Rule::setCalculationFunction(std::string functionName)
 {
 	if (functionName == "elo_binary")
 		calculationFunction = &Rule::calc_elo_binary;
+	else if (functionName == "fifa_binary")
+		calculationFunction = &Rule::calc_fifa_binary;
+	else if (functionName == "value_binary")
+		calculationFunction = &Rule::calc_value_binary;
 	else
 	{
 		std::cerr << "Unknown calculation function: \"" << functionName << "\"" << std::endl;
@@ -55,6 +59,20 @@ void Rule::setCalculationFunction(std::string functionName)
 double Rule::calc_elo_binary(Team &left, Team &right)
 {
 	return 1.0 / (1.0 + std::pow(10.0, (right.scores["ELO"] - left.scores["ELO"]) / 400.0));
+}
+
+double Rule::calc_fifa_binary(Team &left, Team &right)
+{
+	const double &leftScore = left.scores["FIFA"];
+	const double &rightScore = right.scores["FIFA"];
+	return std::log(1 + (leftScore / (leftScore + rightScore)));
+}
+
+double Rule::calc_value_binary(Team &left, Team &right)
+{
+	const double &leftScore = left.scores["Value"];
+	const double &rightScore = right.scores["Value"];
+	return std::log(1 + (leftScore / (leftScore + rightScore)));
 }
 
 } // namespace sim
