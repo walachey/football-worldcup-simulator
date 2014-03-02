@@ -31,7 +31,7 @@ class Dispatcher():
 			dispatchment_thread.start()
 		except Exception as e:
 			print "EXCEPTION: " + str(e)
-			open_tournament.state = TournamentState.pending
+			open_tournament.state = TournamentState.error
 			session.commit()
 			import traceback
 			traceback.print_exc()
@@ -63,12 +63,12 @@ class Dispatcher():
 				tournament.state = TournamentState.finished
 				self.parseJSONResults(json.loads(stdout), tournament)
 			else:
-				tournament.state = TournamentState.pending
+				tournament.state = TournamentState.error
 		except Exception as e:
 			import traceback
 			print "An error occurred: " + str(e)
 			print traceback.format_exc()
-			tournament.state = TournamentState.pending
+			tournament.state = TournamentState.error
 		finally:
 			session.commit()
 	

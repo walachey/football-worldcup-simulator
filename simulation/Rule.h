@@ -31,6 +31,7 @@ private:
 	double calc_elo_binary(Team &left, Team &right);
 	double calc_fifa_binary(Team &left, Team &right);
 	double calc_value_binary(Team &left, Team &right);
+	double calc_homeadvantage_binary(Team &left, Team &right);
 	double calc_dummy(Team &left, Team &right) { return 0.5; };
 };
 

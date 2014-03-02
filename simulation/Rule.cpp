@@ -49,6 +49,8 @@ void Rule::setCalculationFunction(std::string functionName)
 		calculationFunction = &Rule::calc_fifa_binary;
 	else if (functionName == "value_binary")
 		calculationFunction = &Rule::calc_value_binary;
+	else if (functionName == "homeadvantage_binary")
+		calculationFunction = &Rule::calc_homeadvantage_binary;
 	else
 	{
 		std::cerr << "Unknown calculation function: \"" << functionName << "\"" << std::endl;
@@ -73,6 +75,14 @@ double Rule::calc_value_binary(Team &left, Team &right)
 	const double &leftScore = left.scores["Value"];
 	const double &rightScore = right.scores["Value"];
 	return std::log(1 + (leftScore / (leftScore + rightScore)));
+}
+
+double Rule::calc_homeadvantage_binary(Team &left, Team &right)
+{
+	const double &homeLeft = left.scores["HA"];
+	const double &homeRight = right.scores["HA"];
+	if (homeLeft == 0.0 && homeRight == 0.0) return 0.5;
+	return homeLeft / (homeLeft + homeRight);
 }
 
 } // namespace sim

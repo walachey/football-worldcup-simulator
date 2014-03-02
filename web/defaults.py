@@ -14,19 +14,21 @@ class CompactTeamData:
 	ELO = None
 	group = None
 	FIFA = None
-	Value = None
+	Value = None # value in euro
+	HA = 0.0 # home advantage
 	
-	def __init__(self, name, country_code, group, ELO, FIFA, Value):
+	def __init__(self, name, country_code, group, ELO, FIFA, Value, homeadvantage=0.0):
 		self.name = name
 		self.country_code = country_code
 		self.group = group
 		self.ELO = ELO
 		self.FIFA = FIFA
 		self.Value = Value
+		self.HA = homeadvantage
 
 all_teams = [
 	# group A
-	CompactTeamData("Brazil", "BR", "A", 2110, 1125, 434500000),
+	CompactTeamData("Brazil", "BR", "A", 2110, 1125, 434500000, homeadvantage=1.0),
 	CompactTeamData("Croatia", "HR", "A", 1779, 966, 196600000),
 	CompactTeamData("Mexico", "MX", "A", 1784, 887, 50250000),
 	CompactTeamData("Cameroon", "CM", "A", 1593, 626, 126950000),
@@ -75,6 +77,7 @@ for team_data in all_teams:
 session.add(ScoreType("ELO", "The ELO score known from chess."))
 session.add(ScoreType("FIFA", "FIFA ranking points"))
 session.add(ScoreType("Value", "Value of the team in Euro"))
+session.add(ScoreType("HA", "Home-advantage of the team"))
 # add default ELO calculation rule
 elo_rule = RuleType("ELO", "Calculation using the ELO score.", "elo_binary")
 elo_rule.makeDefaultRule(1.0)
@@ -85,6 +88,9 @@ session.add(fifa_rule)
 value_rule = RuleType("Value", "Calculation using the monetary value.", "value_binary")
 value_rule.makeDefaultRule(0.2)
 session.add(value_rule)
+ha_rule = RuleType("HA", "Calculation based on the home-advantage", "homeadvantage_binary")
+ha_rule.makeDefaultRule(0.1)
+session.add(ha_rule)
 # add default tournament types
 session.add(TournamentType("1 vs 1", "A simple 1 vs 1 test tournament.", 2, "TwoHandsIcon.png", "1v1"))
 session.add(TournamentType("World Cup", "The standard FIFA World Cup.", 32, "StdLeagueIcon.png", "worldcup", "worldcup_view"))
@@ -95,13 +101,16 @@ session.commit()
 elo = session.query(ScoreType).filter_by(name="ELO").first()
 fifa = session.query(ScoreType).filter_by(name="FIFA").first()
 value = session.query(ScoreType).filter_by(name="Value").first()
+ha = session.query(ScoreType).filter_by(name="HA").first()
 assert elo != None
 assert fifa != None
 assert value != None
+assert ha != None
 
 elo_rule.score_types.append(elo)
 fifa_rule.score_types.append(fifa)
 value_rule.score_types.append(value)
+ha_rule.score_types.append(ha)
 
 # and finish the team setup
 for team_data in all_teams:
@@ -111,6 +120,7 @@ for team_data in all_teams:
 	session.add(Score(elo.id, team.id, team_data.ELO))
 	session.add(Score(fifa.id, team.id, team_data.FIFA))
 	session.add(Score(value.id, team.id, team_data.Value))
+	session.add(Score(ha.id, team.id, team_data.HA))
 
 session.commit()
 print "..done"

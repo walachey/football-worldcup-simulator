@@ -50,7 +50,7 @@ class TournamentType(db.Model):
 		return "[Tournament " + name + "]"
 
 class TournamentState:
-	pending, running, finished = range(1, 4)
+	pending, running, finished, error = range(1, 5)
 
 class Tournament(db.Model):
 	__tablename__ = "tournaments"
@@ -77,6 +77,8 @@ class Tournament(db.Model):
 			return "running"
 		if self.state == TournamentState.finished:
 			return "finished"
+		if self.state == TournamentState.error:
+			return "error"
 		return "unknown"
 		
 class Team(db.Model):
