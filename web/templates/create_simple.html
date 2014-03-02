@@ -24,7 +24,7 @@ $(document).ready(
 	</table></div>
 	## The rule selection widget.
 	<div id="choose_rules" class="container selectionbox-ok" style="pointer-events: auto;">
-	<div class="headpart"><h2>Adjust the rule weights:</h2>
+	<div class="headpart"><h2>Customize the rules:</h2>
 	</div>
 	<table id="rules" class="table table-hover tablesorter-green">
 	<thead><tr><th>Relative Weight</th><th>Rule Name</th><th>Description</th></tr></thead>
@@ -63,8 +63,8 @@ $(document).ready(
 	
 	## User confirmation before starting the tournament.
 	<div id="finish_setup" class="container selectionbox-info">
-	<div class="headpart"><h2>You are done with the setup!</h2>
-	<div class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:if (validateRuleSelection()) startTournament();">Start the Tournament Simulation</div>
+	<div class="headpart">
+	<div class="btn btn-primary btn-lg" style="margin-bottom:20px;" onclick="javascript:if (validateRuleSelection()) startTournament();">Start the Tournament Simulation</div>
 	</div>
 	<div id="goto_tournament" style="display:none;"><div class="info small"></div><a href="#">Go to your tournament page!</a></div>
 	<div id="starting_progressbar" style="width:100%;display:none;"></div>

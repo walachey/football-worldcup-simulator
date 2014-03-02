@@ -48,7 +48,7 @@ function validateRuleSelection(rule_ids, rule_data)
 function startTournament()
 {
 	$("#finish_setup").toggleClass("selectionbox-info selectionbox-ok", 500);
-	$("#finish_setup > .headpart").hide("blind");
+	$("#finish_setup .headpart").hide("blind");
 	
 	var progress_bar = $("#starting_progressbar");
 	var progress_bar_value = progress_bar.find(".ui-progressbar-value");
@@ -88,9 +88,9 @@ function startTournament()
 	
 	failfunc = function(message) 
 		{
-			// progress_bar.hide("fade");
-			$("#finish_setup > .headpart").show("blind");
+			progress_bar.hide("fade");
 			$("#finish_setup").toggleClass("selectionbox-info selectionbox-ok", 500);
+			$("#finish_setup .headpart").show("blind");
 			alert (message);
 			return;
 		}
@@ -120,10 +120,64 @@ function startTournament()
 					$("#goto_tournament").show("blind");
 					$("#finish_setup").css("pointer-events", "auto");
 					
-					setTimeout(function() { window.location = general_tournament_page_link; }, 1000);
+					redirectTo(data.tournament_id, general_tournament_page_link);
 				}
 			},
 		error: function() { return failfunc("An error occured. Try again."); }
+	}
+	);
+}
+
+function redirectTo(tournament_id, tournament_link)
+{
+	$("#main_container").append('<div id="loading_dialog" style="margin-left:auto;margin-right:auto;text-align:center;">Please wait while the tournament is running..<br><img src="static/img/loader.gif"></div>');
+	$("#loading_dialog").dialog(
+		{
+			resizable: false,
+			height: 'auto',
+			width: 'auto',
+			modal: true,
+			closeText: '',
+			bgiframe: true,
+			closeOnEscape: false,
+			open: function(event, ui) { $(".ui-dialog-titlebar-close", this.parentNode).hide(); }
+		});
+	
+	setTimeout(function(){ redirectionTimer(tournament_id, tournament_link); }, 1000);
+}
+
+function redirectionTimer(tournament_id, tournament_link)
+{
+	function fail()
+	{
+		alert("There was an error with your tournament. Sorry :(");
+		$("#loading_dialog").dialog('close');
+	}
+	$.ajax(
+	{
+		type: "GET",
+		url:"json/state/tournament:" + tournament_id,
+		dataType: "json",
+		data: { get_param: 'value' },
+		timeout: 10000,
+		success: function(data) 
+			{
+				if (data.state == "error")
+				{
+					fail();
+					return;
+				}
+				
+				if (data.state == "finished")
+				{
+					window.location = tournament_link;
+					return;
+				}
+				
+				// try again
+				setTimeout(function(){ redirectionTimer(tournament_id, tournament_link); }, 1000);
+			},
+		error: function() { fail(); }
 	}
 	);
 }

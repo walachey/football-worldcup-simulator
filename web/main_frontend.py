@@ -137,6 +137,16 @@ def simple_new_tournament_view():
 	all_teams = Session.query(Team).limit(tournament_type.team_count).all()
 	Session.remove()
 	return render_template('create_simple.html', tournament_type=tournament_type, rules=all_standard_rule_types, teams=all_teams)
+
+@app.route('/tournaments/redirect:<int:id>')
+def redirect_to_tournament_view(id):
+	return render_template('redirect_to_tournament.html', tournament_id=id)
+@app.route('/json/state/tournament:<int:id>')
+def tournament_state_json(id):
+	session = getSession()
+	tournament = session.query(Tournament).filter_by(id=id).first()
+	Session.remove();
+	return json.dumps({"state":tournament.getStateName()})
 	
 @app.route('/json/rules/tournament:<int:id>')
 def rules_json(id):
