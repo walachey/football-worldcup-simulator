@@ -11,17 +11,11 @@
 
     <title>A football world-cup simulator</title>
 
-    <!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
 
-	<!-- Optional theme -->
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap-theme.min.css">
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.green.css') }}">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-	<!-- Latest compiled and minified JavaScript -->
 	
 	<script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.min.js"></script>
 	<script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
@@ -29,12 +23,7 @@
 	<script type="text/javascript" src="{{ url_for('static', filename='jquery.tablesorter.min.js') }}"></script> 
 	<script type="text/javascript" src="{{ url_for('static', filename='jquery.metadata.js') }}"></script> 
 	
-    <!-- Custom styles for this template -->
-
     <link href="{{ url_for('static', filename='css/layout.css') }}" rel="stylesheet">
-
-    <!-- Just for debugging purposes. Don't actually copy this line! -->
-    <!--[if lt IE 9]><script src="../../docs-assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -60,19 +49,19 @@
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li id="nav_create_simple"><a href="/create_simple">Play World Cup</a></li>
+			<li id="nav_tournaments"><a href="/tournaments">My Tournaments</a></li>
             <li id="nav_teams"><a href="/teams">Teams</a></li>
            </ul>
 		   <ul class="nav navbar-nav pull-right">
-			<li id="nav_tournaments"><a href="/tournaments">Tournaments</a></li>
             <li id="nav_create"><a href="/create">New Custom Tournament</a></li>
           </ul>
-        </div><!--/.nav-collapse -->
+        </div>
       </div>
     </div>
 
     <div class="container" id="main_container">
 # block contents
 # endblock
-    </div><!-- /.container -->
+    </div>
   </body>
 </html>
