@@ -74,10 +74,10 @@ for team_data in all_teams:
 	team = Team(team_data.name, team_data.country_code)
 	session.add(team)
 # add new ELO rating score
-session.add(ScoreType("ELO", "The ELO score known from chess."))
-session.add(ScoreType("FIFA", "FIFA ranking points"))
-session.add(ScoreType("Value", "Value of the team in Euro"))
-session.add(ScoreType("HA", "Home-advantage of the team"))
+session.add(ScoreType("ELO", "The ELO rating known from chess.", long_name="ELO rating"))
+session.add(ScoreType("FIFA", "FIFA ranking points", long_name="FIFA rating"))
+session.add(ScoreType("Value", "Value of the team in Euro", long_name="Value in &euro;"))
+session.add(ScoreType("HA", "Home-advantage of the team", long_name="Home-advantage"))
 # add default ELO calculation rule
 elo_rule = RuleType("ELO", "Calculation using the ELO score.", "elo_binary")
 elo_rule.makeDefaultRule(1.0)
@@ -88,7 +88,7 @@ session.add(fifa_rule)
 value_rule = RuleType("Value", "Calculation using the monetary value.", "value_binary")
 value_rule.makeDefaultRule(0.2)
 session.add(value_rule)
-ha_rule = RuleType("HA", "Calculation based on the home-advantage", "homeadvantage_binary")
+ha_rule = RuleType("Home-advantage", "Calculation based on the home-advantage", "homeadvantage_binary")
 ha_rule.makeDefaultRule(0.1)
 session.add(ha_rule)
 # add default tournament types

@@ -189,6 +189,7 @@ class ScoreType(db.Model):
 	
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(128), unique=False)
+	long_name = db.Column(db.String(128), unique=False)
 	description = db.Column(db.String(512), unique=False)
 	
 	# set if the score type was customized for a specific tournament
@@ -197,9 +198,13 @@ class ScoreType(db.Model):
 	#parent = db.relationship('ScoreType', backref=db.backref('score_types', lazy='dynamic'))
 	parent_id = db.Column(db.Integer, db.ForeignKey('score_types.id'))
 	
-	def __init__(self, name, description):
+	def __init__(self, name, description, long_name=None):
 		self.name = name
+		self.long_name = self.name
 		self.description = description
+		
+		if long_name:
+			self.long_name = long_name
 	
 	def __repr__(self):
 		return "[Score " + self.name + "]"

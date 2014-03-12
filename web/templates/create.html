@@ -9,6 +9,7 @@ $(document).ready(
         $("#teamstable").tablesorter(); 
 		$("#nav_create").toggleClass("active");
 		setGeneralTournamentPageLink("{{ url_for("tournament_view", id=0) }}");
+		setTournamentRunCount({{ run_count }});
     } 
 );
 
@@ -248,7 +249,7 @@ function endTeamSelection()
 	<h1>New Tournament <small>Create a new tournament with user-defined settings.</small></h1>
 	## Select the tournament type first, this is by default the only and first active widget.
 	<div id="choose_type" class="container selectionbox-info">
-	<h2>Choose the tournament type first:</h2>
+	<h2>Choose the tournament type first</h2>
 	# for type in types
 		<div id="{{ "type_"~type.id }}" class="col-md-6 btn btn-default" onclick="javascript:onTypeChosen({{ type.id }})">
 		<div class="container">
@@ -266,7 +267,7 @@ function endTeamSelection()
 	</table></div>
 	## The rule selection widget.
 	<div id="choose_rules" class="container selectionbox-info" style="display:none;">
-	<div class="headpart"><h2>Choose the active rules:</h2>
+	<div class="headpart"><h2>Choose the active rules</h2>
 	<div id="add_rule_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:showRuleSelectionDialog();">Add Rule</div>
 	<div id="end_rule_selection_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:endRuleSelection();">End Rule Selection</div>
 	</div>
@@ -284,7 +285,7 @@ function endTeamSelection()
 	</table></div>
 	
 	<div id="choose_teams" class="container selectionbox-info" style="display:none;">
-	<div class="headpart"><h2>Customize the teams:</h2>
+	<div class="headpart"><h2>Customize the teams</h2>
 	<div id="end_team_selection_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:endTeamSelection();">End Team Selection</div>
 	</div>
 	<table id="teams" class="table table-hover tablesorter-green">
@@ -294,7 +295,7 @@ function endTeamSelection()
 	
 	## User confirmation before starting the tournament.
 	<div id="finish_setup" class="container selectionbox-info" style="display:none;">
-	<div class="headpart"><h2>You are done with the setup!</h2>
+	<div class="headpart"><h2>You are done with the setup!<br><small>This will simulate the complete tournament with your custom rules {{ run_count }} times.</small></h2>
 	<div class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:startTournament();">Start the Tournament Simulation</div>
 	</div>
 	<div id="goto_tournament" style="display:none;"><div class="info small"></div><a href="#">Go to your tournament page!</a></div>

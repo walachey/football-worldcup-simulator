@@ -9,7 +9,9 @@ function setSelectedTournamentTypeID(to) { window.selected_tournament_type_id = 
 window.general_tournament_page_link = null;
 function getGeneralTournamentPageLink() { return window.general_tournament_page_link; }
 function setGeneralTournamentPageLink(to) { window.general_tournament_page_link = to; }
-
+window.tournament_run_count = 0;
+function getTournamentRunCount() { return window.tournament_run_count; }
+function setTournamentRunCount(to) { window.tournament_run_count = to; }
 // validates the rule input and (may) put the selected rules into an array passed as the /rule_ids/ argument. The remaining rule data will be put into the /rule_data/ object
 function validateRuleSelection(rule_ids, rule_data)
 {
@@ -130,7 +132,8 @@ function startTournament()
 
 function redirectTo(tournament_id, tournament_link)
 {
-	$("#main_container").append('<div id="loading_dialog" style="margin-left:auto;margin-right:auto;text-align:center;">Please wait while the tournament is running..<br><img src="static/img/loader.gif"></div>');
+	var html = '<div id="loading_dialog" style="margin-left:auto;margin-right:auto;text-align:center;">Please wait while ' + getTournamentRunCount().toString() + ' simulations are running..<br><img src="static/img/loader.gif"></div>';
+	$("#main_container").append(html);
 	$("#loading_dialog").dialog(
 		{
 			resizable: false,

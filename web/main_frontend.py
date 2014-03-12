@@ -8,6 +8,7 @@ import dispatcher
 # third-party includes
 from flask import abort, redirect, url_for, render_template, flash, request, session, make_response, Response
 from flask import Flask
+import jinja2
 import re, md5
 import subprocess
 import json
@@ -31,7 +32,7 @@ def teams_view():
 	all_score_types = session.query(ScoreType).filter_by(tournament_id=None).order_by(ScoreType.id).all()
 	all_score_data = []
 	for score_type in all_score_types:
-		all_score_data.append({"name":score_type.name, "desc":score_type.description})
+		all_score_data.append({"name":jinja2.Markup(score_type.long_name), "desc":score_type.description})
 	
 	# get all global teams from DB
 	all_teams = session.query(Team).all()
@@ -84,8 +85,9 @@ def tournament_view(id):
 	all_teams = Team.getAllTeamsForTournament(tournament.id)
 	all_result_place_types = session.query(ResultPlaceType).filter_by(tournament_id=tournament.id).order_by(ResultPlaceType.place).all()
 	
-	colors = ['#dddd00', '#eeeeee', '#ee9900', '#000099', '#cccccc', '#bbbbbb']
+	colors = ['#dddd00', '#eeeeee', '#ee9900', '#a4a4ff', '#cccccc', '#bbbbbb']
 	color_count = len(colors)
+	max_used_place = 0
 	
 	all_team_data = []
 	for team in all_teams:
@@ -102,7 +104,8 @@ def tournament_view(id):
 			results.append({
 				"name":result_place_type.name, 
 				"percentage":percentage,
-				"color":(colors[color_counter % color_count])
+				"color":(colors[color_counter % color_count]),
+				"place":result_place_type.place
 				})
 			color_counter += 1
 		# add rounding errors to the percentage of the last place (usually "draw" or "rest")..
@@ -118,16 +121,20 @@ def tournament_view(id):
 	Session.remove()
 	
 	# now allow for custom rendering
+	general = {
+		"colors": colors[:len(all_result_place_types)],
+		"result_names": [x.name for x in all_result_place_types]
+		}
 	if custom_view_function:
-		return getattr(sys.modules[__name__], custom_view_function)(id, all_teams, all_result_place_types, all_team_data)
-	return render_template('tournament.html', teams=all_team_data)
+		return getattr(sys.modules[__name__], custom_view_function)(id, all_teams, all_result_place_types, all_team_data, general)
+	return render_template('tournament.html', teams=all_team_data, general=general)
 	
 @app.route('/create')	
 def new_tournament_view():
 	session = getSession()
 	all_tournament_types = session.query(TournamentType).all()
 	Session.remove()
-	return render_template('create.html', types=all_tournament_types)
+	return render_template('create.html', types=all_tournament_types, run_count=config.simulation_run_count)
 
 @app.route('/create_simple')	
 def simple_new_tournament_view():
@@ -136,7 +143,7 @@ def simple_new_tournament_view():
 	all_standard_rule_types = Session.query(RuleType).filter_by(is_default_rule=True).all()
 	all_teams = Session.query(Team).limit(tournament_type.team_count).all()
 	Session.remove()
-	return render_template('create_simple.html', tournament_type=tournament_type, rules=all_standard_rule_types, teams=all_teams)
+	return render_template('create_simple.html', tournament_type=tournament_type, rules=all_standard_rule_types, teams=all_teams, run_count=config.simulation_run_count)
 
 @app.route('/tournaments/redirect:<int:id>')
 def redirect_to_tournament_view(id):
@@ -274,7 +281,7 @@ def register_tournament_json():
 	return json.dumps(return_value)
 
 # custom view function for FIFA style tournament
-def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_data):
+def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_data, general):
 	# get match data for this tournament
 	session = getSession()
 	# get finals
@@ -295,7 +302,7 @@ def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_dat
 	for team in all_teams:
 		team_lookup[team.id] = team.name
 	
-	return render_template('tournament_fifa.html', teams=all_team_data, matches=json.dumps(match_dict), team_lookup=json.dumps(team_lookup))
+	return render_template('tournament_fifa.html', teams=all_team_data, matches=json.dumps(match_dict), team_lookup=json.dumps(team_lookup), general=general)
 	
 if __name__ == '__main__':
 	# "threaded=True" to fix an error with the IE9..

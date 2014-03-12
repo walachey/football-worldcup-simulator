@@ -29,7 +29,6 @@ $(document).ready(
 	display: inline-block;
 	float: left;
 	overflow: hidden;
-	
 }
 .barcontainer {
 	width:100%;
@@ -50,10 +49,26 @@ $(document).ready(
 # endblock
 
 # block contents
-<p><h3>The result distribution</h3></p>
+<div style="height:4em">
+<h3 style="position:absolute;margin-left:0px;">The result distribution</h3>
+</div>
+
 <table id="tournamenttable" class="tablesorter-green">
 <thead><tr>
-<th>Team</th><th>Distribution</th><th>Avg. Goals</th><th>1st or 2nd</th>
+<th>Team</th>
+<th>
+<div style="height:0em;width:100%;" align="center">Distribution</div><br>
+<small>
+# for i in range(0, general.colors|length)
+	<div class="bar" style="background-color:{{ general.colors[i] }};width:20%;">
+	{{ general.result_names[i] }}
+	# if i < general.colors|length - 1
+	place
+	# endif
+	</div>
+# endfor
+</small></th>
+<th>Avg. Goals</th><th>In Finals</th>
 </tr></thead>
 <tbody>
 # for team in teams
@@ -63,7 +78,11 @@ $(document).ready(
 	<div class="barcontainer">
 	# for result in team.results
 		# if result.percentage > 0.0
-			<div class="bar" style="width:{{ result.percentage }}%;background-color:{{ result.color }};"><small>{{ result.percentage ~ "%" }}</small></div>
+			<div class="bar" style="width:{{ result.percentage }}%;background-color:{{ result.color }};"><small>
+			# if result.place != general.colors|length - 1
+				{{ result.percentage ~ "%" }}
+			# endif
+			</small></div>
 		# endif
 	# endfor
 	</div>
