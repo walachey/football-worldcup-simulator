@@ -1,4 +1,5 @@
 import sys
+import random
 
 # local includes
 from configuration import main_configuration as config
@@ -6,7 +7,7 @@ from database_models import *
 import dispatcher
 
 # third-party includes
-from flask import abort, redirect, url_for, render_template, flash, request, session, make_response, Response
+from flask import abort, redirect, url_for, render_template, flash, request, session as user_session, make_response, Response
 from flask import Flask
 import jinja2
 import re, md5
@@ -19,6 +20,8 @@ import socket # for catching socket.error
 
 app = config.getFlaskApp()
 simulation_dispatcher = dispatcher.Dispatcher(db, config)
+# initialize random numbers for user ID generation
+random.seed()
 
 @app.route('/')
 def index_view():
@@ -56,9 +59,10 @@ def teams_view():
 @app.route("/tournaments")
 def tournaments_view():
 	session = getSession()
-	
+	# this shows the tournaments for one user identified by their user ID!
+	user_id = user_session["user_id"] if "user_id" in user_session else None
 	# get all tournaments including their states
-	all_tournaments = session.query(Tournament).all()
+	all_tournaments = session.query(Tournament).filter_by(user_id=user_id).all()
 	all_tournaments_data = []
 	for tournament in all_tournaments:
 		all_tournaments_data.append({
@@ -256,8 +260,19 @@ def register_tournament_json():
 		return abort(str(e))
 	
 	# all checks passed
+	# firstly, get the user ID from the browser session or generate a new one that is not in use yet
+	user_id = user_session["user_id"] if "user_id" in user_session else None
+	while not user_id:
+		user_id = random.randrange(0x01, 0xffffff)
+		existing_tournament = session.query(Tournament).filter_by(user_id=user_id).first()
+		if existing_tournament:
+			user_id = None
+		else:
+			user_session["user_id"] = user_id
+			user_session.permanent = True
+			break
 	# we can now create a new tournament execution request
-	tournament = Tournament(tournament_type.id, hash_code)
+	tournament = Tournament(tournament_type.id, hash_code, user_id)
 	session.add(tournament)
 	# commit so that we have a correct ID
 	session.commit()

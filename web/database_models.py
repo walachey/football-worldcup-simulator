@@ -59,13 +59,15 @@ class Tournament(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	state = db.Column(db.SmallInteger, unique=False, default=TournamentState.pending)
 	hash = db.Column(db.Integer)
+	user_id = db.Column(db.Integer)
 	
 	type_id = db.Column(db.Integer, db.ForeignKey('tournament_types.id'))
 	tournament_type = db.relationship('TournamentType')
 	
-	def __init__(self, type_id, hash):
+	def __init__(self, type_id, hash, user_id):
 		self.type_id = type_id
 		self.hash = hash
+		self.user_id = user_id
 	
 	def __repr__(self):
 		return "[Play-Off " + str(self.id) + " - type " + str(self.type_id) + "]"

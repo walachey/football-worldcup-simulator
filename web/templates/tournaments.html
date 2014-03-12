@@ -13,19 +13,27 @@ $(document).ready(
 # endblock
 
 # block contents
-<table id="tournamentstable" class="tablesorter-green">
-<thead><tr>
-<th>Name</th><th>State</th>
-</tr></thead>
-<tbody>
-# for tournament in tournaments
-	<tr>
-	<td>
-		<a href="{{ url_for('tournament_view', id=tournament.id) }}">{{ tournament.name }}</a>
-	</td>
-	<td>{{ tournament.state }}</td>
-	</tr>
-# endfor
-</tbody>
-</table>
+# if tournaments|length > 0
+	<h2>Your tournaments<br><small>These are your previously simulated tournaments.</small></h2>
+	<table id="tournamentstable" class="tablesorter-green">
+	<thead><tr>
+	<th>Name</th><th>State</th>
+	</tr></thead>
+	<tbody>
+	# for tournament in tournaments
+		<tr>
+		<td>
+			<a href="{{ url_for('tournament_view', id=tournament.id) }}">{{ tournament.name }}</a>
+		</td>
+		<td>{{ tournament.state }}</td>
+		</tr>
+	# endfor
+	</tbody>
+	</table>
+# else
+	<div class="text-center" style="width:100%;padding-top:20%;">
+	You did not simulate any tournaments yet!<br>
+	<strong><a href="{{ url_for('simple_new_tournament_view') }}">Try it!</a></strong>
+	</div>
+# endif
 # endblock
