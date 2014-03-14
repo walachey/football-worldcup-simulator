@@ -139,6 +139,7 @@ class RuleType(db.Model):
 	
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(128), unique=False)
+	long_name = db.Column(db.String(128), unique=False)
 	description = db.Column(db.String(512), unique=False)
 	score_types = db.relationship("ScoreType", secondary=rule_score_table)
 	
@@ -149,8 +150,11 @@ class RuleType(db.Model):
 	standard_weight = db.Column(db.Float, unique=False)
 	is_default_rule = db.Column(db.Boolean, unique=False)
 	
-	def __init__(self, name, description, internal_function_identifier):
+	def __init__(self, name, description, internal_function_identifier, long_name=None):
 		self.name = name
+		self.long_name = name
+		if long_name:
+			self.long_name = long_name
 		self.description = description
 		self.internal_function_identifier = internal_function_identifier
 		
@@ -165,7 +169,7 @@ class RuleType(db.Model):
 		return "[Rule " + self.name + "]"
 	
 	def toDictionary(self):
-		return {'id':self.id, 'name':self.name, 'desc':self.description}
+		return {'id':self.id, 'name':self.name, 'desc':self.description, 'long_name':self.long_name}
 
 class Rule(db.Model):
 	__tablename__ = "rules"

@@ -11,10 +11,63 @@ $(document).ready(
 		setGeneralTournamentPageLink("{{ url_for("tournament_view", id=0) }}");
 		setSelectedTournamentTypeID({{ tournament_type.id }});
 		setTournamentRunCount({{ run_count }});
+
+		$("#rules > tbody > tr input").each(
+			function (index, item)
+			{
+				$(item).change(function() { updateRuleSpiderChart(); });
+			}
+		);
+		updateRuleSpiderChart();
     } 
 );
 
+function updateRuleSpiderChart()
+{
+	
+	var labels = [];
+	var dataset = {
+		fillColor: "rgba(50, 50, 150, 0.5)",
+		strokeColor: "rgba(0, 0, 50, 1.0)",
+		pointColor: "rgba(25, 25, 100, 0.5)",
+		pointStrokeColor: "rgba(0, 0, 0, 1)",
+		data: []
+	};
+	var maxValue = 1.0;
+	$("#rules > tbody > tr").each(
+		function (index, item)
+		{
+			var input_box = $(item).find("input");
+			if (input_box == null) return;
+			
+			labels.push(input_box.attr("title"));
+			var value = parseFloat(input_box.val());
+			if (value > maxValue)
+				maxValue = value;
+			dataset.data.push(value);
+		}
+	);
+	
+	// replacing the canvas element seems necessary for certain mobile browsers..
+	$('#rulecanvas').replaceWith('<canvas id="rulecanvas" width="250" height="250" style="float:left;"></canvas>');
+	
+	var canvas = document.getElementById("rulecanvas");
+	var ctx = canvas.getContext("2d");
+	var options = {
+		scaleOverride: true,
+		scaleStartValue: 0.0,
+		scaleSteps: 3.0,
+		scaleStepWidth: maxValue / 3.0
+	};
+	new Chart(ctx).Radar({labels: labels, datasets: [dataset]}, options);
+}
+
 </script>
+<style>
+body {
+	min-width:800px;
+}
+</style>
 # endblock
 
 # block contents
@@ -27,18 +80,21 @@ $(document).ready(
 	<div id="choose_rules" class="container selectionbox-ok" style="pointer-events: auto;">
 	<div class="headpart"><h2>Customize the rules<br><small>You can customize the weights of the different ranking rules and define how much influence they will have on the simulation.</small></h2>
 	</div>
-	<table id="rules" class="table table-hover tablesorter-green">
-	<thead><tr><th>Relative Weight</th><th>Rule Name</th><th>Description</th></tr></thead>
-	<tbody>
-	# for rule in rules
-		<tr class="rule_row">
-			<td><input value="{{ rule.standard_weight }}" name="{{ rule.id }}"></input></td>
-			<td>{{ rule.name }}</td>
-			<td>{{ rule.description }}</td>
-		</tr>
-	# endfor
-	</tbody>
-	</table>
+	<canvas id="rulecanvas" width="250" height="250" style="float:left;"></canvas> 
+	<div style="padding-left:250px;">
+		<table id="rules" class="table table-hover tablesorter-green" style="">
+		<thead><tr><th>Relative Weight</th><th>Rule Name</th><th>Description</th></tr></thead>
+		<tbody>
+		# for rule in rules
+			<tr class="rule_row">
+				<td><input value="{{ rule.standard_weight }}" name="{{ rule.id }}" title="{{ rule.name }}"></input></td>
+				<td>{{ rule.long_name }}</td>
+				<td>{{ rule.description }}</td>
+			</tr>
+		# endfor
+		</tbody>
+		</table>
+	</div>
 	</div>
 	
 	## Teams will exist but will be hidden, this helps a streamlined creation API

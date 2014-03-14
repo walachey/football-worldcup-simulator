@@ -88,7 +88,7 @@ session.add(fifa_rule)
 value_rule = RuleType("Value", "Calculation using the monetary value.", "value_binary")
 value_rule.makeDefaultRule(0.2)
 session.add(value_rule)
-ha_rule = RuleType("Home-advantage", "Calculation based on the home-advantage", "homeadvantage_binary")
+ha_rule = RuleType("HA", "Calculation based on the home-advantage", "homeadvantage_binary", long_name="Home-advantage")
 ha_rule.makeDefaultRule(0.1)
 session.add(ha_rule)
 # add default tournament types
