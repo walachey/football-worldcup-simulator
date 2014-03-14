@@ -251,7 +251,16 @@ std::vector<Team*> FIFAStyleTournament::runQualification()
 
 	assert(teamPlaceCounter == 16);
 	assert (winners.size() == 16);
-	return winners;
+
+	// the winners are now sorted like A1, A2, B1, B2, C1, C2, etc..
+	// but for the FIFA tournament we need to re-sort them so that teams from the same group will meet only very late in the tournament.
+	int fifaTeamIndexLayout[] = {0, 3, 4, 7, 8, 11, 12, 15, 2, 1, 6, 5, 10, 9, 14, 13};
+	std::vector<Team*> scrambledWinners;
+	scrambledWinners.reserve(winners.size());
+	for (size_t i = 0; i < winners.size(); ++i)
+		scrambledWinners.push_back(winners[fifaTeamIndexLayout[i]]);
+	assert(scrambledWinners.size() == winners.size());
+	return scrambledWinners;
 }
 
 std::vector<Team*> FIFAStyleTournament::runKnockout(int matches)
