@@ -102,7 +102,7 @@ def tournament_view(id):
 		distribution_sorting_value = 1.0
 		for result_place_type in all_result_place_types:
 			result_place = session.query(ResultPlace).filter_by(tournament_id=tournament.id, team_id=team.id, place=result_place_type.place).first()
-			percentage = int(100 * result_place.percentage)
+			percentage = int(100 * result_place.percentage + 0.5)
 			distribution_sorting_value = distribution_sorting_value * 10.0 + result_place.percentage
 			percentage_count += percentage
 			results.append({
@@ -300,9 +300,26 @@ def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_dat
 	# get match data for this tournament
 	session = getSession()
 	# get finals
-	finals = session.query(MatchResult).filter_by(tournament_id=tournament_id, bof_round=1, game_in_round=1).first()
+	finals = session.query(BracketTeamResult).filter_by(tournament_id=tournament_id, bof_round=1, game_in_round=1, most_frequent=True).first()
+	most_frequent_match_results = [finals]
 	# now get list of all matches that lead to those finals
-	most_frequent_match_results = finals.resolveBrackets()
+	all_brackets = [2, 4, 8, 16]
+	for bracket in all_brackets:
+		number_of_games = 1
+		games_in_bracket = bracket
+		if bracket == 16:
+			number_of_games = 2
+			games_in_bracket = 8
+		for game_in_round in range(1, games_in_bracket+1):
+			game_count = 0
+			for match in session.query(BracketTeamResult)\
+				.filter(BracketTeamResult.tournament_id==tournament_id, BracketTeamResult.bof_round==bracket, BracketTeamResult.game_in_round==game_in_round)\
+				.order_by(BracketTeamResult.wins.desc()):
+				most_frequent_match_results.append(match)
+				game_count += 1
+				if game_count == number_of_games:
+					break
+			assert game_count == number_of_games
 	match_dict = {}
 	#most_frequent_match_results = session.query(MatchResult).filter_by(tournament_id=tournament_id, most_frequent=True).all()
 	for result in most_frequent_match_results:

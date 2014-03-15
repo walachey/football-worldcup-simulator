@@ -148,14 +148,27 @@ class Dispatcher():
 			session.add(result)
 		# then all the match cluster results
 		for match_name in json_object["matches"]:
-			first_result = True
+			# first_result = True
 			bof_round = json_object["matches"][match_name]["bof_round"]
 			game_in_round = json_object["matches"][match_name]["game_in_round"]
-			for match in json_object["matches"][match_name]["results"]:
-				result = MatchResult(tournament.id, bof_round, game_in_round, tuple(match["teams"]), tuple(match["goals"]), match["count"])
-				# the list is sorted, so the first result is the most probable one
-				if first_result:
-					first_result = False
-					result.most_frequent = True
+			# for match in json_object["matches"][match_name]["results"]:
+				# result = MatchResult(tournament.id, bof_round, game_in_round, tuple(match["teams"]), tuple(match["goals"]), match["count"])
+				# # the list is sorted, so the first result is the most probable one
+				# if first_result:
+					# first_result = False
+					# result.most_frequent = True
+				# session.add(result)
+			bracket_team_results = []
+			for team in json_object["matches"][match_name]["teams"]:
+				result = BracketTeamResult(tournament.id, bof_round, game_in_round, team["id"], team["match_data"]["wins"], team["match_data"]["losses"])
+				bracket_team_results.append(result)
 				session.add(result)
+			# figure out highest bracket result and mark as most_frequent
+			best = (0, None)
+			for result in bracket_team_results:
+				(current, team) = best
+				if current < result.wins:
+					best = (result.wins, result)
+			(max_wins, best_result) = best
+			best_result.most_frequent = True
 		session.commit()

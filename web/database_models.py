@@ -306,7 +306,48 @@ class Result(db.Model):
 		
 	def __repr__(self):
 		return "[Result " + str(self.id) + "]"
+
+class BracketTeamResult(db.Model):
+	__tablename__ = "bracket_team_results"
+	query = None
+	
+	id = db.Column(db.Integer, primary_key=True)
+	tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
+	team_id = db.Column(db.Integer, db.ForeignKey('teams.id'))
+	
+	bof_round = db.Column(db.Integer, unique=False)
+	game_in_round = db.Column(db.Integer, unique=False)
+	
+	wins = db.Column(db.Integer, unique=False)
+	losses = db.Column(db.Integer, unique=False)
+	
+	# optimization, the most frequent result will always be shown first
+	most_frequent = db.Column(db.Boolean, unique=False)
+	
+	def __init__(self, tournament_id, bof_round, game_in_round, team_id, wins, losses):
+		self.tournament_id = tournament_id
+		self.bof_round = bof_round
+		self.game_in_round = game_in_round
+		self.team_id = team_id
 		
+		self.wins = wins
+		self.losses = losses
+		
+		self.most_frequent = False
+	
+	def getMatchName(self):
+		return "game_" + str(self.bof_round) + "_" + str(self.game_in_round)
+	
+	def __repr__(self):
+		return "[BracketResult " + self.getMatchName() + " - " + self.team_id + "]"
+		
+	def toDictionary(self):
+		return {
+			"teams": [self.team_id, 0],
+			"goals": [self.wins, self.losses]
+		}
+	
+	
 class MatchResult(db.Model):
 	__tablename__ = "match_results"
 	query = None
@@ -343,7 +384,7 @@ class MatchResult(db.Model):
 		return "game_" + str(self.bof_round) + "_" + str(self.game_in_round)
 	
 	def __repr__(self):
-		return "[MatchResult " + self.match_name + " - " + self.team_left_id + " vs " + self.team_right_id + "]"
+		return "[MatchResult " + self.getMatchName() + " - " + self.team_left_id + " vs " + self.team_right_id + "]"
 		
 	def toDictionary(self):
 		return {
@@ -367,6 +408,7 @@ class MatchResult(db.Model):
 				.filter((MatchResult.team_left_id==team_id) | (MatchResult.team_right_id==team_id))\
 				.order_by(MatchResult.number_of_games.desc())\
 				.first()
+			assert parent_match != None
 			for previous_match in parent_match.resolveBrackets():
 				resolved.append(previous_match)
 		return resolved
