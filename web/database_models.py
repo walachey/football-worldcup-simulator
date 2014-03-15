@@ -58,17 +58,19 @@ class Tournament(db.Model):
 	
 	id = db.Column(db.Integer, primary_key=True)
 	state = db.Column(db.SmallInteger, unique=False, default=TournamentState.pending)
+	run_count = db.Column(db.Integer)
 	hash = db.Column(db.Integer)
 	user_id = db.Column(db.Integer)
 	
 	type_id = db.Column(db.Integer, db.ForeignKey('tournament_types.id'))
 	tournament_type = db.relationship('TournamentType')
 	
-	def __init__(self, type_id, hash, user_id):
+	def __init__(self, type_id, hash, user_id, run_count):
 		self.type_id = type_id
 		self.hash = hash
 		self.user_id = user_id
-	
+		self.run_count = run_count
+		
 	def __repr__(self):
 		return "[Play-Off " + str(self.id) + " - type " + str(self.type_id) + "]"
 
@@ -319,19 +321,19 @@ class BracketTeamResult(db.Model):
 	game_in_round = db.Column(db.Integer, unique=False)
 	
 	wins = db.Column(db.Integer, unique=False)
-	losses = db.Column(db.Integer, unique=False)
+	matches = db.Column(db.Integer, unique=False)
 	
 	# optimization, the most frequent result will always be shown first
 	most_frequent = db.Column(db.Boolean, unique=False)
 	
-	def __init__(self, tournament_id, bof_round, game_in_round, team_id, wins, losses):
+	def __init__(self, tournament_id, bof_round, game_in_round, team_id, wins, matches):
 		self.tournament_id = tournament_id
 		self.bof_round = bof_round
 		self.game_in_round = game_in_round
 		self.team_id = team_id
 		
 		self.wins = wins
-		self.losses = losses
+		self.matches = matches
 		
 		self.most_frequent = False
 	
@@ -343,8 +345,8 @@ class BracketTeamResult(db.Model):
 		
 	def toDictionary(self):
 		return {
-			"teams": [self.team_id, 0],
-			"goals": [self.wins, self.losses]
+			"team": self.team_id,
+			"chance": self.wins / float(self.matches) if self.matches != 0 else 0.0
 		}
 	
 	

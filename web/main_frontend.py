@@ -121,14 +121,17 @@ def tournament_view(id):
 		team_data["general"] = session.query(Result).filter_by(tournament_id=tournament.id, team_id=team.id).first()
 		all_team_data.append(team_data)
 	
-	custom_view_function = tournament.tournament_type.custom_view_function
-	Session.remove()
-	
 	# now allow for custom rendering
 	general = {
 		"colors": colors[:len(all_result_place_types)],
-		"result_names": [x.name for x in all_result_place_types]
+		"result_names": [x.name for x in all_result_place_types],
+		"run_count": tournament.run_count
 		}
+	
+	custom_view_function = tournament.tournament_type.custom_view_function
+	Session.remove()
+	
+
 	if custom_view_function:
 		return getattr(sys.modules[__name__], custom_view_function)(id, all_teams, all_result_place_types, all_team_data, general)
 	return render_template('tournament.html', teams=all_team_data, general=general)
@@ -272,7 +275,7 @@ def register_tournament_json():
 			user_session.permanent = True
 			break
 	# we can now create a new tournament execution request
-	tournament = Tournament(tournament_type.id, hash_code, user_id)
+	tournament = Tournament(tournament_type.id, hash_code, user_id, config.simulation_run_count)
 	session.add(tournament)
 	# commit so that we have a correct ID
 	session.commit()
@@ -299,40 +302,35 @@ def register_tournament_json():
 def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_data, general):
 	# get match data for this tournament
 	session = getSession()
-	# get finals
-	finals = session.query(BracketTeamResult).filter_by(tournament_id=tournament_id, bof_round=1, game_in_round=1, most_frequent=True).first()
-	most_frequent_match_results = [finals]
-	# now get list of all matches that lead to those finals
-	all_brackets = [2, 4, 8, 16]
+	run_count = general["run_count"]
+	# get all matches from that tournament
+	match_dict = {}
+	all_brackets = [16, 1, 2, 4, 8]
 	for bracket in all_brackets:
-		number_of_games = 1
-		games_in_bracket = bracket
+		number_of_games = bracket
+		round_factor = 1.0
 		if bracket == 16:
-			number_of_games = 2
-			games_in_bracket = 8
-		for game_in_round in range(1, games_in_bracket+1):
-			game_count = 0
-			for match in session.query(BracketTeamResult)\
+			number_of_games = 8
+			round_factor = 0.25
+		for game_in_round in range(1, number_of_games+1):
+			team_list = []
+			for result in session.query(BracketTeamResult)\
 				.filter(BracketTeamResult.tournament_id==tournament_id, BracketTeamResult.bof_round==bracket, BracketTeamResult.game_in_round==game_in_round)\
 				.order_by(BracketTeamResult.wins.desc()):
-				most_frequent_match_results.append(match)
-				game_count += 1
-				if game_count == number_of_games:
-					break
-			assert game_count == number_of_games
-	match_dict = {}
-	#most_frequent_match_results = session.query(MatchResult).filter_by(tournament_id=tournament_id, most_frequent=True).all()
-	for result in most_frequent_match_results:
-		# no need for "all" result..
-		if result.bof_round == 0:
-			continue
-		match_dict[result.getMatchName()] = result.toDictionary()
+				if result.matches > 0:
+					team_list.append({
+						"team": result.team_id,
+						"chance" : (result.wins / float(run_count)) * round_factor
+						});
+
+			match_dict["game_" + str(bracket) + "_" + str(game_in_round)] = team_list
+	
 	Session.remove()
 	
 	# create a quick lookup table for team names
 	team_lookup = {}
 	for team in all_teams:
-		team_lookup[team.id] = team.name
+		team_lookup[team.id] = {"name": team.name, "country_code":team.country_code}
 	
 	return render_template('tournament_fifa.html', teams=all_team_data, matches=json.dumps(match_dict), team_lookup=json.dumps(team_lookup), general=general)
 	
