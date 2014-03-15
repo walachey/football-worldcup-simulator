@@ -64,12 +64,15 @@ class Tournament(db.Model):
 	
 	type_id = db.Column(db.Integer, db.ForeignKey('tournament_types.id'))
 	tournament_type = db.relationship('TournamentType')
+	# this is an optimization to quickly have access to rule names & weights that were used for this tournament
+	rule_weight_json = db.Column(db.String(256), unique=False)
 	
 	def __init__(self, type_id, hash, user_id, run_count):
 		self.type_id = type_id
 		self.hash = hash
 		self.user_id = user_id
 		self.run_count = run_count
+		self.rule_weight_json = None
 		
 	def __repr__(self):
 		return "[Play-Off " + str(self.id) + " - type " + str(self.type_id) + "]"

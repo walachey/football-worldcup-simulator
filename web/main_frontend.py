@@ -68,7 +68,8 @@ def tournaments_view():
 		all_tournaments_data.append({
 			"name": tournament.tournament_type.name + " #" + str(tournament.id),
 			"state": tournament.getStateName(),
-			"id": tournament.id
+			"id": tournament.id,
+			"rules": tournament.rule_weight_json
 			})
 			
 	Session.remove()
@@ -287,10 +288,14 @@ def register_tournament_json():
 		participation = Participation(tournament.id, team.id, i + 1)
 		session.add(participation)
 	# active rule setup
+	rule_quick_lookup = {}
 	for (rule_type, weight) in all_rules:
 		rule = Rule(tournament.id, rule_type.id, weight)
 		session.add(rule)
-	
+		# optimization for the tournament list
+		rule_quick_lookup[rule_type.name] = weight
+	# save rule setup quick-access for tournaments list
+	tournament.rule_weight_json = json.dumps(rule_quick_lookup)
 	# tournament is go
 	session.commit()
 	simulation_dispatcher.checkDispatchment()
