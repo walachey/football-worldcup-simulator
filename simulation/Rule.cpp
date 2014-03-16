@@ -67,7 +67,10 @@ double Rule::calc_fifa_binary(Team &left, Team &right)
 {
 	const double &leftScore = left.scores["FIFA"];
 	const double &rightScore = right.scores["FIFA"];
-	return std::log(1 + (leftScore / (leftScore + rightScore)));
+	const double logScore = std::log(leftScore / rightScore);
+	const double result = 1.0 / (1.0 + std::exp(-logScore / 0.23725));
+	//std::cerr << "left: " << leftScore << "\tright: " << rightScore << "\tlog: " << logScore << "\tresult: " << result << std::endl;
+	return result;
 }
 
 double Rule::calc_value_binary(Team &left, Team &right)

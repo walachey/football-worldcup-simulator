@@ -126,31 +126,33 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 
 	assert(!(chanceLeftVsRight == 0.0 && chanceRightVsLeft == 0.0));
 
+	// currently some rules might be assymetric (because they include draws f.e.)
+	// to make sure that we do a fair roll later, normalize the chances..
+	// Note that in case chanceLeftVsRight + chanceRightvsLeft == 1.0, this does nothing
+	double normalizedChanceLeftVsRight = chanceLeftVsRight / (chanceLeftVsRight + chanceRightVsLeft);
+	//std::cerr << "norm: " << normalizedChanceLeftVsRight << "\tleft: " << chanceLeftVsRight << "\tright: " << chanceRightVsLeft << std::endl;
 	// for now, make up results..
 	int teams[] = {left.id, right.id};
 	int goals[] = {0, 0};
 
 	int possibleGoals = 4;
 	auto goalRoller = std::bind(std::uniform_int_distribution<int>(0,1), std::mt19937(SEED));
-	auto sideRoller = std::bind(std::uniform_real_distribution<double>(0.0,1.0), std::mt19937(SEED));
+	auto sideRoller = std::bind(std::uniform_real_distribution<double>(0.0, 1.0), std::mt19937(SEED));
 	bool hadOvertime = false;
 
-	for (;possibleGoals >= 0; --possibleGoals)
+	int winnerIndex = -1;
+	do
 	{
-		if (goalRoller() == 1)
-		{
-			if (sideRoller() < chanceLeftVsRight)
-				goals[0]++;
-			if (sideRoller() < chanceRightVsLeft)
-				goals[1]++;
-		}
+		double winnerSide = sideRoller();
+		if (sideRoller() < normalizedChanceLeftVsRight)
+			winnerIndex = 0;
+		else
+			winnerIndex = 1;
+		// todo: draws
+		break;
+	} while (true);
 
-		if ((possibleGoals == 0) && forceWinner && (goals[0] == goals[1]))
-		{
-			possibleGoals = 2;
-			hadOvertime = true;
-		}
-	}
+	goals[winnerIndex] = 2;
 
 	assert(!forceWinner || goals[0] != goals[1]);
 	return MatchResult(cluster, teams, goals, hadOvertime);
