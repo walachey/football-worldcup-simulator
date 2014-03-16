@@ -1,0 +1,34 @@
+# extends "base_layout.html"
+# block head
+{{ super() }}
+<script lang="javascript">
+$(document).ready(
+	function() 
+    { 
+
+    } 
+);
+</script>
+<style>
+.error span {
+	font-variant:font-variant: small-caps;
+	font-weight: bold;
+	font-color: #550000;
+}
+
+.error {
+	font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+}
+</style>
+# endblock
+
+# block contents
+
+<h2>Execution Error<br><small>Unfortunately there were errors when running your tournament simulation. Sorry.</small></h2>
+# for error in errors
+	<div class="error">
+	<blockquote>{{ error.text }}</blockquote>
+	</div>
+# endfor
+<h3><small>If this happens multiple times, you can contact us and tell us about the problem.</small><br>You could <strong><a href="{{ url_for('simple_new_tournament_view') }}">try it again</a></strong>.</h3>
+# endblock

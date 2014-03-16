@@ -155,6 +155,7 @@ function redirectionTimer(tournament_id, tournament_link)
 	{
 		alert("There was an error with your tournament. Sorry :(");
 		$("#loading_dialog").dialog('close');
+		window.location = tournament_link;
 	}
 	$.ajax(
 	{

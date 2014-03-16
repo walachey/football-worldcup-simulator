@@ -87,6 +87,11 @@ def tournament_view(id):
 		return "Tournament still running.."
 	elif tournament.state == TournamentState.pending:
 		return "Tournament not yet started.."
+	elif tournament.state == TournamentState.error:
+		all_errors = session.query(TournamentExecutionError).filter_by(tournament_id=id).all()
+		Session.remove()
+		return render_template('tournament_errors.html', errors=all_errors)
+		
 	all_teams = Team.getAllTeamsForTournament(tournament.id)
 	all_result_place_types = session.query(ResultPlaceType).filter_by(tournament_id=tournament.id).order_by(ResultPlaceType.place).all()
 	
@@ -114,7 +119,7 @@ def tournament_view(id):
 				})
 			color_counter += 1
 		# add rounding errors to the percentage of the last place (usually "draw" or "rest")..
-		if percentage_count != 100:
+		if percentage_count != 100 and results:
 			results[-1]["percentage"] += 100 - percentage_count
 		team_data["results"] = results
 		team_data["distribution_sorting_value"] = distribution_sorting_value

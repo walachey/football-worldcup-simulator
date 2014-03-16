@@ -87,7 +87,21 @@ class Tournament(db.Model):
 		if self.state == TournamentState.error:
 			return "error"
 		return "unknown"
+
+class TournamentExecutionError(db.Model):
+	__tablename__ = "tournament_execution_errors"
+	query = None
+	id = db.Column(db.Integer, primary_key=True)
+	tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
+	text = db.Column(db.String(256), unique=False)
+	
+	def __init__(self, tournament_id, text):
+		self.tournament_id = tournament_id
+		self. text = text
 		
+	def __repr__(self):
+		return "[Error " + str(self.id) + ": " + self.text + "]"
+	
 class Team(db.Model):
 	__tablename__ = "teams"
 	query = None

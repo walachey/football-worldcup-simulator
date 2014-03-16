@@ -64,11 +64,23 @@ class Dispatcher():
 				self.parseJSONResults(json.loads(stdout), tournament)
 			else:
 				tournament.state = TournamentState.error
+				if stderr:
+					for error_text in stderr.split("\n"):
+						if len(error_text) > 2:
+							error = TournamentExecutionError(tournament.id, error_text)
+							session.add(error)
+			
 		except Exception as e:
 			import traceback
+			error_message = traceback.format_exc()
 			print "An error occurred: " + str(e)
-			print traceback.format_exc()
+			print error_message
 			tournament.state = TournamentState.error
+			
+			for error_text in error_message.split("\n"):
+				if len(error_text) > 2:
+					error = TournamentExecutionError(tournament.id, error_text)
+					session.add(error)
 		finally:
 			session.commit()
 	
@@ -92,7 +104,6 @@ class Dispatcher():
 		for rule in all_rules:
 			rule_type = session.query(RuleType).filter_by(id=rule.type_id).first()
 			rule_data = {
-				"name": rule_type.name,
 				"weight": rule.weight,
 				"function": rule_type.internal_function_identifier
 				}
