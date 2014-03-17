@@ -328,10 +328,12 @@ def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_dat
 				.filter(BracketTeamResult.tournament_id==tournament_id, BracketTeamResult.bof_round==bracket, BracketTeamResult.game_in_round==game_in_round)\
 				.order_by(BracketTeamResult.wins.desc()):
 				if result.matches > 0:
-					team_list.append({
-						"team": result.team_id,
-						"chance" : (result.wins / float(run_count)) * round_factor
-						});
+					chance = (result.wins / float(run_count)) * round_factor
+					if chance >= 0.005:
+						team_list.append({
+							"team": result.team_id,
+							"chance" : chance
+							});
 
 			match_dict["game_" + str(bracket) + "_" + str(game_in_round)] = team_list
 	
