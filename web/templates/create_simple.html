@@ -49,7 +49,7 @@ function updateRuleSpiderChart()
 	);
 	
 	// replacing the canvas element seems necessary for certain mobile browsers..
-	$('#rulecanvas').replaceWith('<canvas id="rulecanvas" width="250" height="250" style="float:left;"></canvas>');
+	$('#rulecanvas').replaceWith('<canvas id="rulecanvas" width="300" height="300" style="float:left;"></canvas>');
 	
 	var canvas = document.getElementById("rulecanvas");
 	var ctx = canvas.getContext("2d");
@@ -67,6 +67,33 @@ function updateRuleSpiderChart()
 body {
 	min-width:800px;
 }
+
+.rule_row {
+	border-top: 2px solid grey;
+}
+div.ruletitle {
+	margin:0px;
+	margin-left:70px;
+	margin-top:-5px;
+}
+
+td.ruletitle {
+	width:25em;
+}
+
+.background {
+	height:55px;
+	position:absolute;
+	margin-top:-20px;
+	margin-left:-10px;
+	padding-left:0px;
+}
+
+td.input {
+	text-align:left;
+	vertical-align:middle;
+	##background:#8A8A8A;
+}
 </style>
 # endblock
 
@@ -77,24 +104,33 @@ body {
 	<table class="table table-hover tablesorter-green">
 	</table></div>
 	## The rule selection widget.
-	<div id="choose_rules" class="container selectionbox-ok" style="pointer-events: auto;">
+	<div id="choose_rules" class="container selectionbox-ok" style="pointer-events: auto;padding-bottom:0px;">
 	<div class="headpart"><h2>Customize the rules<br><small>You can customize the weights of the different ranking rules and define how much influence they will have on the simulation.</small></h2>
 	</div>
-	<canvas id="rulecanvas" width="250" height="250" style="float:left;"></canvas> 
-	<div style="padding-left:250px;">
-		<table id="rules" class="table table-hover tablesorter-green" style="">
-		<thead><tr><th>Relative Weight</th><th>Rule Name</th><th>Description</th></tr></thead>
+	<table style="width:100%"><tr>
+	<td style="width:300px;"><canvas id="rulecanvas" width="300" height="300" style="float:left;"></canvas></td>
+	<td style="vertical-align:middle;">
+	##<div style="padding-left:300px;">
+		<table id="rules" class="table table-hover" style="">
+		## <thead><tr><th>Relative Weight</th><th>Rule Name</th></tr></thead>
 		<tbody>
 		# for rule in rules
 			<tr class="rule_row">
-				<td><input value="{{ rule.standard_weight }}" name="{{ rule.id }}" title="{{ rule.name }}"></input></td>
-				<td>{{ rule.long_name }}</td>
-				<td>{{ rule.description }}</td>
+				<td class="ruletitle" style="background-image:url('');">
+				<div class="background"><img src="{{ url_for('static', filename='img/rules/RuleBackground' ~ rule.name ~ '.png') }}"></div>
+				<div class="ruletitle">
+				<h5 style="padding:0px;margin:0px;"><strong>{{ rule.long_name }}</strong>
+				<br><small>{{ rule.description }}</small></h5>
+				</div></td>
+				<td class="input"><input value="{{ rule.standard_weight }}" name="{{ rule.id }}" title="{{ rule.name }}"></td>
+				##<td>{{ rule.description }}</td>
 			</tr>
 		# endfor
 		</tbody>
 		</table>
-	</div>
+	##</div>
+	</td>
+	</tr></table>
 	</div>
 	
 	## Teams will exist but will be hidden, this helps a streamlined creation API
