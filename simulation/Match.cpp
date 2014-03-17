@@ -114,14 +114,28 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 
 		for (auto &rule : simulation->rules)
 		{
-			weightedChanceSum += rule.weight * rule.getRawResults(i == 0 ? left : right, i == 0 ? right : left);
-			weightTotalSum += rule.weight;
+			double customWeight(1.0); // rules can scale down their weight for one calculation if they cannot make good predictions anyway
+			double ruleChance = rule.getRawResults(i == 0 ? left : right, i == 0 ? right : left, &customWeight);
+			weightedChanceSum += customWeight * rule.weight * ruleChance;
+			weightTotalSum += customWeight * rule.weight;
+		}
+
+		double chance = 0.0;
+		if (weightTotalSum > 0.0)
+		{
+			chance = weightedChanceSum / weightTotalSum;
 		}
 
 		if (i == 0)
-			chanceLeftVsRight = weightedChanceSum / weightTotalSum;
+			chanceLeftVsRight = chance;
 		else
-			chanceRightVsLeft = weightedChanceSum / weightTotalSum;
+			chanceRightVsLeft = chance;
+	}
+
+	// this can happen if a rule reduces its custom weight to 0
+	if (chanceLeftVsRight == 0.0 && chanceRightVsLeft == 0.0)
+	{
+		chanceLeftVsRight = chanceRightVsLeft = 0.5;
 	}
 
 	assert(!(chanceLeftVsRight == 0.0 && chanceRightVsLeft == 0.0));
@@ -130,29 +144,43 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 	// to make sure that we do a fair roll later, normalize the chances..
 	// Note that in case chanceLeftVsRight + chanceRightvsLeft == 1.0, this does nothing
 	double normalizedChanceLeftVsRight = chanceLeftVsRight / (chanceLeftVsRight + chanceRightVsLeft);
-	//std::cerr << "norm: " << normalizedChanceLeftVsRight << "\tleft: " << chanceLeftVsRight << "\tright: " << chanceRightVsLeft << std::endl;
+	// std::cerr << "norm: " << normalizedChanceLeftVsRight << "\tleft: " << chanceLeftVsRight << "\tright: " << chanceRightVsLeft << std::endl;
 	// for now, make up results..
 	int teams[] = {left.id, right.id};
 	int goals[] = {0, 0};
 
 	int possibleGoals = 4;
 	auto goalRoller = std::bind(std::uniform_int_distribution<int>(0,1), std::mt19937(SEED));
-	auto sideRoller = std::bind(std::uniform_real_distribution<double>(0.0, 1.0), std::mt19937(SEED));
+	auto uniformRoller = std::bind(std::uniform_real_distribution<double>(0.0, 1.0), std::mt19937(SEED));
 	bool hadOvertime = false;
 
-	int winnerIndex = -1;
-	do
+	// roll for draws first
+	// 0.33 * exp(-(x - 0.5) ^ 2 / (2 * 0.33 ^ 2))
+	double chanceForDraw = 0.33 * std::exp(-std::pow((normalizedChanceLeftVsRight - 0.5), 2.0) / (2.0 * std::pow(0.33, 2.0)));
+	bool isDraw = false;
+	if (uniformRoller() < chanceForDraw)
 	{
-		double winnerSide = sideRoller();
-		if (sideRoller() < normalizedChanceLeftVsRight)
-			winnerIndex = 0;
+		if (forceWinner)
+			hadOvertime = true;
 		else
-			winnerIndex = 1;
-		// todo: draws
-		break;
-	} while (true);
+			isDraw = true;
+	}
 
-	goals[winnerIndex] = 2;
+	if (!isDraw)
+	{
+		int winnerIndex = -1;
+		do
+		{
+			const double winnerSide = uniformRoller();
+			if (winnerSide < normalizedChanceLeftVsRight)
+				winnerIndex = 0;
+			else
+				winnerIndex = 1;
+			break;
+		} while (true);
+
+		goals[winnerIndex] = 2;
+	}
 
 	assert(!forceWinner || goals[0] != goals[1]);
 	return MatchResult(cluster, teams, goals, hadOvertime);
