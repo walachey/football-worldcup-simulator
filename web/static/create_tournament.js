@@ -1,3 +1,6 @@
+// we need the IE to not cache AJAX responses..
+$.ajaxSetup({ cache: false });
+
 /*
 	Some global variables and getter/setters are used to pass information over dialogs/ajax requests and the like.
 */
@@ -118,7 +121,6 @@ function startTournament()
 					// alert(data.message);
 					var general_tournament_page_link = getGeneralTournamentPageLink();
 					general_tournament_page_link = general_tournament_page_link.slice(0, -1) + data.tournament_id;
-					$("#goto_tournament > a").attr("href", general_tournament_page_link);
 					$("#goto_tournament").show("blind");
 					$("#finish_setup").css("pointer-events", "auto");
 					
@@ -132,7 +134,7 @@ function startTournament()
 
 function redirectTo(tournament_id, tournament_link)
 {
-	var html = '<div id="loading_dialog" style="margin-left:auto;margin-right:auto;text-align:center;">Please wait while ' + getTournamentRunCount().toString() + ' simulations are running..<br><img src="static/img/loader.gif"></div>';
+	var html = '<div id="loading_dialog" style="margin-left:auto;margin-right:auto;text-align:center;">Please wait while ' + getTournamentRunCount().toString() + ' simulations are running..<br><img src="static/img/loader.gif"><small style="display:none;"><br><hr>If you are not redirected automatically, visit the <strong><a href="/tournaments">My Tournaments</a></strong> page.</small></div>';
 	$("#main_container").append(html);
 	$("#loading_dialog").dialog(
 		{
@@ -146,17 +148,23 @@ function redirectTo(tournament_id, tournament_link)
 			open: function(event, ui) { $(".ui-dialog-titlebar-close", this.parentNode).hide(); }
 		});
 	
-	setTimeout(function(){ redirectionTimer(tournament_id, tournament_link); }, 1000);
+	setTimeout(function(){ redirectionTimer(tournament_id, tournament_link, 1); }, 1000);
 }
 
-function redirectionTimer(tournament_id, tournament_link)
+function redirectionTimer(tournament_id, tournament_link, seconds_passed)
 {
+	if (seconds_passed == 10)
+	{
+		$("#loading_dialog small").show("fade");
+	}
+	
 	function fail()
 	{
 		alert("There was an error with your tournament. Sorry :(");
 		$("#loading_dialog").dialog('close');
 		window.location = tournament_link;
 	}
+
 	$.ajax(
 	{
 		type: "GET",
@@ -179,7 +187,7 @@ function redirectionTimer(tournament_id, tournament_link)
 				}
 				
 				// try again
-				setTimeout(function(){ redirectionTimer(tournament_id, tournament_link); }, 1000);
+				setTimeout(function(){ redirectionTimer(tournament_id, tournament_link, seconds_passed + 1); }, 1000);
 			},
 		error: function() { fail(); }
 	}

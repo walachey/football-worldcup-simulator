@@ -63,13 +63,13 @@ function correctRuleInfo()
 	<h2>Your tournaments<br><small>These are your previously simulated tournaments.</small></h2>
 	<table id="tournamentstable" class="tablesorter-green">
 	<thead><tr>
-	<th>Name</th><th>Active Rules</th><th>State</th>
+	<th>Tournament Page</th><th>Active Rules</th><th>State</th>
 	</tr></thead>
 	<tbody>
 	# for tournament in tournaments
 		<tr>
 		<td>
-			<a href="{{ url_for('tournament_view', id=tournament.id) }}">{{ tournament.name }}</a>
+			<a href="{{ url_for('tournament_view', id=tournament.id) }}">Go to {{ tournament.name }} Simulation</a>
 		</td>
 		<td class="rule_info">{{ tournament.rules }}</td>
 		<td>{{ tournament.state }}</td>
