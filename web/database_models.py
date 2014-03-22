@@ -60,17 +60,15 @@ class Tournament(db.Model):
 	state = db.Column(db.SmallInteger, unique=False, default=TournamentState.pending)
 	run_count = db.Column(db.Integer)
 	hash = db.Column(db.Integer)
-	user_id = db.Column(db.Integer)
 	
 	type_id = db.Column(db.Integer, db.ForeignKey('tournament_types.id'))
 	tournament_type = db.relationship('TournamentType')
 	# this is an optimization to quickly have access to rule names & weights that were used for this tournament
 	rule_weight_json = db.Column(db.String(256), unique=False)
 	
-	def __init__(self, type_id, hash, user_id, run_count):
+	def __init__(self, type_id, hash, run_count):
 		self.type_id = type_id
 		self.hash = hash
-		self.user_id = user_id
 		self.run_count = run_count
 		self.rule_weight_json = None
 		
@@ -88,6 +86,24 @@ class Tournament(db.Model):
 			return "error"
 		return "unknown"
 
+# used to manage the tournaments that are visible to a certain user
+user_tournament_table = db.Table("user2tournaments", db.metadata,
+	db.Column("user_id", db.Integer, db.ForeignKey("users.id")),
+	db.Column("tournament_id", db.Integer, db.ForeignKey("tournaments.id"))
+	)
+	
+class User(db.Model):
+	__tablename__ = "users"
+	query = None
+	id = db.Column(db.Integer, primary_key=True)
+	tournaments = db.relationship("Tournament", secondary=user_tournament_table)
+	
+	def __init__(self):
+		pass
+		
+	def __repr__(self):
+		return "[User " + str(self.id) + "]"
+	
 class TournamentExecutionError(db.Model):
 	__tablename__ = "tournament_execution_errors"
 	query = None

@@ -61,16 +61,17 @@ def tournaments_view():
 	session = getSession()
 	# this shows the tournaments for one user identified by their user ID!
 	user_id = user_session["user_id"] if "user_id" in user_session else None
-	# get all tournaments including their states
-	all_tournaments = session.query(Tournament).filter_by(user_id=user_id).all()
+	user = session.query(User).filter_by(id=user_id).first() if user_id else None
 	all_tournaments_data = []
-	for tournament in all_tournaments:
-		all_tournaments_data.append({
-			"name": tournament.tournament_type.name + " #" + str(tournament.id),
-			"state": tournament.getStateName(),
-			"id": tournament.id,
-			"rules": tournament.rule_weight_json
-			})
+	if user:
+		# get all tournaments including their states
+		for tournament in user.tournaments:
+			all_tournaments_data.append({
+				"name": tournament.tournament_type.name + " #" + str(tournament.id),
+				"state": tournament.getStateName(),
+				"id": tournament.id,
+				"rules": tournament.rule_weight_json
+				})
 			
 	Session.remove()
 	return render_template('tournaments.html', tournaments=all_tournaments_data)
@@ -271,40 +272,48 @@ def register_tournament_json():
 	# all checks passed
 	# firstly, get the user ID from the browser session or generate a new one that is not in use yet
 	user_id = user_session["user_id"] if "user_id" in user_session else None
-	while not user_id:
-		user_id = random.randrange(0x01, 0xffffff)
-		existing_tournament = session.query(Tournament).filter_by(user_id=user_id).first()
-		if existing_tournament:
-			user_id = None
-		else:
-			user_session["user_id"] = user_id
-			user_session.permanent = True
-			break
+	user = session.query(User).filter_by(id=user_id).first() if user_id else None
+	if not user:
+		user = User()
+		session.add(user)
+		session.commit()
+	
+		user_session["user_id"] = user.id
+		user_session.permanent = True
+
+	# we can now check whether a tournament with the exact same parameters has already been simulated.
+	# instead of running the simulation another time, we can simply present that tournament to the user.
+	existing_tournament = session.query(Tournament).filter_by(hash=hash_code).first()
+		
 	# we can now create a new tournament execution request
-	tournament = Tournament(tournament_type.id, hash_code, user_id, config.simulation_run_count)
-	session.add(tournament)
-	# commit so that we have a correct ID
-	session.commit()
+	tournament = existing_tournament or Tournament(tournament_type.id, hash_code, config.simulation_run_count)
+	user.tournaments.append(tournament)
+	if not existing_tournament:
+		session.add(tournament)
+		# commit so that we have a correct ID
+		session.commit()
+		# make the teams join the tournament
+		for i in range(0, len(all_teams)):
+			team = all_teams[i]
+			participation = Participation(tournament.id, team.id, i + 1)
+			session.add(participation)
+		# active rule setup
+		rule_quick_lookup = {}
+		for (rule_type, weight) in all_rules:
+			rule = Rule(tournament.id, rule_type.id, weight)
+			session.add(rule)
+			# optimization for the tournament list
+			rule_quick_lookup[rule_type.name] = weight
+		# save rule setup quick-access for tournaments list
+		tournament.rule_weight_json = json.dumps(rule_quick_lookup)
+		# tournament is go
+		session.commit()
+		simulation_dispatcher.checkDispatchment()
+	else:
+		# commit the new user-tournament relationship
+		session.commit()
 	print "new tournament of id " + str(tournament.id)
 	return_value["tournament_id"] = tournament.id
-	# make the teams join the tournament
-	for i in range(0, len(all_teams)):
-		team = all_teams[i]
-		participation = Participation(tournament.id, team.id, i + 1)
-		session.add(participation)
-	# active rule setup
-	rule_quick_lookup = {}
-	for (rule_type, weight) in all_rules:
-		rule = Rule(tournament.id, rule_type.id, weight)
-		session.add(rule)
-		# optimization for the tournament list
-		rule_quick_lookup[rule_type.name] = weight
-	# save rule setup quick-access for tournaments list
-	tournament.rule_weight_json = json.dumps(rule_quick_lookup)
-	# tournament is go
-	session.commit()
-	simulation_dispatcher.checkDispatchment()
-	
 	Session.remove()
 	return json.dumps(return_value)
 
