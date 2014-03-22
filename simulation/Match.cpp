@@ -148,10 +148,13 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 	// for now, make up results..
 	int teams[] = {left.id, right.id};
 	int goals[] = {0, 0};
+	int winnerIndex = -1;
 
-	int possibleGoals = 4;
-	auto goalRoller = std::bind(std::uniform_int_distribution<int>(0,1), std::mt19937(SEED));
-	auto uniformRoller = std::bind(std::uniform_real_distribution<double>(0.0, 1.0), std::mt19937(SEED));
+	std::random_device seeder;
+	auto leftSideGoalRoller = std::bind(std::poisson_distribution<>(2.0 * (normalizedChanceLeftVsRight)+(1.0 / 3.0)), std::mt19937(SEED + seeder()));
+	auto rightSideGoalRoller = std::bind(std::poisson_distribution<>(2.0 * (1.0 - normalizedChanceLeftVsRight)+(1.0 / 3.0)), std::mt19937(SEED + seeder()));
+	auto uniformRoller = std::bind(std::uniform_real_distribution<double>(0.0, 1.0), std::mt19937(SEED + seeder()));
+
 	bool hadOvertime = false;
 
 	// roll for draws first
@@ -168,7 +171,6 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 
 	if (!isDraw)
 	{
-		int winnerIndex = -1;
 		do
 		{
 			const double winnerSide = uniformRoller();
@@ -179,7 +181,21 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 			break;
 		} while (true);
 
-		goals[winnerIndex] = 2;
+		// roll goals until someone wins
+		do
+		{
+			goals[0] = leftSideGoalRoller();
+			goals[1] = rightSideGoalRoller();
+		} while (goals[winnerIndex] <= goals[1 - winnerIndex]);
+	}
+	else
+	{
+		// roll goals until draw
+		do
+		{
+			goals[0] = leftSideGoalRoller();
+			goals[1] = rightSideGoalRoller();
+		} while (goals[winnerIndex] != goals[1 - winnerIndex]);
 	}
 
 	assert(!forceWinner || goals[0] != goals[1]);
