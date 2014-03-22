@@ -6,6 +6,7 @@ class WCSConfiguration:
 	flask_port = 5000
 	flask_template_folder = "templates"
 	flask_application_name = "World-Cup Sim"
+	flask_admin_password = "secret admin pw"
 	
 	# database configuration
 	database_connection_string = "mysql://worldcup_admin:JPpbueH5vX4Ee6Th@localhost/worldcup"

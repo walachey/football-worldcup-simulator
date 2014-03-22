@@ -5,6 +5,7 @@ import random
 from configuration import main_configuration as config
 from database_models import *
 import dispatcher
+import admin_interface
 
 # third-party includes
 from flask import abort, redirect, url_for, render_template, flash, request, session as user_session, make_response, Response
@@ -21,6 +22,7 @@ import socket # for catching socket.error
 
 app = config.getFlaskApp()
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+admin_interface.init(app)
 simulation_dispatcher = dispatcher.Dispatcher(db, config)
 # initialize random numbers for user ID generation
 random.seed()
@@ -165,9 +167,6 @@ def simple_new_tournament_view():
 	Session.remove()
 	return render_template('create_simple.html', tournament_type=tournament_type, rules=all_standard_rule_types, teams=all_teams, run_count=config.simulation_run_count)
 
-@app.route('/tournaments/redirect:<int:id>')
-def redirect_to_tournament_view(id):
-	return render_template('redirect_to_tournament.html', tournament_id=id)
 @app.route('/json/state/tournament:<int:id>')
 def tournament_state_json(id):
 	session = getSession()

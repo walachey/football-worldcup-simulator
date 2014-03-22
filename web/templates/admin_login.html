@@ -1,0 +1,18 @@
+{% extends 'admin/master.html' %}
+{% block body %}
+	{% if refresh %}
+		<script>
+		window.location = "/admin";
+		</script>
+	{% else %}
+		<p>
+		<form method="POST">
+		{% if logged_in %}
+			<input type="submit" value="Logout">
+		{% else %}
+			Admin Passwort: <input name="pw" type="password" value="">
+		{% endif %}
+		</form>
+		</p>
+	{% endif %}
+{% endblock %}
