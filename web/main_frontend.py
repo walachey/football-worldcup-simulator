@@ -9,6 +9,7 @@ import dispatcher
 # third-party includes
 from flask import abort, redirect, url_for, render_template, flash, request, session as user_session, make_response, Response
 from flask import Flask
+from flask.ext.cache import Cache
 import jinja2
 import re, md5
 import subprocess
@@ -19,15 +20,18 @@ from email.mime.text import MIMEText
 import socket # for catching socket.error
 
 app = config.getFlaskApp()
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 simulation_dispatcher = dispatcher.Dispatcher(db, config)
 # initialize random numbers for user ID generation
 random.seed()
 
 @app.route('/')
+@cache.cached()
 def index_view():
 	return render_template('index.html')
 
 @app.route('/teams')
+@cache.cached()
 def teams_view():
 	session = getSession()
 	
@@ -143,14 +147,16 @@ def tournament_view(id):
 		return getattr(sys.modules[__name__], custom_view_function)(id, all_teams, all_result_place_types, all_team_data, general)
 	return render_template('tournament.html', teams=all_team_data, general=general)
 	
-@app.route('/create')	
+@app.route('/create')
+@cache.cached()
 def new_tournament_view():
 	session = getSession()
 	all_tournament_types = session.query(TournamentType).all()
 	Session.remove()
 	return render_template('create.html', types=all_tournament_types, run_count=config.simulation_run_count)
 
-@app.route('/create_simple')	
+@app.route('/create_simple')
+@cache.cached()
 def simple_new_tournament_view():
 	session = getSession();
 	tournament_type = Session.query(TournamentType).filter_by(internal_identifier="worldcup").first()
@@ -217,15 +223,11 @@ def register_tournament_json():
 	
 	info = json.loads(request.form["info"])
 	hash_code = hash(repr(info))
-	print "INFO____________________________________"
-	print info
-	print "HASH____________________________________\t" + str(hash_code)
 	
 	return_value = {"status":"OK", "message":"Your tournament has been created!"}
 	def abort(message):
 		return_value["status"] = "FAIL"
 		return_value["message"] = message
-		print message
 		return json.dumps(return_value)
 		
 	all_rules = []
@@ -312,7 +314,6 @@ def register_tournament_json():
 	else:
 		# commit the new user-tournament relationship
 		session.commit()
-	print "new tournament of id " + str(tournament.id)
 	return_value["tournament_id"] = tournament.id
 	Session.remove()
 	return json.dumps(return_value)
