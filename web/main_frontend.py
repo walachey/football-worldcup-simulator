@@ -106,11 +106,11 @@ def tournament_view(id):
 		results = []
 		color_counter = 0
 		percentage_count = 0
-		distribution_sorting_value = 1.0
+		distribution_sorting_value = 1
 		for result_place_type in all_result_place_types:
 			result_place = session.query(ResultPlace).filter_by(tournament_id=tournament.id, team_id=team.id, place=result_place_type.place).first()
 			percentage = int(100 * result_place.percentage + 0.5)
-			distribution_sorting_value = distribution_sorting_value * 10.0 + result_place.percentage
+			distribution_sorting_value = distribution_sorting_value * 100 + percentage
 			percentage_count += percentage
 			results.append({
 				"name":result_place_type.name, 
