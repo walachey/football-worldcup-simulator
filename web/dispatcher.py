@@ -105,7 +105,8 @@ class Dispatcher():
 			rule_type = session.query(RuleType).filter_by(id=rule.type_id).first()
 			rule_data = {
 				"weight": rule.weight,
-				"function": rule_type.internal_function_identifier
+				"function": rule_type.internal_function_identifier,
+				"backref": rule_type.is_backref_rule
 				}
 			needed_score_types_data = []
 			for score_type in rule_type.score_types:

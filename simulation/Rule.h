@@ -19,21 +19,22 @@ public:
 
 	std::vector<std::string> neededScores;
 	double weight;
+	bool isBackrefRule; // whether the rule needs the win expectancy of other rules as its input
 
 	// returns unweighted results
-	double getRawResults(Team &left, Team &right, double *weight);
+	double getRawResults(Team &left, Team &right, double *weight, double *currentWinExpectancy);
 
 
 	void setCalculationFunction(std::string functionName);
 
 private:
-	double (Rule::*calculationFunction) (Team &left, Team &right, double *weight);
-	double calc_elo_binary(Team &left, Team &right, double *weight);
-	double calc_fifa_binary(Team &left, Team &right, double *weight);
-	double calc_value_binary(Team &left, Team &right, double *weight);
-	double calc_homeadvantage_binary(Team &left, Team &right, double *weight);
-	double calc_luck(Team &left, Team &right, double *weight) { return 0.5; };
-	double calc_dummy(Team &left, Team &right, double *weight) { return 0.5; };
+	double (Rule::*calculationFunction) (Team &left, Team &right, double *weight, double *currentWinExpectancy);
+	double calc_elo_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy);
+	double calc_fifa_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy);
+	double calc_value_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy);
+	double calc_homeadvantage_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy);
+	double calc_luck(Team &left, Team &right, double *weight, double *currentWinExpectancy) { return 0.5; };
+	double calc_dummy(Team &left, Team &right, double *weight, double *currentWinExpectancy) { return 0.5; };
 };
 
 }

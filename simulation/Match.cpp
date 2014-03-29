@@ -106,7 +106,9 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 	++SEED;
 	// use two chances for scoring - some rules are not necessarily symmetrical and should still work as good as possible
 	double chanceLeftVsRight(0.0), chanceRightVsLeft(0.0);
-	// apply all rules to figure out the correct odds
+	// the maximum weight of the normal rules. Used to scale backreferencing rules correctly
+	double maxRuleWeight = 0.0;
+	// apply all normal rules to figure out the correct odds
 	for (int i = 0; i < 2; ++i)
 	{
 		double weightedChanceSum = 0.0;
@@ -114,8 +116,14 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 
 		for (auto &rule : simulation->rules)
 		{
-			double customWeight(1.0); // rules can scale down their weight for one calculation if they cannot make good predictions anyway
-			double ruleChance = rule.getRawResults(i == 0 ? left : right, i == 0 ? right : left, &customWeight);
+			// remember for backref rules later. Not only the weight of non-backref rules!
+			maxRuleWeight = std::max(maxRuleWeight, rule.weight);
+
+			if (rule.isBackrefRule) continue;
+			// rules can scale down their weight for one calculation if they cannot make good predictions anyway
+			double customWeight(1.0);
+			// apply!
+			double ruleChance = rule.getRawResults(i == 0 ? left : right, i == 0 ? right : left, &customWeight, nullptr);
 			weightedChanceSum += customWeight * rule.weight * ruleChance;
 			weightTotalSum += customWeight * rule.weight;
 		}
@@ -136,6 +144,24 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 	if (chanceLeftVsRight == 0.0 && chanceRightVsLeft == 0.0)
 	{
 		chanceLeftVsRight = chanceRightVsLeft = 0.5;
+	}
+
+	// now apply all backreference rules
+	assert(maxRuleWeight != 0.0);
+
+	for (int i = 0; i < 2; ++i)
+	{
+		double *currentWinExpectancy = (i == 0) ? &chanceLeftVsRight : &chanceRightVsLeft;
+
+		for (auto &rule : simulation->rules)
+		{
+			if (!rule.isBackrefRule) continue;
+			double customWeight(1.0);
+			double adjustedWinExpectancy = rule.getRawResults(i == 0 ? left : right, i == 0 ? right : left, &customWeight, currentWinExpectancy);
+			// now scale the rule correctly, according to the user input
+			double ruleFactor = std::min(1.0, rule.weight * customWeight / maxRuleWeight);
+			*currentWinExpectancy = ruleFactor * adjustedWinExpectancy + (1.0 - ruleFactor) * (*currentWinExpectancy);
+		}
 	}
 
 	assert(!(chanceLeftVsRight == 0.0 && chanceRightVsLeft == 0.0));
