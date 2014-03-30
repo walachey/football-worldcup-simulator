@@ -15,6 +15,31 @@ function setGeneralTournamentPageLink(to) { window.general_tournament_page_link 
 window.tournament_run_count = 0;
 function getTournamentRunCount() { return window.tournament_run_count; }
 function setTournamentRunCount(to) { window.tournament_run_count = to; }
+
+function setSectionState(id, to_state)
+{
+	if (to_state == "active" || to_state == "ok")
+	{
+		$(id).toggleClass("selbox-info selbox-ok", 500);
+		$(id).parent().toggleClass("selbox-con-info selbox-con-ok", 500);
+		
+		if (to_state == "ok")
+			$(id + " .headpart").hide("blind");
+		else
+			$(id + " .headpart").show("blind");
+	}
+	
+	if (to_state == "visible")
+	{
+		$(id).parent().show("blind");
+	}
+	else
+	if (to_state == "hidden")
+	{
+		$(id).parent().hide("blind");
+	}
+}
+
 // validates the rule input and (may) put the selected rules into an array passed as the /rule_ids/ argument. The remaining rule data will be put into the /rule_data/ object
 function validateRuleSelection(rule_ids, rule_data)
 {
@@ -52,8 +77,7 @@ function validateRuleSelection(rule_ids, rule_data)
 
 function startTournament()
 {
-	$("#finish_setup").toggleClass("selectionbox-info selectionbox-ok", 500);
-	$("#finish_setup .headpart").hide("blind");
+	setSectionState("#finish_setup", "ok");
 	
 	var progress_bar = $("#starting_progressbar");
 	var progress_bar_value = progress_bar.find(".ui-progressbar-value");
@@ -94,8 +118,7 @@ function startTournament()
 	failfunc = function(message) 
 		{
 			progress_bar.hide("fade");
-			$("#finish_setup").toggleClass("selectionbox-info selectionbox-ok", 500);
-			$("#finish_setup .headpart").show("blind");
+			setSectionState("#finish_setup", "active");
 			alert (message);
 			return;
 		}

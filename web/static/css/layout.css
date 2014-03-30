@@ -1,36 +1,85 @@
 body {
   padding-top: 50px;
-}
-.starter-template {
-  padding: 40px 15px;
-  text-align: center;
+  padding-bottom: 50px;
 }
 
 .small {
 	font-size:0.75em;
 }
 
-.selectionbox-info {
-	margin-top: 25px;
-	border: 1px solid yellow;
-	border-radius: 10px;
-	padding-top: 25px;
-	padding-bottom: 25px;
-	background-color:#ffffee;
+.selbox {
+	display: table-cell;
+	background-color:#fdfdfd;
+	box-shadow: 0px 0px 20px #888888;
+	
+	padding-top: 2em;
+	padding-bottom: 2em;
 }
 
-.selectionbox-ok {
+
+.selbox-con {
 	margin-top: 25px;
-	border: 1px solid green;
-	border-radius: 10px;
-	padding-top: 25px;
-	padding-bottom: 25px;
-	background-color:#eeffee;
-	pointer-events: none;
+	margin-left: -3em;
 }
+
+.selbox h1,h2,h3,h4 {
+	margin-top: 0px;
+}
+
+.selbox-con .headtab {
+	display: table-cell;
+	vertical-align: middle;
+	text-align: center;
+	position: relative;
+	min-width: 3em;
+	max-width: 3em;
+	width: 3em;
+	background-color: darkgrey;
+}
+.selbox-con .headtab span {
+
+	display: block;
+	font-variant: small-caps;
+	color: #ffffff;
+	font-weight: bold;
+	font-size: 2em;
+	-webkit-transform:rotate(-90deg);
+	-moz-transform:rotate(-90deg);
+	-o-transform:rotate(-90deg);
+	/* filter:progid:DXImageTransform.Microsoft.BasicImage(rotation=-0.5); */
+	-ms-transform:rotate(-90deg);   
+}
+
+.selbox-con-ok .headtab {
+	background-color: green;
+}
+
+.selbox-info {
+	
+}
+
+.selbox-ok {
+	pointer-events: none;
+	background-color: #fbfffb;
+}
+
+
 
 .ui-effects-transfer { border: 2px dotted gray; }
 
 .ui-progressbar-value {
 	background-color: #cceecc;
+}
+
+/* For the create custom tournament page */
+.type-button {
+	width: 100%;
+	min-width: 30em;
+}
+.type-buttonimage {
+	width: 64px;
+	float: left;
+}
+.type-buttontext {
+	padding-left: 64px;
 }

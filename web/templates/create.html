@@ -29,10 +29,10 @@ function getAvailableScoreData(score_data) { return window.received_tournament_i
 function onTypeChosen(type_id)
 {
 	// animate some buttons and show next selection widget
-	$("#choose_type").toggleClass("selectionbox-info selectionbox-ok", 500);
-	$("#choose_type > h2").hide("blind");
 	$("#choose_type #type_" + type_id.toString()).toggleClass("btn-default btn-success");
-	$("#choose_rules").show("blind");
+	$("#choose_type .type-button:not(#type_" + type_id.toString() + ")").hide("blend");
+	setSectionState("#choose_type", "ok");
+	setSectionState("#choose_rules", "visible");
 	
 	// fetch rule information
 	$.ajax(
@@ -109,9 +109,8 @@ function endRuleSelection()
 	if (!validateRuleSelection(rule_ids, rule_data)) return;
 	
 	// some effects
-	$("#choose_rules").toggleClass("selectionbox-info selectionbox-ok", 500);
-	$("#choose_rules > .headpart").hide("blind");
-	$("#choose_teams").show("blind");
+	setSectionState("#choose_rules", "ok");
+	setSectionState("#choose_teams", "visible");
 	
 	// get the teams and rule parameters
 	var tournament_type = getSelectedTournamentTypeID();
@@ -237,9 +236,8 @@ function changeTeam(index)
 function endTeamSelection()
 {
 	// some effects
-	$("#choose_teams").toggleClass("selectionbox-info selectionbox-ok", 500);
-	$("#choose_teams > .headpart").hide("blind");
-	$("#finish_setup").show("blind");
+	setSectionState("#choose_teams", "ok");
+	setSectionState("#finish_setup", "visible");
 }
 
 </script>
@@ -248,15 +246,17 @@ function endTeamSelection()
 # block contents
 	<h1>New Tournament <small>Create a new tournament with user-defined settings.</small></h1>
 	## Select the tournament type first, this is by default the only and first active widget.
-	<div id="choose_type" class="container selectionbox-info">
-	<h2>Choose the tournament type first</h2>
-	# for type in types
-		<div id="{{ "type_"~type.id }}" class="col-md-6 btn btn-default" onclick="javascript:onTypeChosen({{ type.id }})">
-		<div class="container">
-		<div class="col-xs-1"><img src="{{ url_for('static', filename='img/icons/'~type.icon) }}" width="64px"></img></div>
-		<div class="col-xs-1"><span class="h3 text-center">{{ type.name }}<br/><small>{{ type.description }}</small></span></div>
-		</div></div>
-	# endfor
+	<div class="selbox-con">
+	<div class="headtab"><span>Type</span></div>
+	<div id="choose_type" class="container selbox selbox-info">
+		<h2>Choose the tournament type first</h2>
+		# for type in types
+			<div id="{{ "type_"~type.id }}" class="btn btn-default type-button" onclick="javascript:onTypeChosen({{ type.id }})">
+				<div class="type-buttonimage"><img src="{{ url_for('static', filename='img/icons/'~type.icon) }}" width="64px"></img></div>
+				<div class="type-buttontext"><span class="h3 text-center">{{ type.name }}<br/><small>{{ type.description }}</small></span></div>
+			</div>
+		# endfor
+	</div>
 	</div>
 	
 	## When a tournament type was set, the remaining data can be fetched, first the rule stuff.
@@ -266,14 +266,17 @@ function endTeamSelection()
 	<table class="table table-hover tablesorter-green">
 	</table></div>
 	## The rule selection widget.
-	<div id="choose_rules" class="container selectionbox-info" style="display:none;">
-	<div class="headpart"><h2>Choose the active rules</h2>
-	<div id="add_rule_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:showRuleSelectionDialog();">Add Rule</div>
-	<div id="end_rule_selection_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:endRuleSelection();">End Rule Selection</div>
+	<div class="selbox-con" style="display:none">
+	<div class="headtab"><span>Rules</span></div>
+	<div id="choose_rules" class="container selbox selbox-info">
+		<div class="headpart"><h2>Choose the active rules</h2>
+		<div id="add_rule_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:showRuleSelectionDialog();">Add Rule</div>
+		<div id="end_rule_selection_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:endRuleSelection();">End Rule Selection</div>
+		</div>
+		<table id="rules" class="table table-hover tablesorter-green">
+		<thead><tr><th>Relative Weight</th><th>Rule Name</th><th>Description</th></tr></thead>
+		</table>
 	</div>
-	<table id="rules" class="table table-hover tablesorter-green">
-	<thead><tr><th>Relative Weight</th><th>Rule Name</th><th>Description</th></tr></thead>
-	</table>
 	</div>
 	
 	## Now that the rules are known, the teams have been fetched with the correct rule data.
@@ -284,21 +287,27 @@ function endTeamSelection()
 	<table class="table table-hover tablesorter-green">
 	</table></div>
 	
-	<div id="choose_teams" class="container selectionbox-info" style="display:none;">
-	<div class="headpart"><h2>Customize the teams</h2>
-	<div id="end_team_selection_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:endTeamSelection();">End Team Selection</div>
+	<div class="selbox-con" style="display:none">
+	<div class="headtab"><span>Teams</span></div>
+	<div id="choose_teams" class="container selbox selbox-info">
+		<div class="headpart"><h2>Customize the teams</h2>
+		<div id="end_team_selection_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:endTeamSelection();">End Team Selection</div>
+		</div>
+		<table id="teams" class="table table-hover tablesorter-green">
+		## The columns are not known at this point. They will be added via JS later.
+		</table>
 	</div>
-	<table id="teams" class="table table-hover tablesorter-green">
-	## The columns are not known at this point. They will be added via JS later.
-	</table>
 	</div>
 	
 	## User confirmation before starting the tournament.
-	<div id="finish_setup" class="container selectionbox-info" style="display:none;">
-	<div class="headpart"><h2>You are done with the setup!<br><small>This will simulate the complete tournament with your custom rules {{ run_count }} times.</small></h2>
-	<div class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:startTournament();">Start the Tournament Simulation</div>
+	<div class="selbox-con" style="display:none">
+	<div class="headtab"><span>Run</span></div>
+	<div id="finish_setup" class="container selbox selbox-info">
+		<div class="headpart"><h2>You are done with the setup!<br><small>This will simulate the complete tournament with your custom rules {{ run_count }} times.</small></h2>
+		<div class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:startTournament();">Start the Tournament Simulation</div>
+		</div>
+		<div id="goto_tournament" style="display:none;"><div class="info small"></div></div>
+		<div id="starting_progressbar" style="width:100%;display:none;"></div>
 	</div>
-	<div id="goto_tournament" style="display:none;"><div class="info small"></div></div>
-	<div id="starting_progressbar" style="width:100%;display:none;"></div>
 	</div>
 # endblock

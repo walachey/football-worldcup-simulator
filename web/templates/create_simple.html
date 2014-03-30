@@ -104,33 +104,36 @@ td.input {
 	<table class="table table-hover tablesorter-green">
 	</table></div>
 	## The rule selection widget.
-	<div id="choose_rules" class="container selectionbox-ok" style="pointer-events: auto;padding-bottom:0px;">
-	<div class="headpart"><h2>Customize the rules<br><small>You can customize the weights of the different ranking rules and define how much influence they will have on the simulation.</small></h2>
+	<div class="selbox-con selbox-con-ok">
+	<div class="headtab"><span>Rules</span></div>
+	<div id="choose_rules" class="container selbox selbox-ok" style="pointer-events: auto;padding-bottom:0px;">
+		<div class="headpart"><h2>Customize the rules<br><small>You can customize the weights of the different ranking rules and define how much influence they will have on the simulation.</small></h2>
+		</div>
+		<table style="width:100%"><tr>
+		<td style="width:300px;"><canvas id="rulecanvas" width="300" height="300" style="float:left;"></canvas></td>
+		<td style="vertical-align:middle;">
+		##<div style="padding-left:300px;">
+			<table id="rules" class="table table-hover" style="">
+			## <thead><tr><th>Relative Weight</th><th>Rule Name</th></tr></thead>
+			<tbody>
+			# for rule in rules
+				<tr class="rule_row">
+					<td class="ruletitle" style="background-image:url('');">
+					<div class="background"><img src="{{ url_for('static', filename='img/rules/RuleBackground' ~ rule.name ~ '.png') }}"></div>
+					<div class="ruletitle">
+					<h5 style="padding:0px;margin:0px;"><strong>{{ rule.long_name }}</strong>
+					<br><small>{{ rule.description }}</small></h5>
+					</div></td>
+					<td class="input"><input value="{{ rule.standard_weight }}" name="{{ rule.id }}" title="{{ rule.name }}"></td>
+					##<td>{{ rule.description }}</td>
+				</tr>
+			# endfor
+			</tbody>
+			</table>
+		##</div>
+		</td>
+		</tr></table>
 	</div>
-	<table style="width:100%"><tr>
-	<td style="width:300px;"><canvas id="rulecanvas" width="300" height="300" style="float:left;"></canvas></td>
-	<td style="vertical-align:middle;">
-	##<div style="padding-left:300px;">
-		<table id="rules" class="table table-hover" style="">
-		## <thead><tr><th>Relative Weight</th><th>Rule Name</th></tr></thead>
-		<tbody>
-		# for rule in rules
-			<tr class="rule_row">
-				<td class="ruletitle" style="background-image:url('');">
-				<div class="background"><img src="{{ url_for('static', filename='img/rules/RuleBackground' ~ rule.name ~ '.png') }}"></div>
-				<div class="ruletitle">
-				<h5 style="padding:0px;margin:0px;"><strong>{{ rule.long_name }}</strong>
-				<br><small>{{ rule.description }}</small></h5>
-				</div></td>
-				<td class="input"><input value="{{ rule.standard_weight }}" name="{{ rule.id }}" title="{{ rule.name }}"></td>
-				##<td>{{ rule.description }}</td>
-			</tr>
-		# endfor
-		</tbody>
-		</table>
-	##</div>
-	</td>
-	</tr></table>
 	</div>
 	
 	## Teams will exist but will be hidden, this helps a streamlined creation API
@@ -138,29 +141,36 @@ td.input {
 	<table class="table table-hover tablesorter-green">
 	</table></div>
 	
-	<div id="choose_teams" class="container selectionbox-info" style="display:none;">
-	<div class="headpart"><h2>Customize the teams</h2>
-	<div id="end_team_selection_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:endTeamSelection();">End Team Selection</div>
+	<div class="selbox-con" style="display:none;">
+	<div class="headtab"><span>Teams</span></div>
+	<div id="choose_teams" class="container selbox selbox-info">
+	<div class="headtab">Teams</div>
+		<div class="headpart"><h2>Customize the teams</h2>
+		<div id="end_team_selection_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:endTeamSelection();">End Team Selection</div>
+		</div>
+		<table id="teams" class="table table-hover tablesorter-green">
+		<thead><tr><th>Team</th></tr></thead>
+		<tbody>
+		# for team in teams
+			<tr>
+			<td><span class="teamid">{{ team.id }}</span></td>
+			</tr>
+		# endfor
+		</tbody>
+		</table>
 	</div>
-	<table id="teams" class="table table-hover tablesorter-green">
-	<thead><tr><th>Team</th></tr></thead>
-	<tbody>
-	# for team in teams
-		<tr>
-		<td><span class="teamid">{{ team.id }}</span></td>
-		</tr>
-	# endfor
-	</tbody>
-	</table>
 	</div>
 	
 	## User confirmation before starting the tournament.
-	<div id="finish_setup" class="container selectionbox-info">
-	<div class="headpart">
-	<h2><small>This will simulate the complete tournament with your custom rules {{ run_count }} times.</small></h2>
-	<div class="btn btn-primary btn-lg" style="margin-bottom:0px;" onclick="javascript:if (validateRuleSelection()) startTournament();">Start the Tournament Simulation</div>
+	<div class="selbox-con">
+	<div class="headtab"><span>Run</span></div>
+	<div id="finish_setup" class="container selbox selbox-info">
+		<div class="headpart">
+		<h2><small>This will simulate the complete tournament with your custom rules {{ run_count }} times.</small></h2>
+		<div class="btn btn-success btn-lg" style="margin-bottom:0px; width:100%;" onclick="javascript:if (validateRuleSelection()) startTournament();">Start the Tournament Simulation</div>
+		</div>
+		<div id="goto_tournament" style="display:none;"><div class="info small"></div></div>
+		<div id="starting_progressbar" style="width:100%;display:none;"></div>
 	</div>
-	<div id="goto_tournament" style="display:none;"><div class="info small"></div></div>
-	<div id="starting_progressbar" style="width:100%;display:none;"></div>
 	</div>
 # endblock
