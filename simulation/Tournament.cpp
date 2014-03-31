@@ -211,10 +211,10 @@ std::vector<Team*> FIFAStyleTournament::runQualification()
 					qualiResult.goalDifference += result.goals[resultIndex] - result.goals[1 - resultIndex];
 					
 					if (result.isWinner(resultIndex))
-						qualiResult.score = 3;
+						qualiResult.score += 3;
 					else if (result.isLoser(resultIndex))
-						qualiResult.score = 0;
-					else qualiResult.score = 1;
+						qualiResult.score += 0;
+					else qualiResult.score += 1;
 				}
 			}
 		}
