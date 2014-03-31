@@ -359,21 +359,26 @@ class BracketTeamResult(db.Model):
 	game_in_round = db.Column(db.Integer, unique=False)
 	
 	wins = db.Column(db.Integer, unique=False)
+	draws = db.Column(db.Integer, unique=False)
 	matches = db.Column(db.Integer, unique=False)
 	
 	# optimization, the most frequent result will always be shown first
 	most_frequent = db.Column(db.Boolean, unique=False)
 	
-	def __init__(self, tournament_id, bof_round, game_in_round, team_id, wins, matches):
+	def __init__(self, tournament_id, bof_round, game_in_round, team_id, wins, draws, matches):
 		self.tournament_id = tournament_id
 		self.bof_round = bof_round
 		self.game_in_round = game_in_round
 		self.team_id = team_id
 		
 		self.wins = wins
+		self.draws = draws
 		self.matches = matches
 		
 		self.most_frequent = False
+	
+	def getLossCount(self):
+		return self.matches - (self.wins + self.draws)
 	
 	def getMatchName(self):
 		return "game_" + str(self.bof_round) + "_" + str(self.game_in_round)

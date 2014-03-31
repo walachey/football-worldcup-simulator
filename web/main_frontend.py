@@ -327,17 +327,19 @@ def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_dat
 	all_brackets = [16, 1, 2, 4, 8]
 	for bracket in all_brackets:
 		number_of_games = bracket
-		round_factor = 1.0
+		use_round_robin_scores = False
 		if bracket == 16:
 			number_of_games = 8
-			round_factor = 0.25
+			use_round_robin_scores = True
 		for game_in_round in range(1, number_of_games+1):
 			team_list = []
 			for result in session.query(BracketTeamResult)\
 				.filter(BracketTeamResult.tournament_id==tournament_id, BracketTeamResult.bof_round==bracket, BracketTeamResult.game_in_round==game_in_round)\
 				.order_by(BracketTeamResult.wins.desc()):
 				if result.matches > 0:
-					chance = (result.wins / float(run_count)) * round_factor
+					chance = (
+						(result.wins if not use_round_robin_scores else (3.0 * result.wins + 1.0 * result.draws))
+						/ float(run_count))
 					if chance >= 0.005:
 						team_list.append({
 							"team": result.team_id,

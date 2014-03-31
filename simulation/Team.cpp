@@ -58,6 +58,7 @@ json_spirit::Object TeamResult::toJSONObject()
 	object.push_back(json_spirit::Pair("losses", statisticalData[StatisticalDataKeys::TotalLosses]));
 	object.push_back(json_spirit::Pair("draws", statisticalData[StatisticalDataKeys::TotalDraws]));
 	object.push_back(json_spirit::Pair("matches", statisticalData[StatisticalDataKeys::TotalMatches]));
+	assert(statisticalData[StatisticalDataKeys::TotalMatches] == (statisticalData[StatisticalDataKeys::TotalWins] + statisticalData[StatisticalDataKeys::TotalLosses] + statisticalData[StatisticalDataKeys::TotalDraws]));
 	return object;
 }
 

@@ -83,7 +83,7 @@ function fillBrackets(json_data, team_lookup)
 			// the group get assigned their letter, because they are not in the expected order for better overview..
 			if (round == 16)
 			{
-				game_table.append("<tr><td>&nbsp;</td><td class='table_header'>Group " + String.fromCharCode(64 + game) + "</td><td>&nbsp;</td></tr>");
+				game_table.append("<tr><td>&nbsp;</td><td class='table_header'>Group " + String.fromCharCode(64 + game) + "</td><td align='right'><small>pts</small></td></tr>");
 			}
 			var match_data = json_data[name];
 			var team_count = match_data.length;
@@ -93,12 +93,17 @@ function fillBrackets(json_data, team_lookup)
 				//if (team.chance == 0.0) continue;
 				var team_data = team_lookup[team.team];
 				var class_name = "team_" + team_data.country_code;
-
+				var score_string = "";
+				// special treatment for round-robin games where the number is not the win ratio but the score
+				if (round == 16)
+					score_string = (Math.floor(10 * team.chance) / 10).toString();
+				else
+					score_string = Math.floor(100 * team.chance + 0.5).toString() + "%"
 				game_table.append(
 					"<tr class='" + class_name + "' onmouseover='hl(\"" + class_name + "\");'>" +
 					"<td><img class='flag' src='/static/img/flags/" + team_data.country_code + ".png'></img></td>" +
 					"<td>" + team_data.name + "</td>" +
-					"<td class='chance'>" + Math.floor(100 * team.chance + 0.5) + "%</td>" +
+					"<td class='chance'>" + score_string + "</td>" +
 					"</tr>");
 			}
 		}
