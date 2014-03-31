@@ -6,6 +6,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.declarative import declarative_base
 import base64, random
 import string
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config.database_connection_string
@@ -87,16 +88,25 @@ class Tournament(db.Model):
 		return "unknown"
 
 # used to manage the tournaments that are visible to a certain user
-user_tournament_table = db.Table("user2tournaments", db.metadata,
-	db.Column("user_id", db.Integer, db.ForeignKey("users.id")),
-	db.Column("tournament_id", db.Integer, db.ForeignKey("tournaments.id"))
-	)
+class UserTournamentMapping(db.Model):
+	__tablename__ = "user2tournaments"
+	
+	id = db.Column(db.Integer, primary_key=True)
+	user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+	tournament_id = db.Column(db.Integer, db.ForeignKey("tournaments.id"))
+	timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+	
+	tournament = db.relationship("Tournament")
+	
+	def __init__(self, user, tournament):
+		self.tournament = tournament
+		user.tournaments.append(self)
 	
 class User(db.Model):
 	__tablename__ = "users"
 	query = None
 	id = db.Column(db.Integer, primary_key=True)
-	tournaments = db.relationship("Tournament", secondary=user_tournament_table)
+	tournaments = db.relationship("UserTournamentMapping", order_by=UserTournamentMapping.timestamp)
 	
 	def __init__(self):
 		pass

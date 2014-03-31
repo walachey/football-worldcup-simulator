@@ -1,5 +1,6 @@
 import sys
 import random
+from datetime import datetime
 
 # local includes
 from configuration import main_configuration as config
@@ -15,6 +16,7 @@ import jinja2
 import re, md5
 import subprocess
 import json
+
 
 import smtplib
 from email.mime.text import MIMEText
@@ -71,7 +73,8 @@ def tournaments_view():
 	all_tournaments_data = []
 	if user:
 		# get all tournaments including their states
-		for tournament in user.tournaments:
+		for association in user.tournaments:
+			tournament = association.tournament
 			all_tournaments_data.append({
 				"name": tournament.tournament_type.name + " #" + str(tournament.id),
 				"state": tournament.getStateName(),
@@ -274,6 +277,7 @@ def register_tournament_json():
 	# firstly, get the user ID from the browser session or generate a new one that is not in use yet
 	user_id = user_session["user_id"] if "user_id" in user_session else None
 	user = session.query(User).filter_by(id=user_id).first() if user_id else None
+	user_existed = False
 	if not user:
 		user = User()
 		session.add(user)
@@ -281,14 +285,26 @@ def register_tournament_json():
 	
 		user_session["user_id"] = user.id
 		user_session.permanent = True
-
+	else:
+		user_existed = True
 	# we can now check whether a tournament with the exact same parameters has already been simulated.
 	# instead of running the simulation another time, we can simply present that tournament to the user.
 	existing_tournament = session.query(Tournament).filter_by(hash=hash_code).filter(Tournament.state!=TournamentState.error).first()
 		
 	# we can now create a new tournament execution request
 	tournament = existing_tournament or Tournament(tournament_type.id, hash_code, config.simulation_run_count)
-	user.tournaments.append(tournament)
+	
+	# check if the user already did the simulation before
+	# if so, move it to the end of the My Tournaments list by adjusting the timestamp
+	existing_association = None
+	if user_existed and existing_tournament:
+		existing_association = session.query(UserTournamentMapping).filter_by(user_id=user.id, tournament_id=tournament.id).first()
+		if existing_association:
+			existing_association.timestamp = datetime.utcnow()
+	# otherwise, add it to the user's tournaments	
+	if not existing_association: 
+		session.add(UserTournamentMapping(user, tournament))
+	
 	if not existing_tournament:
 		session.add(tournament)
 		# commit so that we have a correct ID
