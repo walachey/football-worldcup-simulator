@@ -6,6 +6,7 @@ from datetime import datetime
 from configuration import main_configuration as config
 from database_models import *
 import dispatcher
+import dispatcher_local
 import admin_interface
 
 # third-party includes
@@ -25,7 +26,7 @@ import socket # for catching socket.error
 app = config.getFlaskApp()
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 admin_interface.init(app)
-simulation_dispatcher = dispatcher.Dispatcher(db, config)
+simulation_dispatcher = dispatcher_local.DispatcherLocal(db, config)
 # initialize random numbers for user ID generation
 random.seed()
 

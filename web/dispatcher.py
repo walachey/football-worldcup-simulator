@@ -14,75 +14,42 @@ class Dispatcher():
 		
 	# looks for a pending tournament and starts a simulation if one is found
 	def checkDispatchment(self):
-		session = getSession()
+		session = getSession() # no need to remove, because this is generally called from a request
 		
 		open_tournament = session.query(Tournament).filter_by(state=TournamentState.pending).with_lockmode("update").first()
 		# no open jobs?
 		if not open_tournament:
 			return
-		open_tournament.state = TournamentState.running
+			
+		self.dispatchTournament(open_tournament)
+	
+	# prepare tournament data and finally executeDispatchment
+	def dispatchTournament(self, tournament):
+		session = getSession() # no need to clean up because called from a request
+		tournament.state = TournamentState.running
 		session.commit()
-		
+				
 		# from here on everything needs to be protected to reset tournaments in case of failures
 		try:
-			json_object = self.toDictForSimulationInput(open_tournament)
-			open_tournament = None
-			dispatchment_thread = threading.Thread(target=self.dispatchJob, args=(json_object, ))
-			dispatchment_thread.start()
+			json_object = self.toDictForSimulationInput(tournament)
+			self.executeDispatchment(json_object)
 		except Exception as e:
-			open_tournament.state = TournamentState.error
+			tournament.state = TournamentState.error
 			session.commit()
 			
 			self.config.logger.error("EXCEPTION: " + str(e))
 			if self.config.is_debug_mode_enabled:
 				import traceback
 				traceback.print_exc()
+			error = TournamentExecutionError(tournament.id, str(e))
+			session.add(error)
+			session.commit()
 		finally:
 			pass
 	
-	# this should run in a different thread
-	def dispatchJob(self, json_object):
-		session = getSession()
-		# construct command to start the simulation client
-		command = self.config.getCompleteSimulationProgramPath()
-		# the JSON input will the given via stdin
-		json_string = json.dumps(json_object)
-		self.config.logger.debug("TOURNAMENTING " + json_string)
-		# run and wait for termination
-		process = subprocess.Popen(command, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		(stdout, stderr) = process.communicate(json_string)
+	def executeDispatchment(self, json_object):
+		pass
 		
-		self.config.logger.debug("PROGRAM TERMINATED WITH CODE " + str(process.returncode))
-		self.config.logger.debug("STDOUT ---------------------" + stdout);
-		if stderr:
-			self.config.logger.warning("STDERR ---------------------" + stderr);
-		
-		tournament = session.query(Tournament).filter_by(id=json_object["tournament_id"]).first()
-		try:
-			if process.returncode == 0:
-				tournament.state = TournamentState.finished
-				self.parseJSONResults(json.loads(stdout), tournament)
-			else:
-				tournament.state = TournamentState.error
-				if stderr:
-					for error_text in stderr.split("\n"):
-						if len(error_text) > 2:
-							error = TournamentExecutionError(tournament.id, error_text)
-							session.add(error)
-			
-		except Exception as e:
-			import traceback
-			error_message = traceback.format_exc()
-			self.config.logger.error("An error occurred: " + str(e) + "\n" + error_message)
-			tournament.state = TournamentState.error
-			
-			for error_text in error_message.split("\n"):
-				if len(error_text) > 2:
-					error = TournamentExecutionError(tournament.id, error_text)
-					session.add(error)
-		finally:
-			session.commit()
-	
 	# creates a dictionary that can be used to create JSON from it and pass it to the simulation program
 	def toDictForSimulationInput(self, tournament):
 		session = getSession()
@@ -149,48 +116,61 @@ class Dispatcher():
 	# after a successful simulation, the result needs to be put into the DB
 	def parseJSONResults(self, json_object, tournament):
 		session = getSession()
-		
-		# first get the general ranking layout (aka "1, 2, 3, 4, REST") and save it
-		rank_counter = 0 # for correct sorting later
-		for rank_data in json_object["ranks"]:
-			result_place_type = ResultPlaceType(tournament.id, rank_counter, rank_data["name"])
-			session.add(result_place_type)
-			rank_counter += 1
-		# then get the rank percentage for every team
-		for team_data in json_object["matches"]["all"]["teams"]:
-			rank_counter = 0
-			for result in team_data["ranks"]:
-				result_place = ResultPlace(tournament.id, team_data["id"], rank_counter, result["percentage"])
-				session.add(result_place)
+		try:
+			# first get the general ranking layout (aka "1, 2, 3, 4, REST") and save it
+			rank_counter = 0 # for correct sorting later
+			for rank_data in json_object["ranks"]:
+				result_place_type = ResultPlaceType(tournament.id, rank_counter, rank_data["name"])
+				session.add(result_place_type)
 				rank_counter += 1
-			# general results
-			average_goals = team_data["avg_goals"]
-			average_place = team_data["avg_place"]
-			result = Result(tournament.id, team_data["id"], average_goals, average_place)
-			session.add(result)
-		# then all the match cluster results
-		for match_name in json_object["matches"]:
-			# first_result = True
-			bof_round = json_object["matches"][match_name]["bof_round"]
-			game_in_round = json_object["matches"][match_name]["game_in_round"]
-			# for match in json_object["matches"][match_name]["results"]:
-				# result = MatchResult(tournament.id, bof_round, game_in_round, tuple(match["teams"]), tuple(match["goals"]), match["count"])
-				# # the list is sorted, so the first result is the most probable one
-				# if first_result:
-					# first_result = False
-					# result.most_frequent = True
-				# session.add(result)
-			bracket_team_results = []
-			for team in json_object["matches"][match_name]["teams"]:
-				result = BracketTeamResult(tournament.id, bof_round, game_in_round, team["id"], team["match_data"]["wins"], team["match_data"]["draws"], team["match_data"]["matches"])
-				bracket_team_results.append(result)
+			# then get the rank percentage for every team
+			for team_data in json_object["matches"]["all"]["teams"]:
+				rank_counter = 0
+				for result in team_data["ranks"]:
+					result_place = ResultPlace(tournament.id, team_data["id"], rank_counter, result["percentage"])
+					session.add(result_place)
+					rank_counter += 1
+				# general results
+				average_goals = team_data["avg_goals"]
+				average_place = team_data["avg_place"]
+				result = Result(tournament.id, team_data["id"], average_goals, average_place)
 				session.add(result)
-			# figure out highest bracket result and mark as most_frequent
-			best = (0, None)
-			for result in bracket_team_results:
-				(current, team) = best
-				if current < result.wins:
-					best = (result.wins, result)
-			(max_wins, best_result) = best
-			best_result.most_frequent = True
+			# then all the match cluster results
+			for match_name in json_object["matches"]:
+				# first_result = True
+				bof_round = json_object["matches"][match_name]["bof_round"]
+				game_in_round = json_object["matches"][match_name]["game_in_round"]
+				# for match in json_object["matches"][match_name]["results"]:
+					# result = MatchResult(tournament.id, bof_round, game_in_round, tuple(match["teams"]), tuple(match["goals"]), match["count"])
+					# # the list is sorted, so the first result is the most probable one
+					# if first_result:
+						# first_result = False
+						# result.most_frequent = True
+					# session.add(result)
+				bracket_team_results = []
+				for team in json_object["matches"][match_name]["teams"]:
+					result = BracketTeamResult(tournament.id, bof_round, game_in_round, team["id"], team["match_data"]["wins"], team["match_data"]["draws"], team["match_data"]["matches"])
+					bracket_team_results.append(result)
+					session.add(result)
+				# figure out highest bracket result and mark as most_frequent
+				best = (0, None)
+				for result in bracket_team_results:
+					(current, team) = best
+					if current < result.wins:
+						best = (result.wins, result)
+				(max_wins, best_result) = best
+				best_result.most_frequent = True
+		
+		except Exception as e:
+			import traceback
+			error_message = traceback.format_exc()
+			self.config.logger.error("An error occurred: " + str(e) + "\n" + error_message)
+			tournament.state = TournamentState.error
+			
+			for error_text in error_message.split("\n"):
+				if len(error_text) > 2:
+					error = TournamentExecutionError(tournament.id, error_text)
+					session.add(error)
+		
 		session.commit()
+		
