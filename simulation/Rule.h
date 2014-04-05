@@ -16,7 +16,11 @@ public:
 	Rule(json_spirit::Object &data);
 	~Rule();
 	void setupNeededScores(json_spirit::Array &data);
-
+	void setupParameters(json_spirit::Object &data);
+	union {
+		double customNormalizationConstant; // shortcut for the calc_custom_binary rule
+	};
+	std::map<std::string, double> ruleParameters;
 	std::vector<std::string> neededScores;
 	double weight;
 	bool isBackrefRule; // whether the rule needs the win expectancy of other rules as its input
@@ -33,7 +37,8 @@ private:
 	double calc_fifa_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy);
 	double calc_value_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy);
 	double calc_homeadvantage_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy);
-	double calc_luck(Team &left, Team &right, double *weight, double *currentWinExpectancy) { return 0.5; };
+	double calc_custom_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy);
+	double calc_luck_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy) { return 0.5; };
 	double calc_dummy(Team &left, Team &right, double *weight, double *currentWinExpectancy) { return 0.5; };
 };
 

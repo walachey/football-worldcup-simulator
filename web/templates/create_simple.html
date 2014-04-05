@@ -18,7 +18,10 @@ $(document).ready(
 				$(item).change(function() { updateRuleSpiderChart(); });
 			}
 		);
+		
+		$("#custom_rule_constant").change(function() { updateCustomRuleChart(); });		
 		updateRuleSpiderChart();
+		updateCustomRuleChart();
     } 
 );
 
@@ -34,7 +37,7 @@ function updateRuleSpiderChart()
 		data: []
 	};
 	var maxValue = 1.0;
-	$("#rules > tbody > tr").each(
+	$("#rules > tbody > tr.rule_row").each(
 		function (index, item)
 		{
 			var input_box = $(item).find("input");
@@ -60,6 +63,66 @@ function updateRuleSpiderChart()
 		scaleStepWidth: maxValue / 3.0
 	};
 	new Chart(ctx).Radar({labels: labels, datasets: [dataset]}, options);
+}
+
+function showCustomRule(id)
+{
+	
+	$("#rule_row_" + id.toString()).show("fade");
+	$("#custom_show_" + id.toString()).hide();
+	showCustomTeamRatingsDialog(id)
+}
+
+function updateCustomRuleChart()
+{
+	var value = parseFloat($("#custom_rule_constant").val());
+	var fun = function(x) { return 1.0 / (1.0  + Math.exp(-x/value)); }
+	var labels = [];
+	var data = [];
+	for (var i = -100; i <= 100; i += 20)
+	{
+		labels.push(i);
+		data.push(fun(i));
+	}
+	var data = {
+		labels : labels,
+		datasets : [
+			{
+				fillColor : "rgba(220,220,255,0.5)",
+				strokeColor : "rgba(150,150,255,1)",
+				pointColor : "rgba(100,100,200,1)",
+				pointStrokeColor : "#fff",
+				data : data
+			}
+		]
+	};
+	$('#customfunctioncanvas').replaceWith('<canvas id="customfunctioncanvas" width="300" height="300" style="float:left;"></canvas>');
+	var canvas = document.getElementById("customfunctioncanvas");
+	var ctx = canvas.getContext("2d");
+	var options = {
+		scaleOverride : true,
+		scaleSteps : 10,
+		scaleStepWidth : 0.1,
+		scaleStartValue : 0.0,
+		bezierCurve : false,
+	};
+	new Chart(ctx).Line(data, options);
+}
+
+function showCustomTeamRatingsDialog(id)
+{
+	$("#choose_teams_con").dialog(
+	{
+		//autoOpen: false,
+		height: "auto",
+		width: "auto",
+		modal: true,
+		title: "Set the custom ratings",
+		buttons: 
+			{
+				 OK: function() { $( this ).dialog( "close" ); }
+			}
+	});
 }
 
 </script>
@@ -92,8 +155,16 @@ td.ruletitle {
 td.input {
 	text-align:left;
 	vertical-align:middle;
-	##background:#8A8A8A;
 }
+
+{{"#"}}choose_teams td,{{"#"}}choose_teams tr
+{
+	vertical-align:middle;
+	padding:0px;
+	padding-left:1em;
+	padding-right:1em;
+}
+
 </style>
 # endblock
 
@@ -112,25 +183,33 @@ td.input {
 		<table style="width:100%"><tr>
 		<td style="width:300px;"><canvas id="rulecanvas" width="300" height="300" style="float:left;"></canvas></td>
 		<td style="vertical-align:middle;">
-		##<div style="padding-left:300px;">
 			<table id="rules" class="table table-hover" style="">
-			## <thead><tr><th>Relative Weight</th><th>Rule Name</th></tr></thead>
 			<tbody>
 			# for rule in rules
-				<tr class="rule_row">
+				<tr class="rule_row" id="rule_row_{{ rule.id }}" {% if rule.needs_custom_ratings %}style="display:none;"{% endif %}>
 					<td class="ruletitle" style="background-image:url('');">
 					<div class="background"><img src="{{ url_for('static', filename='img/rules/RuleBackground' ~ rule.name ~ '.png') }}"></div>
 					<div class="ruletitle">
 					<h5 style="padding:0px;margin:0px;"><strong>{{ rule.long_name }}</strong>
 					<br><small>{{ rule.description }}</small></h5>
 					</div></td>
-					<td class="input"><input value="{{ rule.standard_weight }}" name="{{ rule.id }}" title="{{ rule.name }}"></td>
-					##<td>{{ rule.description }}</td>
+					<td class="input"><input value="{{ rule.standard_weight }}" name="{{ rule.id }}" title="{{ rule.name }}">
+					# if rule.needs_custom_ratings
+					<span class="btn btn-primary" onclick="javascript:showCustomTeamRatingsDialog({{ rule.id }});" style="float:right;">adjust team ratings</span>
+					# endif
+					</td>
+					
 				</tr>
+				# if rule.needs_custom_ratings
+				<tr class="rule_show" id="custom_show_{{ rule.id }}">
+					<td>&nbsp;</td>
+					<td align="right"><span class="btn btn-primary" onclick="javascript:showCustomRule({{ rule.id }});">add custom rule</span></td>
+					<td></td>
+				</tr>
+				# endif
 			# endfor
 			</tbody>
 			</table>
-		##</div>
 		</td>
 		</tr></table>
 	</div>
@@ -141,19 +220,60 @@ td.input {
 	<table class="table table-hover tablesorter-green">
 	</table></div>
 	
-	<div class="selbox-con" style="display:none;">
+	<div class="selbox-con selbox-con-ok" id="choose_teams_con" style="display:none;padding:4em;">
 	<div class="headtab"><span>Teams</span></div>
 	<div id="choose_teams" class="container selbox selbox-info">
-	<div class="headtab">Teams</div>
-		<div class="headpart"><h2>Customize the teams</h2>
-		<div id="end_team_selection_button" class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:endTeamSelection();">End Team Selection</div>
+		<div>
+		<h2>Setup Custom Ratings<br><small>This is for advanced users who want to try out an own rating strategy.</small></h2>
+		<table style="width:100%"><tr>
+		<td style="width:300px;"><canvas id="customfunctioncanvas" width="300" height="300" style="float:left;"></canvas></td>
+		<td style="vertical-align:middle;text-align:left;">
+		Please choose a normalization constant that will be used to calculate the win expectancy of two opposing teams.
+		<div style="width:100%; background-color:#f0f0ff;padding:0.5em;">
+		<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+		<mstyle>
+			<mtext>win expectancy</mtext>
+			<mo>=</mo>
+			<mrow>
+				<mfrac>
+				<mrow><mn>1</mn></mrow>
+				<mrow>
+					<mn>1</mn>
+					<mo>+</mo>
+					<msup>
+						<mi>e</mi>
+						<mrow><mo>-</mo>
+						<mfrac>
+							<mrow>
+								<msub><mtext>rating</mtext><mn>1</mn></msub>
+									<mo>-</mo>
+								<msub><mtext>rating</mtext><mn>2</mn></msub>
+							</mrow>
+							<mrow>
+							<mi>c</mi>
+							</mrow>
+						</mfrac></mrow>
+					</msup>
+	
+				</mrow>
+				</mfrac>
+			</mrow>
+		</mstyle>
+		</math>
+		</div>
+		with c = <input value="10" id="custom_rule_constant" class="rule_parameter" data-type_id="{{ custom_score_rule['par_type'] }}">
+		</td>
+		</table>
 		</div>
 		<table id="teams" class="table table-hover tablesorter-green">
-		<thead><tr><th>Team</th></tr></thead>
+		<thead><tr><th>Number</th><th>Name</th><th>Rating</th><th>Country Code</th></tr></thead>
 		<tbody>
 		# for team in teams
 			<tr>
 			<td><span class="teamid">{{ team.id }}</span></td>
+			<td>{{ team.name }}</td>
+			<td class="input"><input value="100" title="Custom Rating" class="custom" data-score_type="{{ custom_score_rule['score_type'] }}">
+			<td>{{ team.country_code }}<img style="border:1px solid black;float:right;" src="{{ url_for('static', filename='img/flags/'~team.country_code~'.png') }}"></td>
 			</tr>
 		# endfor
 		</tbody>

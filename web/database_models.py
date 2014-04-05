@@ -177,7 +177,12 @@ rule_score_table = db.Table("rule2scores", db.metadata,
 	db.Column("rule_type_id", db.Integer, db.ForeignKey("rule_types.id")),
 	db.Column("score_type_id", db.Integer, db.ForeignKey("score_types.id"))
 	)
-		
+
+rule_parameter_table = db.Table("rule2parameters", db.metadata,
+	db.Column("rule_type_id", db.Integer, db.ForeignKey("rule_types.id")),
+	db.Column("parameter_type_id", db.Integer, db.ForeignKey("rule_parameter_types.id"))
+	)
+	
 class RuleType(db.Model):
 	__tablename__ = "rule_types"
 	query = None
@@ -187,9 +192,13 @@ class RuleType(db.Model):
 	long_name = db.Column(db.String(128), unique=False)
 	description = db.Column(db.String(512), unique=False)
 	score_types = db.relationship("ScoreType", secondary=rule_score_table)
+	parameter_types = db.relationship("RuleParameterType", secondary=rule_parameter_table)
 	
 	# whether the rule needs the win expectancy output of other rules as its input
 	is_backref_rule = db.Column(db.Boolean, unique=False)
+	
+	# whether the rule needs custom ratings entered by the user
+	needs_custom_ratings = db.Column(db.Boolean, unique=False)
 	
 	# for communication with the simulator
 	internal_function_identifier = db.Column(db.String(128), unique=False)
@@ -198,7 +207,7 @@ class RuleType(db.Model):
 	standard_weight = db.Column(db.Float, unique=False)
 	is_default_rule = db.Column(db.Boolean, unique=False)
 	
-	def __init__(self, name, description, internal_function_identifier, long_name=None, is_backref_rule=False):
+	def __init__(self, name, description, internal_function_identifier, long_name=None, is_backref_rule=False, needs_custom_ratings=False):
 		self.name = name
 		self.long_name = name
 		if long_name:
@@ -207,6 +216,7 @@ class RuleType(db.Model):
 		self.internal_function_identifier = internal_function_identifier
 		
 		self.is_backref_rule = is_backref_rule
+		self.needs_custom_ratings = needs_custom_ratings
 		
 		self.standard_weight = 0.0
 		self.is_default_rule = False
@@ -238,6 +248,40 @@ class Rule(db.Model):
 	
 	def __repr__(self):
 		return "[Rule " + str(self.type_id) + " set to " + str(self.weight) + "]"
+
+class RuleParameterType(db.Model):
+	__tablename__ = "rule_parameter_types"
+	query = None
+	
+	id = db.Column(db.Integer, primary_key=True)
+	default_value = db.Column(db.Float)
+	# for communication with the simulator
+	internal_identifier = db.Column(db.String(128), unique=False)
+	
+	def __init__(self, internal_identifier, default_value):
+		self.internal_identifier = internal_identifier
+		self.default_value = default_value
+		
+	def __repr__(self):
+		return "[ParameterType " + str(self.id) + ": " + self.internal_identifier + "]"
+		
+class RuleParameter(db.Model):
+	__tablename__ = "rule_parameters"
+	query = None
+	
+	id = db.Column(db.Integer, primary_key=True)
+	type_id = db.Column(db.Integer, db.ForeignKey('rule_parameter_types.id'))
+	value = db.Column(db.Float, unique=False)
+	
+	tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
+	
+	def __init__(self, tournament_id, type_id, value):
+		self.tournament_id = tournament_id
+		self.type_id = type_id
+		self.value = value
+		
+	def __repr__(self):
+		return "[Parameter of type " + str(self.type_id) + " for tournament " + str(self.tournament_id) + " = " + str(self.value) + "]"
 	
 class ScoreType(db.Model):
 	__tablename__ = "score_types"
@@ -248,16 +292,20 @@ class ScoreType(db.Model):
 	long_name = db.Column(db.String(128), unique=False)
 	description = db.Column(db.String(512), unique=False)
 	
+	# whether to hide the score type from the team list
+	hidden = db.Column(db.Boolean)
+	
 	# set if the score type was customized for a specific tournament
 	#tournament = db.relationship('Tournament', backref=db.backref('score_types', lazy='dynamic'))
 	tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'))
 	#parent = db.relationship('ScoreType', backref=db.backref('score_types', lazy='dynamic'))
 	parent_id = db.Column(db.Integer, db.ForeignKey('score_types.id'))
 	
-	def __init__(self, name, description, long_name=None):
+	def __init__(self, name, description, long_name=None, hidden=False):
 		self.name = name
 		self.long_name = self.name
 		self.description = description
+		self.hidden = hidden
 		
 		if long_name:
 			self.long_name = long_name
@@ -279,11 +327,12 @@ class Score(db.Model):
 	#team = db.relationship('Team', backref=db.backref('teams', lazy='dynamic'))
 	team_id = db.Column(db.Integer, db.ForeignKey('teams.id'))
 	
-	def __init__(self, type_id, team_id, value):
+	def __init__(self, type_id, team_id, value, tournament_id=None):
 		self.type_id = type_id
 		self.value = value
 		self.team_id = team_id
-	
+		self.tournament_id = tournament_id
+		
 	def __repr__(self):
 		return "[Rating " + str(self.id) + " for play-off " + str(self.tournament_id) + " of team " + str(self.team_id) + "]"
 	

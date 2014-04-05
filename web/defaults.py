@@ -53,7 +53,7 @@ all_teams = [
 	CompactTeamData("France", "FR", "E", 1855, 917, 397250000),
 	CompactTeamData("Honduras", "HN", "E", 1664, 716, 16850000),
 	# group F
-	CompactTeamData("Argentina", "AR", "F", 1994, 1255, 424500000),
+	CompactTeamData("Argentina", "AR", "F", 1994, 1255, 424500000, homeadvantage=0.5),
 	CompactTeamData("Bosnia and Herzegovina", "BA", "F", 1758, 919, 109500000),
 	CompactTeamData("Iran", "IR", "F", 1719, 729, 30650000),
 	CompactTeamData("Nigeria", "NG", "F", 1718, 616, 91250000),
@@ -73,27 +73,41 @@ all_teams = [
 for team_data in all_teams:
 	team = Team(team_data.name, team_data.country_code)
 	session.add(team)
-# add new ELO rating score
+# add new rating score types
 session.add(ScoreType("ELO", "The ELO rating known from chess.", long_name="ELO rating"))
 session.add(ScoreType("FIFA", "FIFA ranking points", long_name="FIFA rating"))
 session.add(ScoreType("Value", "Value of the team in Euro", long_name="Value in &euro;"))
 session.add(ScoreType("HA", "Home-advantage of the team", long_name="Home-advantage"))
+session.add(ScoreType("Custom", "User-defind custom rating", long_name="Custom rating", hidden=True))
+
+# add certain custom parameters
+custom_rule_parameter = RuleParameterType("normalization_constant", 10.0)
+session.add(custom_rule_parameter)
+
 # add default ELO calculation rule
 elo_rule = RuleType("ELO", "Calculation using the ELO score.", "elo_binary")
 elo_rule.makeDefaultRule(1.0)
 session.add(elo_rule)
+
 fifa_rule = RuleType("FIFA", "Calculation using the FIFA ranking.", "fifa_binary")
 fifa_rule.makeDefaultRule(0.2)
 session.add(fifa_rule)
+
 value_rule = RuleType("Value", "Calculation using the monetary value.", "value_binary")
 value_rule.makeDefaultRule(0.2)
 session.add(value_rule)
+
 ha_rule = RuleType("HA", "Adjust the win expectancy based on the home-advantage.", "homeadvantage_binary", long_name="Home-advantage", is_backref_rule=True)
 ha_rule.makeDefaultRule(1.0)
 session.add(ha_rule)
+
 luck_rule = RuleType("Luck", "Even the unexpected can happen!", "luck_binary")
 luck_rule.makeDefaultRule(0.0)
 session.add(luck_rule)
+
+custom_rule = RuleType("Custom", "Define custom ratings and an own win expectancy function.", "custom_binary", long_name="Custom Rating", needs_custom_ratings=True)
+custom_rule.makeDefaultRule(0.0)
+session.add(custom_rule)
 # add default tournament types
 session.add(TournamentType("1 vs 1", "A simple 1 vs 1 test tournament.", 2, "TwoHandsIcon.png", "1v1"))
 session.add(TournamentType("World Cup", "The standard FIFA World Cup.", 32, "StdLeagueIcon.png", "worldcup", "worldcup_view"))
@@ -105,15 +119,20 @@ elo = session.query(ScoreType).filter_by(name="ELO").first()
 fifa = session.query(ScoreType).filter_by(name="FIFA").first()
 value = session.query(ScoreType).filter_by(name="Value").first()
 ha = session.query(ScoreType).filter_by(name="HA").first()
+custom = session.query(ScoreType).filter_by(name="Custom").first()
 assert elo != None
 assert fifa != None
 assert value != None
 assert ha != None
+assert custom != None
 
 elo_rule.score_types.append(elo)
 fifa_rule.score_types.append(fifa)
 value_rule.score_types.append(value)
 ha_rule.score_types.append(ha)
+custom_rule.score_types.append(custom)
+
+custom_rule.parameter_types.append(custom_rule_parameter)
 
 # and finish the team setup
 for team_data in all_teams:

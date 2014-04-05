@@ -40,7 +40,7 @@ def teams_view():
 	session = getSession()
 	
 	# get list of global scores for header row
-	all_score_types = session.query(ScoreType).filter_by(tournament_id=None).order_by(ScoreType.id).all()
+	all_score_types = session.query(ScoreType).filter_by(tournament_id=None, hidden=False).order_by(ScoreType.id).all()
 	all_score_data = []
 	for score_type in all_score_types:
 		all_score_data.append({"name":jinja2.Markup(score_type.long_name), "desc":score_type.description})
@@ -167,8 +167,17 @@ def simple_new_tournament_view():
 	tournament_type = Session.query(TournamentType).filter_by(internal_identifier="worldcup").first()
 	all_standard_rule_types = Session.query(RuleType).filter_by(is_default_rule=True).all()
 	all_teams = Session.query(Team).limit(tournament_type.team_count).all()
+	# special treatment for the "custom score" rule
+	custom_score_info = {}
+	for rule_type in all_standard_rule_types:
+		if rule_type.name != "Custom":
+			continue
+		custom_score_info["score_type"] = rule_type.score_types[0].id
+		custom_score_info["par_type"] = rule_type.parameter_types[0].id
+		break
+	
 	Session.remove()
-	return render_template('create_simple.html', tournament_type=tournament_type, rules=all_standard_rule_types, teams=all_teams, run_count=config.simulation_run_count)
+	return render_template('create_simple.html', tournament_type=tournament_type, rules=all_standard_rule_types, teams=all_teams, run_count=config.simulation_run_count, custom_score_rule=custom_score_info)
 
 @app.route('/json/state/tournament:<int:id>')
 def tournament_state_json(id):
@@ -234,6 +243,8 @@ def register_tournament_json():
 		
 	all_rules = []
 	all_teams = []
+	all_custom_scores = [] # {team_id, score_type_id, score}
+	all_rule_parameters = [] # {par_type_id, value}
 	
 	try:
 		# check valid tournament type
@@ -248,10 +259,23 @@ def register_tournament_json():
 			if team in all_teams:
 				raise Exception("Selected team twice.")
 			all_teams.append(team)
+			
+			# now go through customized ratings and add them iff they differ from the default rating
+			for custom_rating in team_data["ratings"]:
+				score_type_id = int(custom_rating)
+				custom_score = float(team_data["ratings"][custom_rating])
+				
+				default_score = Session.query(Score).filter_by(tournament_id=None, team_id=team.id, type_id=score_type_id).first()
+				if default_score and default_score.value == custom_score:
+					continue
+				else:
+					all_custom_scores.append({"team_id": team.id, "score_type_id":score_type_id, "score":custom_score})
+			
 		# every tournament type has an obligatory team count
 		if len(all_teams) != tournament_type.team_count:
 			return abort("Selected an invalid amount of teams.")
 		# and every tournament needs active rules
+		needed_rule_parameters = []
 		for rule_data in info["rules"]:
 			rule = session.query(RuleType).filter_by(id=int(rule_data["id"])).first()
 			if not rule:
@@ -260,11 +284,31 @@ def register_tournament_json():
 				if old_rule == rule:
 					raise Exception("Selected rule twice.")
 			rule_weight = float(rule_data["weight"])
+			if rule_weight < 0.0:
+				# the only possibility to reach this code-point is when the user tampered with the POST data..
+				raise Exception("Rules with negative weight not allowed.")
 			if rule_weight == 0.0:
 				continue
 			all_rules.append((rule, rule_weight)) # add as tuple
+			# and require parameters for that rule
+			for parameter_type in rule.parameter_types:
+				needed_rule_parameters.append(parameter_type)
 		if len(all_rules) == 0:
 			raise Exception("You need to have active rules.")
+		
+		# the rules can have custom parameters
+		for parameter in info["rule_parameters"]:
+			par_id = int(parameter)
+			par_value = float(info["rule_parameters"][parameter])
+			
+			# only remember if required
+			for i in range(len(needed_rule_parameters)):
+				parameter = needed_rule_parameters[i]
+				if not parameter or parameter.id != par_id:
+					continue
+				all_rule_parameters.append({"par_type_id": par_id, "value":par_value})
+				needed_rule_parameters[i] = None
+				break
 		
 	except ValueError:
 		Session.remove()
@@ -309,11 +353,18 @@ def register_tournament_json():
 		session.add(tournament)
 		# commit so that we have a correct ID
 		session.commit()
+		
 		# make the teams join the tournament
 		for i in range(0, len(all_teams)):
 			team = all_teams[i]
 			participation = Participation(tournament.id, team.id, i + 1)
 			session.add(participation)
+		
+		# set the user-defined ratings for the tournament
+		for custom_score in all_custom_scores:
+			score = Score(custom_score["score_type_id"], custom_score["team_id"], custom_score["score"], tournament.id)
+			session.add(score)
+		
 		# active rule setup
 		rule_quick_lookup = {}
 		for (rule_type, weight) in all_rules:
@@ -321,6 +372,10 @@ def register_tournament_json():
 			session.add(rule)
 			# optimization for the tournament list
 			rule_quick_lookup[rule_type.name] = weight
+		# and add parameters to the rules if necessary
+		for rule_parameter in all_rule_parameters:
+			par = RuleParameter(tournament.id, rule_parameter["par_type_id"], rule_parameter["value"])
+			session.add(par)
 		# save rule setup quick-access for tournaments list
 		tournament.rule_weight_json = json.dumps(rule_quick_lookup)
 		# tournament is go

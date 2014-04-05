@@ -51,10 +51,10 @@ class Dispatcher():
 		(stdout, stderr) = process.communicate(json_string)
 		
 		print "PROGRAM TERMINATED WITH CODE " + str(process.returncode)
-		print "STDERR ---------------------"
-		print stderr
 		print "STDOUT ---------------------"
 		print stdout
+		print "STDERR ---------------------"
+		print stderr
 		print "----------------------------"
 		
 		tournament = session.query(Tournament).filter_by(id=json_object["tournament_id"]).first()
@@ -108,6 +108,7 @@ class Dispatcher():
 				"function": rule_type.internal_function_identifier,
 				"backref": rule_type.is_backref_rule
 				}
+			# every rule has certain scores associated
 			needed_score_types_data = []
 			for score_type in rule_type.score_types:
 				needed_score_types_data.append(score_type.name)
@@ -116,6 +117,16 @@ class Dispatcher():
 				if not score_type in all_unique_score_types:
 					all_unique_score_types.append(score_type)
 			rule_data["scores"] = needed_score_types_data
+			
+			# rules might need custom parameters from the user
+			parameters = {}
+			for parameter_type in rule_type.parameter_types:
+				# check if parameter for this tournament exists
+				parameter = session.query(RuleParameter).filter_by(type_id=parameter_type.id, tournament_id=tournament.id).first()
+				value = parameter.value if parameter != None else parameter_type.default_value
+				parameters[parameter_type.internal_identifier] = value
+			if parameters:
+				rule_data["parameters"] = parameters
 			rules.append(rule_data)
 		dict["rules"] = rules
 			

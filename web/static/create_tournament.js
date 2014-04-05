@@ -98,8 +98,9 @@ function startTournament()
 			
 			var rule_object = {};
 			rule_object.id = input_box.attr("name");
-			rule_object.weight = input_box.val();
-			json_object.rules.push(rule_object);
+			rule_object.weight = parseFloat(input_box.val());
+			if (rule_object.weight > 0) // obviously also checked on the server.
+				json_object.rules.push(rule_object);
 			// console.log("rule " + rule_object.id + " with weight " + rule_object.weight);
 		}
 	);
@@ -111,7 +112,29 @@ function startTournament()
 		{
 			var team_object = {};
 			team_object.id = $(item).find(".teamid").html();
+			team_object.ratings = {};
+			// now also get all user-defined rating
+			$(item).find("input.custom").each(
+				function (index, item)
+				{
+					var value = parseFloat($(item).val());
+					var score_type = $(item).data("score_type");
+					team_object.ratings[score_type] = value;
+				}
+			);
+			
+			// add!
 			json_object.teams.push(team_object);
+		}
+	);
+	
+	json_object.rule_parameters = {};
+	$("input.rule_parameter").each(
+		function (index, item)
+		{
+			var type_id = $(item).data("type_id");
+			var value = parseFloat($(item).val());
+			json_object.rule_parameters[type_id.toString()] = value;
 		}
 	);
 	

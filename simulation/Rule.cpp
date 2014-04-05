@@ -8,11 +8,11 @@ Rule::Rule(json_spirit::Object &data)
 {
 	weight = 0.0;
 
-	for (auto iter = data.begin(); iter != data.end(); ++iter)
 	for (json_spirit::Pair &pair : data)
 	{
 		std::string &key = pair.name_;
 		if (key == "scores") setupNeededScores(pair.value_.get_array());
+		else if (key == "parameters") setupParameters(pair.value_.get_obj());
 		else if (key == "weight") weight = pair.value_.get_real();
 		else if (key == "function") setCalculationFunction(pair.value_.get_str());
 		else if (key == "backref") isBackrefRule = pair.value_.get_bool();
@@ -20,8 +20,27 @@ Rule::Rule(json_spirit::Object &data)
 			std::cerr << "sim::Rule: invalid property \"" << key << "\"" << std::endl;
 	}
 
-	if (calculationFunction == nullptr)
+	if (calculationFunction == &Rule::calc_dummy || calculationFunction == nullptr)
 		std::cerr << "Rule without calculation function." << std::endl;
+
+	if (calculationFunction == &Rule::calc_custom_binary)
+	{
+		if (ruleParameters.count("normalization_constant"))
+		{
+			customNormalizationConstant = ruleParameters["normalization_constant"];
+
+			if (!std::isnormal(customNormalizationConstant))
+			{
+				std::cerr << "The normalization constant of the custom rating rule must be a non-zero number!" << std::endl;
+				throw "The Simulation was stopped because of invalid rule parameters.";
+			}
+		}
+		else
+		{
+			std::cerr << "Custom Rating rule needs a normalization constant!" << std::endl;
+			throw "The simulation was stopped because of missing rule parameters.";
+		}
+	}
 }
 
 
@@ -34,6 +53,15 @@ void Rule::setupNeededScores(json_spirit::Array &data)
 	for (json_spirit::Value &val : data)
 	{
 		neededScores.push_back(val.get_str());
+	}
+}
+
+void Rule::setupParameters(json_spirit::Object &data)
+{
+	for (json_spirit::Pair &pair : data)
+	{
+		std::string &key = pair.name_;
+		ruleParameters[key] = pair.value_.get_real();
 	}
 }
 
@@ -55,7 +83,9 @@ void Rule::setCalculationFunction(std::string functionName)
 	else if (functionName == "homeadvantage_binary")
 		calculationFunction = &Rule::calc_homeadvantage_binary;
 	else if (functionName == "luck_binary")
-		calculationFunction = &Rule::calc_luck;
+		calculationFunction = &Rule::calc_luck_binary;
+	else if (functionName == "custom_binary")
+		calculationFunction = &Rule::calc_custom_binary;
 	else
 	{
 		std::cerr << "Unknown calculation function: \"" << functionName << "\"" << std::endl;
@@ -97,6 +127,11 @@ double Rule::calc_homeadvantage_binary(Team &left, Team &right, double *weight, 
 
 	return 2.0 / 
 		(1.0 + std::exp(-4.0 * (*currentWinExpectancy))) - 1.0;
+}
+
+double Rule::calc_custom_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy)
+{
+	return 1.0 / (1.0 + std::exp((right.scores["Custom"] - left.scores["Custom"]) / customNormalizationConstant));
 }
 
 } // namespace sim
