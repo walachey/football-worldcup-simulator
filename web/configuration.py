@@ -2,30 +2,33 @@ from flask import Flask
 
 class WCSConfiguration:
 	# flask configuration
-	flask_host = '0.0.0.0' # '0.0.0.0' for public network - use only with debug off; None for localhost
+	flask_host = None # '0.0.0.0' for public network - use only with debug off; None for localhost
 	flask_port = 5000
 	flask_template_folder = "templates"
 	flask_application_name = "World-Cup Sim"
 	flask_admin_password = "secret admin pw"
 	
 	# database configuration
-	database_connection_string = "mysql://worldcup_admin:JPpbueH5vX4Ee6Th@localhost/worldcup"
-	database_connection_password = "JPpbueH5vX4Ee6Th"
+	database_connection_string = "mysql://user:password@localhost/databasename"
+	database_connection_password = "secret database pw"
 	
 	# session configuration
-	session_secret_key = "hello i am a pretty secret key"
+	session_secret_key = "secret session key"
 	session_auto_timeout = 7200
 	
 	# for running the actual simulation
-	simulation_path = "../simulation/Debug/"
-	simulation_program_name = "WorldCupSimulator.exe"
-	simulation_thread_count = 8
-	simulation_run_count = 500 # total runs per simulation
+	simulation_path = "./"
+	simulation_program_name = "WorldCupSimulator"
+	simulation_thread_count = 2
+	simulation_run_count = 1000 # total runs per simulation
 	
 	# debugging
-	is_debug_mode_enabled = True
-	log_file_name = "WCSLog.log"
+	is_debug_mode_enabled = False
+	log_file_name = None
 	echo_sql = False
+		
+	# this will be set on initialization
+	logger = None
 	
 	def getFlaskApp(self):
 		app = Flask(self.flask_application_name, template_folder=self.flask_template_folder)
@@ -46,14 +49,23 @@ class WCSConfiguration:
 		
 	# enable logging to file if applicable
 	def setupLogging(self, flask_application):
+		self.logger = flask_application.logger
+		
 		if not self.log_file_name: return
 		
 		import logging
 		file_handler = logging.FileHandler(self.log_file_name)
-		file_handler.setLevel(logging.DEBUG)
+		level = logging.DEBUG if self.is_debug_mode_enabled else logging.WARNING
+		file_handler.setLevel(level)
 		flask_application.logger.addHandler(file_handler)
 
 	def getCompleteSimulationProgramPath(self):
 		return self.simulation_path + self.simulation_program_name
 
 main_configuration = WCSConfiguration()
+
+try:
+	import configuration_custom
+	configuration_custom.customize(main_configuration)
+except ImportError:
+	print "Could not find custom configuration."

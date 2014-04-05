@@ -30,11 +30,13 @@ class Dispatcher():
 			dispatchment_thread = threading.Thread(target=self.dispatchJob, args=(json_object, ))
 			dispatchment_thread.start()
 		except Exception as e:
-			print "EXCEPTION: " + str(e)
 			open_tournament.state = TournamentState.error
 			session.commit()
-			import traceback
-			traceback.print_exc()
+			
+			self.config.logger.error("EXCEPTION: " + str(e))
+			if self.config.is_debug_mode_enabled:
+				import traceback
+				traceback.print_exc()
 		finally:
 			pass
 	
@@ -45,17 +47,15 @@ class Dispatcher():
 		command = self.config.getCompleteSimulationProgramPath()
 		# the JSON input will the given via stdin
 		json_string = json.dumps(json_object)
-		print "TOURNAMENTING " + json_string
+		self.config.logger.debug("TOURNAMENTING " + json_string)
 		# run and wait for termination
 		process = subprocess.Popen(command, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		(stdout, stderr) = process.communicate(json_string)
 		
-		print "PROGRAM TERMINATED WITH CODE " + str(process.returncode)
-		print "STDOUT ---------------------"
-		print stdout
-		print "STDERR ---------------------"
-		print stderr
-		print "----------------------------"
+		self.config.logger.debug("PROGRAM TERMINATED WITH CODE " + str(process.returncode))
+		self.config.logger.debug("STDOUT ---------------------" + stdout);
+		if stderr:
+			self.config.logger.warning("STDERR ---------------------" + stderr);
 		
 		tournament = session.query(Tournament).filter_by(id=json_object["tournament_id"]).first()
 		try:
@@ -73,8 +73,7 @@ class Dispatcher():
 		except Exception as e:
 			import traceback
 			error_message = traceback.format_exc()
-			print "An error occurred: " + str(e)
-			print error_message
+			self.config.logger.error("An error occurred: " + str(e) + "\n" + error_message)
 			tournament.state = TournamentState.error
 			
 			for error_text in error_message.split("\n"):
