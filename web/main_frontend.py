@@ -30,6 +30,13 @@ simulation_dispatcher = dispatcher_local.DispatcherLocal(db, config)
 # initialize random numbers for user ID generation
 random.seed()
 
+# set some global config options that are used in the base template
+@app.context_processor
+def define_globals():
+	return {
+		"show_custom_tournament_page": config.show_custom_tournament_page
+	}
+
 @app.route('/')
 @cache.cached()
 def index_view():

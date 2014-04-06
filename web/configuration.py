@@ -26,7 +26,10 @@ class WCSConfiguration:
 	is_debug_mode_enabled = False
 	log_file_name = None
 	echo_sql = False
-		
+	
+	# whether the "custom tournament" page will be visible
+	show_custom_tournament_page = False
+	
 	# this will be set on initialization
 	logger = None
 	

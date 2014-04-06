@@ -54,7 +54,9 @@
             <li id="nav_teams"><a href="/teams">Teams</a></li>
            </ul>
 		   <ul class="nav navbar-nav pull-right">
-            <li id="nav_create"><a href="/create">New Custom Tournament</a></li>
+			# if show_custom_tournament_page
+			<li id="nav_create"><a href="/create">New Custom Tournament</a></li>
+			# endif
           </ul>
         </div>
       </div>
