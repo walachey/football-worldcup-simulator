@@ -5,6 +5,12 @@ Python packages (can usually be installed via "pip install <name>":
 	Flask-Admin
 	Flask-Cache
 
+The Web Frontend has the following dependencies, that need to be placed in web/static for deployment:
+	Chart.js as Chart.min.js
+	jquery as jquery-1.11.0.min.js
+	jquery-tablesorter as jquery.tablesorter.min.js
+	jquery-metadata as jquery.metadata.js
+
 INSTALLATION:
 	You will need Python2.7 installed.
 	It is suggested to use virtualenv to manage the installation and dependencies:

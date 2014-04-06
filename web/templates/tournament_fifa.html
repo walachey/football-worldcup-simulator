@@ -1,47 +1,15 @@
 # extends "tournament.html"
 # block head
 {{ super() }}
-<script type="text/javascript" src="{{ url_for('static', filename='jquery.jsPlumb-1.5.5-min.js') }}"></script>
 <script lang="javascript">
 
 $(document).ready(
 	function() 
     {  
 	
-		fillBrackets({{ matches|safe }}, {{ team_lookup|safe }});
-return;
-		var best_of = [null, 8, 4, 2, 1];
-		var elements = [null, [1, 2, 3, 4, 5, 6, 7, 8], [1, 2, 3, 4], [1, 2], [1]];
-		for (var from = 1; from < elements.length-1; ++from)
-		{
-			// connect to next element
-			var to = from + 1;
-			for (var from_elem_index = 0; from_elem_index < elements[from].length; ++from_elem_index)
-			{
-				var to_elem_index = Math.floor(from_elem_index / 2);
-				var from_id = "game_" + best_of[from] + "_" + elements[from][from_elem_index];
-				var to_id = "game_" + best_of[to] + "_" + elements[to][to_elem_index];
-
-				jsPlumb.connect({
-					source: from_id,
-					target: to_id,
-					anchors:["Right", "Left"],
-					endpoint:"Blank",
-					connector: "Flowchart"
-					});
-			}
-		}
-		
+		fillBrackets({{ matches|safe }}, {{ team_lookup|safe }});		
     } 
 );
-$(window).resize(function(){
-	return;
-      jsPlumb.repaintEverything();
-  });
-
-jsPlumb.ready(function() {
-    
-});
 
 function fillBrackets(json_data, team_lookup)
 {
