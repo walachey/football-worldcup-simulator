@@ -80,6 +80,8 @@ void Rule::setCalculationFunction(std::string functionName)
 		calculationFunction = &Rule::calc_fifa_binary;
 	else if (functionName == "value_binary")
 		calculationFunction = &Rule::calc_value_binary;
+	else if (functionName == "age_binary")
+		calculationFunction = &Rule::calc_age_binary;
 	else if (functionName == "homeadvantage_binary")
 		calculationFunction = &Rule::calc_homeadvantage_binary;
 	else if (functionName == "luck_binary")
@@ -112,8 +114,20 @@ double Rule::calc_value_binary(Team &left, Team &right, double *weight, double *
 {
 	const double &leftScore = left.scores["Value"];
 	const double &rightScore = right.scores["Value"];
-	return std::log(1 + (leftScore / (leftScore + rightScore)));
+	const double logScore = std::log(leftScore / rightScore);
+	const double result = 1.0 / (1.0 + std::exp(-logScore / 1.3026));
+	return result;
 }
+
+double Rule::calc_age_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy)
+{
+	const double &leftScore = left.scores["Age"];
+	const double &rightScore = right.scores["Age"];
+	const double ageDiff = leftScore - rightScore;
+	const double result = 1.0 / (1.0 + std::exp(-(32.0 * ageDiff - ageDiff * ageDiff * ageDiff) / 131.0));
+	return result;
+}
+
 
 double Rule::calc_homeadvantage_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy)
 {
