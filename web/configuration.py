@@ -17,10 +17,16 @@ class WCSConfiguration:
 	session_auto_timeout = 7200
 	
 	# for running the actual simulation
+	simulation_run_count = 1000 # total runs per simulation
+	dispatcher_class = None # if None, the local dispatcher will be used
+	
+	# for the local dispatcher
 	simulation_path = "./"
 	simulation_program_name = "WorldCupSimulator"
 	simulation_thread_count = 2
-	simulation_run_count = 1000 # total runs per simulation
+	
+	# for the qless dispatcher
+	qless_connection_string = None # f.e. redis://foo.bar.com:1234
 	
 	# debugging
 	is_debug_mode_enabled = False
@@ -49,6 +55,10 @@ class WCSConfiguration:
 		flask_application.jinja_env.line_comment_prefix = '##'
 		
 		self.setupLogging(flask_application)
+		
+		if not self.dispatcher_class:
+			import dispatcher_local
+			self.dispatcher_class = dispatcher_local.DispatcherLocal
 		
 	# enable logging to file if applicable
 	def setupLogging(self, flask_application):

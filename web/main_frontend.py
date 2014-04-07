@@ -5,8 +5,6 @@ from datetime import datetime
 # local includes
 from configuration import main_configuration as config
 from database_models import *
-import dispatcher
-import dispatcher_local
 import admin_interface
 
 # third-party includes
@@ -26,7 +24,7 @@ import socket # for catching socket.error
 app = config.getFlaskApp()
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 admin_interface.init(app)
-simulation_dispatcher = dispatcher_local.DispatcherLocal(db, config)
+simulation_dispatcher = config.dispatcher_class(db, config)
 # initialize random numbers for user ID generation
 random.seed()
 
@@ -439,7 +437,3 @@ def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_dat
 if __name__ == '__main__':
 	# "threaded=True" to fix an error with the IE9..
 	app.run(host=config.flask_host, port=config.flask_port, threaded=True)
-
-@app.teardown_appcontext
-def shutdown_session(exception=None):
-    db_Session.remove()
