@@ -1,6 +1,7 @@
 import sys
 import random
 from datetime import datetime
+from os.path import abspath, dirname # to fix app.root_path issues when deploying via wsgi
 
 # local includes
 from configuration import main_configuration as config
@@ -22,6 +23,7 @@ from email.mime.text import MIMEText
 import socket # for catching socket.error
 
 app = config.getFlaskApp()
+app.root_path = abspath(dirname(__file__)) # this fixes incorrect root-path deployment issues
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 admin_interface.init(app)
 simulation_dispatcher = config.dispatcher_class(db, config)
