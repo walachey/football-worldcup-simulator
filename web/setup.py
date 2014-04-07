@@ -5,6 +5,7 @@ os.system("pip install Flask")
 os.system("pip install Flask-SQLAlchemy")
 os.system("pip install Flask-Admin")
 os.system("pip install Flask-Cache")
+os.system("pip install MySQL-python")
 print "\tDependencies installed."
 
 print "Checking dependencies.."
@@ -12,31 +13,38 @@ try:
 	import flask
 except Exception as e:
 	print "\tERROR: Flask does not appear to be installed."
-	print e.msg
+	print str(e)
 
 try:
 	from flask.ext.cache import Cache
 except Exception as e:
 	print "\tERROR: Flask-Cache does not appear to be installed."
-	print e.msg
+	print str(e)
 	
 try:
 	from flask.ext.sqlalchemy import SQLAlchemy
 except Exception as e:
 	print "\tERROR: Flask-SQLAlchemy does not appear to be installed."
-	print e.msg
+	print str(e)
 	
 try:
 	from sqlalchemy.ext.declarative import declarative_base
 except Exception as e:
 	print "\tERROR: SQLAlchemy not appear to be installed."
-	print e.msg
+	print str(e)
 	
 try:
 	from flask.ext.admin import Admin
 except Exception as e:
 	print "\tERROR: Flask-Admin does not appear to be installed."
-	print e.msg
+	print str(e)
+
+try:
+	import MySQLdb
+except Exception as e:
+	print "\tERROR: MySQLdb does not appear to be installed."
+	print str(e)
+	
 	
 print "\tDependency check complete."
 
@@ -52,11 +60,11 @@ if os.path.isfile(folder + "/" + custom_config_filename):
 else:
 	created = False
 	try:
-		shututil.copyfile(folder + "/" + custom_config_template_filename, folder + "/" + custom_config_filename)
+		shutil.copyfile(folder + "/" + custom_config_template_filename, folder + "/" + custom_config_filename)
 		created = True
 	except Exception as e:
 		print "\tError when trying to create custom configuration file."
-		print e.msg
+		print str(e)
 	if created:
 		print "\tSuccessfully created custom configuration file."
 
