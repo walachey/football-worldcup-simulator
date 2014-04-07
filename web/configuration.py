@@ -80,5 +80,6 @@ main_configuration = WCSConfiguration()
 try:
 	import configuration_custom
 	configuration_custom.customize(main_configuration)
-except ImportError:
+except ImportError as e:
 	print "Could not find custom configuration."
+	print str(e)

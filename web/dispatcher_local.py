@@ -19,9 +19,9 @@ class DispatcherLocal(Dispatcher):
 		(stdout, stderr) = process.communicate(json_string)
 		
 		self.config.logger.debug("PROGRAM TERMINATED WITH CODE " + str(process.returncode))
-		self.config.logger.debug("STDOUT ---------------------" + stdout);
+		self.config.logger.debug("STDOUT ---------------------" + stdout)
 		if stderr:
-			self.config.logger.warning("STDERR ---------------------" + stderr);
+			self.config.logger.warning("STDERR ---------------------" + stderr)
 		
 		tournament = session.query(Tournament).filter_by(id=json_object["tournament_id"]).first()
 		try:
