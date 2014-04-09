@@ -15,10 +15,10 @@ endif
 simulator: $(OBJ_FILES)
 	g++ $(LD_FLAGS) -o $@ $^
 	
-	ifdef MOVE
-		@echo "Moving simulator to worker directory.."
-		mv simulator ../worker/simulator
-	endif
+ifdef MOVE
+	@echo "Moving simulator to worker directory.."
+	mv simulator ../worker/simulator
+endif
 
 obj/%.o: %.cpp
 	g++ -c -o $@ $< $(CC_FLAGS)
