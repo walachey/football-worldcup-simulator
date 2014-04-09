@@ -20,7 +20,10 @@ class SimulationJob:
 			returncode = process.returncode
 		except Exception as e:
 			stderr = stderr + "\n" + str(e)
-			print stderr
+			
+			import os
+			stderr = stderr + "\n" + "Filepath: " + os.path.dirname(os.path.realpath(__file__))
+			stderr = stderr + "\n" + "Working Directory: " + os.getcwd()
 			
 		job.data = {"stdout": stdout, "stderr": stderr, "code": returncode}
 		
