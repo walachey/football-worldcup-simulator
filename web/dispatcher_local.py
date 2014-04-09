@@ -19,7 +19,7 @@ class DispatcherLocal(Dispatcher):
 		
 		try:
 			# run and wait for termination
-			process = subprocess.Popen("asd"+command, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			process = subprocess.Popen(command, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			(stdout, stderr) = process.communicate(json_string)
 			
 			self.config.logger.debug("PROGRAM TERMINATED WITH CODE " + str(process.returncode))
