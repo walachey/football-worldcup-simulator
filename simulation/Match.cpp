@@ -217,11 +217,27 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 	else
 	{
 		// roll goals until draw
+#ifndef NDEBUG
+		int safetyCounter = 10000;
+#endif
 		do
 		{
 			goals[0] = leftSideGoalRoller();
 			goals[1] = rightSideGoalRoller();
-		} while (goals[winnerIndex] != goals[1 - winnerIndex]);
+#ifndef NDEBUG
+			if (--safetyCounter <= 0) break;
+#endif
+		} while (goals[0] != goals[1]);
+		
+#ifndef NDEBUG
+		if (safetyCounter <= 0)
+		{
+			std::cerr << "Goal rolling did not terminate!" << std::endl;
+			std::cerr << "Chance: " << chanceLeftVsRight << ", C4D: " << chanceForDraw << ", chance: " << (2.0 * (normalizedChanceLeftVsRight)+(1.0 / 3.0)) << ", seed: " << SEED << std::endl;
+			std::cerr << "Current sample: " << goals[0] << ":" << goals[1] << ", winner: " << winnerIndex << std::endl;
+			exit(1);
+		}
+#endif
 	}
 
 	assert(!forceWinner || goals[0] != goals[1]);

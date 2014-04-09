@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
 
 	std::set_terminate(debug_terminate);
 
-#define EXCEPTIONDEBUG ((defined(_MSC_VER) && !defined(_DEBUG)) || (!defined(_MSC_VER) && defined(NDEBUG)))
+#define EXCEPTIONDEBUG defined(NDEBUG)
 
 #if EXCEPTIONDEBUG
 	try
