@@ -12,7 +12,6 @@
 #include <string>
 #include <map>
 #include <stdio.h>
-#include <tchar.h>
 #include <iostream>
 #include <fstream>
 #include <stdint.h>
