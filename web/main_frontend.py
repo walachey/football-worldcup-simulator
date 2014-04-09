@@ -84,10 +84,11 @@ def tournaments_view():
 		for association in user.tournaments:
 			tournament = association.tournament
 			all_tournaments_data.append({
-				"name": tournament.tournament_type.name + " #" + str(tournament.id),
+				"name": tournament.tournament_type.name,
 				"state": tournament.getStateName(),
 				"id": tournament.id,
-				"rules": tournament.rule_weight_json
+				"rules": tournament.rule_weight_json,
+				"time": int((association.timestamp - datetime(1970, 1, 1)).total_seconds())
 				})
 			
 	Session.remove()

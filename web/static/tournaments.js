@@ -3,6 +3,7 @@ $(document).ready(
     {  
 		$("#nav_tournaments").toggleClass("active");
 		correctRuleInfo();
+		correctTimestamps();
     } 
 );
 
@@ -36,6 +37,18 @@ function correctRuleInfo()
 				text = text + "<span class='ruleweight'>" + rules[i].name + ": " + rules[i].weight.toString() + "</span> ";
 			}
 			$(item).html(text);
+		}
+	);
+}
+
+function correctTimestamps()
+{
+	$(".timestamp").each(
+		function (index, item)
+		{
+			var twodigits = function(x) {if (x >= 10) return x; return "0" + x;}
+			var date = new Date(parseInt($(item).html()) * 1000);
+			$(item).html(twodigits(date.getDate()) + "." + twodigits(date.getMonth()) + ". " + twodigits(date.getHours()) + ":" + twodigits(date.getMinutes()));
 		}
 	);
 }
