@@ -1,15 +1,32 @@
 CPP_FILES := $(wildcard *.cpp) $(wildcard deps/json_spirit/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
-LD_FLAGS := 
-CC_FLAGS := -std=c++11 -DNDEBUG -I deps -o3
+LD_FLAGS := -pthread
+CC_FLAGS := -std=c++11 -I deps -pthread
+
+
+ifdef DEBUG
+#	$(info Debug enabled..)
+	CC_FLAGS += -g 
+else
+#	$(info no debug)
+	CC_FLAGS += -DNDEBUG -O3
+endif
 
 simulator: $(OBJ_FILES)
 	g++ $(LD_FLAGS) -o $@ $^
+	
+	ifdef MOVE
+		@echo "Moving simulator to worker directory.."
+		mv simulator ../worker/simulator
+	endif
 
 obj/%.o: %.cpp
-	g++ $(CC_FLAGS) -c -o $@ $<
+	g++ -c -o $@ $< $(CC_FLAGS)
 
 obj/%.o: deps/json_spirit/%.cpp
-	g++ $(CC_FLAGS) -c -o $@ $<
+	g++ -c -o $@ $< $(CC_FLAGS)
 
+clean:
+	-rm -rf obj/*.o
+	
 #-include $(OBJFILES:.o=.d)
