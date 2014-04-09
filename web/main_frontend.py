@@ -192,6 +192,8 @@ def tournament_state_json(id):
 	session = getSession()
 	tournament = session.query(Tournament).filter_by(id=id).first()
 	Session.remove();
+	if not tournament:
+		abort(404)
 	return json.dumps({"state":tournament.getStateName()})
 	
 @app.route('/json/rules/tournament:<int:id>')
