@@ -1,12 +1,3 @@
-
-$(document).ready(
-	function() 
-    {  
-	
-		fillBrackets({{ matches|safe }}, {{ team_lookup|safe }});		
-    } 
-);
-
 function fillBrackets(json_data, team_lookup)
 {
 	// a fresh start!

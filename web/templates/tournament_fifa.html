@@ -2,7 +2,14 @@
 # block head
 {{ super() }}
 <script type="text/javascript" src="{{ url_for('static', filename='tournament_fifa.js') }}"></script> 
-
+<script type="text/javascript">
+$(document).ready(
+	function() 
+    {  
+		fillBrackets({{ matches|safe }}, {{ team_lookup|safe }});		
+    } 
+);
+</script>
 <style>
 
 .container {
