@@ -1,6 +1,7 @@
 body {
   padding-top: 50px;
   padding-bottom: 50px;
+  min-width: 800px;
 }
 
 .small {
@@ -82,4 +83,66 @@ body {
 }
 .type-buttontext {
 	padding-left: 64px;
+}
+
+/* create_simple */
+
+.rule_row {
+	border-top: 2px solid grey;
+}
+div.ruletitle {
+	margin:0px;
+	margin-left:70px;
+	margin-top:-5px;
+}
+
+td.ruletitle {
+	width:25em;
+}
+
+.background {
+	height:55px;
+	position:absolute;
+	margin-top:-16px;
+	margin-left:-10px;
+	padding-left:0px;
+}
+
+td.input {
+	text-align:left;
+	vertical-align:middle;
+}
+
+{{"#"}}choose_teams td,{{"#"}}choose_teams tr
+{
+	vertical-align:middle;
+	padding:0px;
+	padding-left:1em;
+	padding-right:1em;
+}
+
+/* tournament */
+
+.bar {
+	text-align: right;
+	padding:0px;
+	height:2em;
+	position: relative;
+	display: inline-block;
+	float: left;
+	overflow: hidden;
+}
+.barcontainer {
+	width:100%;
+	padding:0px;
+	margin:0px;
+	overflow: hidden;
+	height: 100%;
+}
+
+{{ '#' }}tournamenttable td {
+	padding: 0px;
+	height: 2em;
+	vertical-align:middle;
+	text-align:center;
 }
