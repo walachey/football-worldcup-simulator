@@ -28,11 +28,11 @@ int main(int argc, char* argv[])
 
 	if (!inputFilename.empty())
 	{
-		jsonResult = json_spirit::read(std::ifstream(inputFilename, std::ifstream::in), jsonData);
+		jsonResult = json_spirit::read((std::istream&)std::ifstream(inputFilename, std::ifstream::in), jsonData);
 	}
 	else
 	{
-		jsonResult = json_spirit::read(std::cin, jsonData);
+		jsonResult = json_spirit::read((std::istream&)std::cin, jsonData);
 	}
 
 	if (!jsonResult)
