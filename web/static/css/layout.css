@@ -113,7 +113,7 @@ td.input {
 	vertical-align:middle;
 }
 
-{{"#"}}choose_teams td,{{"#"}}choose_teams tr
+#choose_teams td,#choose_teams tr
 {
 	vertical-align:middle;
 	padding:0px;
@@ -140,7 +140,7 @@ td.input {
 	height: 100%;
 }
 
-{{ '#' }}tournamenttable td {
+#tournamenttable td {
 	padding: 0px;
 	height: 2em;
 	vertical-align:middle;
