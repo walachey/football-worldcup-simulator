@@ -12,7 +12,7 @@ class SimulationJob:
 		returncode = 1
 		
 		stderr = ""
-		stdout = json_input # mirror back input in case of errors
+		stdout = "" # mirror back input in case of errors
 		
 		try:
 			process = subprocess.Popen(config.simulation_path_program_path, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -24,7 +24,9 @@ class SimulationJob:
 			import os
 			stderr = stderr + "\n" + "Filepath: " + os.path.dirname(os.path.realpath(__file__))
 			stderr = stderr + "\n" + "Working Directory: " + os.getcwd()
-			
+		
+		if not stdout:
+			stdout = json_input
 		job.data = {"stdout": stdout, "stderr": stderr, "code": returncode}
 		
 		if returncode == 0:
