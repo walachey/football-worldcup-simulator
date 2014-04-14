@@ -1,0 +1,103 @@
+html {
+	height: 100%;
+}
+
+body {
+	min-width: 10em;
+	height: 100%;
+}
+
+#main_container {
+	min-height: 100%;
+	margin-bottom: 3.5em;
+}
+
+#footer
+{
+	margin-top: -3em;
+	height: 3em;
+	background-color: #f0f0f0;
+	margin: 0px;
+}
+#footer .container {
+	height: 100%;
+}
+#footer .row {
+	height: 100%;
+}
+
+#footer .row > div {
+	height: 100%;
+	padding-top: 1em;
+}
+
+#footer a {
+	color: grey;
+	text-decoration: none;
+}
+
+#footer a:hover {
+	color: black;
+}
+
+
+.infotext {
+	padding: 2em;
+	box-shadow: 0px 0px 20px #888888;
+	background-color:white;
+}
+
+.big-con
+{
+	width: 100%;
+	direction:rtl;
+	
+}
+.bg-con
+{
+	height: 650px;
+	direction:rtl;
+	margin-right: -2em;
+}
+.bg-img
+{
+	float:right;
+	display: inline;
+	position: absolute;
+	margin-right:0px;
+	z-index: -10;
+}
+.right-con
+{
+	width: 25%;
+	direction:ltr;
+	float:left;
+	display: inline;
+	position:absolute;
+}
+.right-side
+{
+	float:right;
+	z-index: 20;
+}
+.right-text
+{
+	padding: 2em;
+	padding-top: 3em;
+	height: 450px;
+}
+.right-text dd
+{
+	margin-left: 1em;
+}
+.btn-pos
+{
+	width: 100%;
+	padding-left: 2em;
+	padding-right: 2em;	
+}
+.btn-go
+{
+	width: 100%;
+	
+}

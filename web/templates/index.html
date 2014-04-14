@@ -9,66 +9,7 @@ $(document).ready(
     } 
 );
 </script>
-<style>
-body
-{
-	min-width: 10em;
-}
-.big-con
-{
-	width: 100%;
-	direction:rtl;
-	
-}
-.bg-con
-{
-	height: 650px;
-	direction:rtl;
-	margin-right: -2em;
-}
-.bg-img
-{
-	float:right;
-	display: inline;
-	position: absolute;
-	margin-right:0px;
-	z-index: -10;
-}
-.right-con
-{
-	width: 25%;
-	direction:ltr;
-	float:left;
-	display: inline;
-	position:absolute;
-}
-.right-side
-{
-	float:right;
-	z-index: 20;
-}
-.right-text
-{
-	padding: 2em;
-	padding-top: 3em;
-	height: 450px;
-}
-.right-text dd
-{
-	margin-left: 1em;
-}
-.btn-pos
-{
-	width: 100%;
-	padding-left: 2em;
-	padding-right: 2em;	
-}
-.btn-go
-{
-	width: 100%;
-	
-}
-</style>
+<link href="{{ url_for('static', filename='css/index.css') }}" rel="stylesheet">
 # endblock
 
 # block contents
@@ -123,4 +64,16 @@ body
 		This world-cup simulator was developed at the Freie&nbsp;Universit&auml;t&nbsp;Berlin in the Artificial&nbsp;Intelligence&nbsp;Group.
 		</div>
       </div>
+# endblock
+
+# block footer  
+	<footer id="footer">
+	<div class="container">
+	
+	<div class="row">
+	<div class="col-xs-4">
+	<a href="/impressum">Impressum</a></div>
+	</div>
+	</div>
+	</footer>
 # endblock

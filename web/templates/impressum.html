@@ -1,0 +1,32 @@
+# extends "base_layout.html"
+# block head
+{{ super() }}
+<script language="javascript">
+$(document).ready(
+	function() 
+    { 
+		$(".email").each(
+			function (index, mail)
+			{
+				mail = $(mail);
+				var href = mail.html() + "@" + mail.attr("href");
+				mail.attr("href", "mailto:" + href);
+				mail.html(href);
+			}
+		);
+    } 
+);
+</script>
+# endblock
+
+# block contents
+<h1>Impressum</h1>
+This world-cup simulator was developed at the Freie&nbsp;Universit&auml;t&nbsp;Berlin in the Artificial&nbsp;Intelligence&nbsp;Group.
+
+<address style="margin-top: 5em;">
+	<strong>David Dormagen</strong><br>
+	Dominicusstr. 52<br>
+	10713 Berlin<br>
+	<abbr title="e-Mail address">mail: </abbr><a href="fu-berlin.de" class="email">david.dormagen</a>
+</address>
+# endblock

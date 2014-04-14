@@ -42,6 +42,11 @@ def define_globals():
 def index_view():
 	return render_template('index.html')
 
+@app.route('/impressum')
+@cache.cached()
+def impressum_view():
+	return render_template('impressum.html')
+	
 @app.route('/teams')
 @cache.cached()
 def teams_view():
