@@ -19,11 +19,11 @@ function viewDataForSpreadsheets(tournament_id, tournament_link)
 	$("#spreadsheet_dialog").dialog(
 		{
 			resizable: true,
+			draggable: false,
 			height: 'auto',
-			width: 'auto',
+			width: 600,
 			modal: true,
 			closeText: 'Close',
-			bgiframe: true,
 			closeOnEscape: true,
 			open: function(event, ui) { },
 			title: "Export the data to spreadsheet software",
