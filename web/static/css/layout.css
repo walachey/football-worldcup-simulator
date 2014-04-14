@@ -1,7 +1,6 @@
 body {
   padding-top: 50px;
   padding-bottom: 50px;
-  min-width: 800px;
 }
 
 .small {
@@ -38,7 +37,6 @@ body {
 	background-color: darkgrey;
 }
 .selbox-con .headtab span {
-
 	display: block;
 	font-variant: small-caps;
 	color: #ffffff;
@@ -63,8 +61,6 @@ body {
 	pointer-events: none;
 	background-color: #fbfffb;
 }
-
-
 
 .ui-effects-transfer { border: 2px dotted gray; }
 
@@ -101,10 +97,6 @@ div.ruletitle {
 	margin:0px;
 	margin-left:70px;
 	margin-top:-5px;
-}
-
-td.ruletitle {
-	width:25em;
 }
 
 .background {

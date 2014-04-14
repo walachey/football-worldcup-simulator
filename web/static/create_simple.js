@@ -44,7 +44,7 @@ function updateRuleSpiderChart()
 	);
 	
 	// replacing the canvas element seems necessary for certain mobile browsers..
-	$('#rulecanvas').replaceWith('<canvas id="rulecanvas" width="300" height="300" style="float:left;"></canvas>');
+	$('#rulecanvas').replaceWith('<canvas id="rulecanvas" width="300" height="300"></canvas>');
 	
 	var canvas = document.getElementById("rulecanvas");
 	var ctx = canvas.getContext("2d");
