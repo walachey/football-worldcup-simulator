@@ -24,7 +24,7 @@ $(document).ready(
 <tbody>
 # for team in teams
 	<tr>
-	<td><img style="border:1px solid black" src="{{ url_for('static', filename='img/flags/'~team.country_code~'.png') }}"></img></td><td>{{ team.name }}</td>
+	<td><img style="border:1px solid black" src="{{ url_for('static', filename='img/flags/'~team.country_code~'.png') }}"></td><td>{{ team.name }}</td>
 	# for score in team.scores
 		<td>{{ score|round(1) }}</td>
 	# endfor

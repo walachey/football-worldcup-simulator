@@ -115,4 +115,7 @@ function showCustomTeamRatingsDialog(id)
 				 OK: function() { $( this ).dialog( "close" ); }
 			}
 	});
+	var width = Math.min($(window).width() * 0.9, $("#choose_teams_con").width());
+	$("#choose_teams_con").dialog('option', 'height', $(window).height() * 0.8);
+	$("#choose_teams_con").dialog('option', 'width', width);
 }
