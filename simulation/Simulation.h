@@ -14,6 +14,8 @@ namespace sim
 class Simulation
 {
 public:
+	static Simulation *singleton;
+
 	Simulation(json_spirit::Value &jsonData);
 	~Simulation();
 	void reset();

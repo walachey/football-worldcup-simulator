@@ -87,8 +87,10 @@ json_spirit::Array TeamResult::rankDataToJSONArray(std::vector<RankData> &rankDa
 	return ranks;
 }
 
-Team::Team(json_spirit::Object &data)
+Team::Team(json_spirit::Object &data, int index)
 {
+	this->index = index;
+
 	for (json_spirit::Pair &pair : data)
 	{
 		std::string key = pair.name_;

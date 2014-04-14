@@ -6,8 +6,13 @@
 namespace sim
 {
 
+Simulation *Simulation::singleton = nullptr;
+
 void Simulation::reset()
 {
+	assert(Simulation::singleton == nullptr);
+	Simulation::singleton = this;
+
 	numberOfThreads = 1;
 	tournamentID = 0;
 }
@@ -42,9 +47,10 @@ Simulation::~Simulation()
 
 void Simulation::setupTeams(json_spirit::Array &teamData)
 {
+	int teamIndex = 0;
 	for (json_spirit::Value &val : teamData)
 	{
-		teams.push_back(Team(val.get_obj()));
+		teams.push_back(Team(val.get_obj(), teamIndex++));
 	}
 }
 

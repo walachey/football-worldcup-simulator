@@ -127,12 +127,15 @@ template <class CONT> TeamResult::TeamResult(CONT matches, int teamID) : TeamRes
 class Team
 {
 public:
-	Team(json_spirit::Object &data);
+	Team(json_spirit::Object &data, int index);
 	~Team();
 	void setupScores(json_spirit::Object &scoreData);
 
 	int id;
 	std::map<std::string, double> scores;
+
+	// the index (as opposed to the ID) is continuous
+	int index;
 };
 
 

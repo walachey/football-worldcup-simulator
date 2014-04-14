@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Rule.h"
 
+#include "Simulation.h"
+
 namespace sim
 {
 
@@ -41,11 +43,13 @@ Rule::Rule(json_spirit::Object &data)
 			throw "The simulation was stopped because of missing rule parameters.";
 		}
 	}
+
 }
 
 
 Rule::~Rule()
 {
+
 }
 
 void Rule::setupNeededScores(json_spirit::Array &data)
@@ -84,6 +88,8 @@ void Rule::setCalculationFunction(std::string functionName)
 		calculationFunction = &Rule::calc_age_binary;
 	else if (functionName == "homeadvantage_binary")
 		calculationFunction = &Rule::calc_homeadvantage_binary;
+	else if (functionName == "spi_binary")
+		calculationFunction = &Rule::calc_spi_binary;
 	else if (functionName == "luck_binary")
 		calculationFunction = &Rule::calc_luck_binary;
 	else if (functionName == "custom_binary")
@@ -128,6 +134,12 @@ double Rule::calc_age_binary(Team &left, Team &right, double *weight, double *cu
 	return result;
 }
 
+double Rule::calc_spi_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy)
+{
+	if (probabilityLookupMatrix.empty())
+		generateExpectancyMatrix(&Rule::calculateSPIWinExpectancy);
+	return probabilityLookupMatrix[left.index][right.index];
+}
 
 double Rule::calc_homeadvantage_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy)
 {
@@ -146,6 +158,79 @@ double Rule::calc_homeadvantage_binary(Team &left, Team &right, double *weight, 
 double Rule::calc_custom_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy)
 {
 	return 1.0 / (1.0 + std::exp((right.scores["Custom"] - left.scores["Custom"]) / customNormalizationConstant));
+}
+
+void Rule::generateExpectancyMatrix(double (*fun)(Team&, Team&))
+{
+	assert(probabilityLookupMatrix.empty());
+	size_t teamCount = Simulation::singleton->teams.size();
+
+	probabilityLookupMatrix.resize(teamCount);
+	for (size_t i = 0; i < teamCount; ++i)
+		probabilityLookupMatrix[i].resize(teamCount);
+	
+	for (Team &left : Simulation::singleton->teams)
+	{
+		for (Team &right : Simulation::singleton->teams)
+		{
+			double prob_left = fun(left, right);
+			double prob_right = fun(right, left);
+			probabilityLookupMatrix[left.index][right.index] = prob_left;
+			probabilityLookupMatrix[right.index][left.index] = prob_right;
+		}
+	}
+
+	std::cerr << "Matrix is go\nI1\tI2\tP\t" << std::endl;
+	for (size_t i = 0; i < teamCount; ++i)
+		std::cerr << Simulation::singleton->teams[i].id << "\t";
+	std::cerr << std::endl;
+	for (size_t i = 0; i < teamCount; ++i)
+	{
+		for (size_t c = 0; c < teamCount; ++c)
+			std::cerr << probabilityLookupMatrix[i][c] << "\t";
+		std::cerr << std::endl;
+	}
+}
+
+double Rule::calculateSPIWinExpectancy(Team &left, Team &right)
+{
+	const double &off1 = left.scores["SPI Off"];
+	const double &off2 = right.scores["SPI Off"];
+	const double &def1 = left.scores["SPI Def"];
+	const double &def2 = right.scores["SPI Def"];
+
+	const double combined_off = (off1 + def2) / 2.0;
+	const double combined_def = (def1 + off2) / 2.0;
+
+	std::function<int(int)> factorial =
+		[&](int n)
+	{
+		return (n == 1 || n == 0) ? 1 : factorial(n - 1) * n;
+	};
+	auto poisson_probability =
+		[&](double lambda, int times)
+	{
+		return std::exp(-lambda) * std::pow(lambda, (double)times) / (double)factorial(times);
+	};
+
+	double prob_off(0.0), prob_def(0.0);
+
+	for (int i = 0; i < 20; ++i)
+	{
+		const double equal_prob_off = poisson_probability(combined_off, i);
+		const double equal_prob_def = poisson_probability(combined_def, i);
+
+		double less_prob_off(0.0), less_prob_def(0.0);
+		for (int c = 0; c < i; ++c)
+		{
+			less_prob_off += poisson_probability(combined_off, c);
+			less_prob_def += poisson_probability(combined_def, c);
+		}
+
+		prob_off += equal_prob_off * less_prob_def;
+		prob_def += equal_prob_def * less_prob_off;
+	}
+	return (prob_off / (prob_off + prob_def));
 }
 
 } // namespace sim

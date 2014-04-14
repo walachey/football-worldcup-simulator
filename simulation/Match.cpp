@@ -171,7 +171,7 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 	// Note that in case chanceLeftVsRight + chanceRightvsLeft == 1.0, this does nothing
 	double normalizedChanceLeftVsRight = chanceLeftVsRight / (chanceLeftVsRight + chanceRightVsLeft);
 	// std::cerr << "norm: " << normalizedChanceLeftVsRight << "\tleft: " << chanceLeftVsRight << "\tright: " << chanceRightVsLeft << std::endl;
-	// for now, make up results..
+
 	int teams[] = {left.id, right.id};
 	int goals[] = {0, 0};
 	int winnerIndex = -1;

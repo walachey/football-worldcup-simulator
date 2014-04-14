@@ -32,11 +32,16 @@ public:
 	void setCalculationFunction(std::string functionName);
 
 private:
+	void generateExpectancyMatrix(double(*fun)(Team&, Team&));
+	std::vector<std::vector<double>> probabilityLookupMatrix;
+	static double calculateSPIWinExpectancy(Team &left, Team &right);
+
 	double (Rule::*calculationFunction) (Team &left, Team &right, double *weight, double *currentWinExpectancy);
 	double calc_elo_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy);
 	double calc_fifa_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy);
 	double calc_value_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy);
 	double calc_age_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy);
+	double calc_spi_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy);
 	double calc_homeadvantage_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy);
 	double calc_custom_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy);
 	double calc_luck_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy) { return 0.5; };
