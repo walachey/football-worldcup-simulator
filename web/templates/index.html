@@ -9,11 +9,118 @@ $(document).ready(
     } 
 );
 </script>
+<style>
+body
+{
+	min-width: 10em;
+}
+.big-con
+{
+	width: 100%;
+	direction:rtl;
+	
+}
+.bg-con
+{
+	height: 650px;
+	direction:rtl;
+	margin-right: -2em;
+}
+.bg-img
+{
+	float:right;
+	display: inline;
+	position: absolute;
+	margin-right:0px;
+	z-index: -10;
+}
+.right-con
+{
+	width: 25%;
+	direction:ltr;
+	float:left;
+	display: inline;
+	position:absolute;
+}
+.right-side
+{
+	float:right;
+	z-index: 20;
+}
+.right-text
+{
+	padding: 2em;
+	padding-top: 3em;
+	height: 450px;
+}
+.right-text dd
+{
+	margin-left: 1em;
+}
+.btn-pos
+{
+	width: 100%;
+	padding-left: 2em;
+	padding-right: 2em;	
+}
+.btn-go
+{
+	width: 100%;
+	
+}
+</style>
 # endblock
 
 # block contents
       <div class="starter-template">
         <h1>World-Cup Simulator</h1>
-        <p class="lead">Hello, this is a simulator for the FIFA World-Cup 2014.</p>
+		
+		<div class="infotext">
+		<h3>What is this?</h3>
+		This is a probabilistic simulator for the upcoming football world-cup. It uses different rules to rate the strength of the teams and to calculate a team's chance to win in a match.<br>
+		Repeating the simulation of the tournament plenty of times results in a probability distribution, that shows how likely a team is to win the finals.
+		</div>
+
+		<div class="big-con">
+			<div class="bg-con">
+				<div class="bg-img">
+				<img src="{{ url_for('static', filename='img/MainPageBG.jpg') }}">
+				</div>
+				
+				<div class="right-con">
+					
+					<div class="right-side">
+						<div class="right-text">
+							<div class="infotext">
+							<h3>What to do?</h3><br>
+							<dl class="dl">
+								<dt>Go to <i>New Tournament</i> page</dt>
+								<dd>Click on <i>Play World Cup</i> below or in the navigation above.</dd>
+								<dt>Select Rules</dt>
+								<dd>Leave the rule weights at the default values or change them to your liking.<br>
+								The rule weights decide how much your simulation will be influenced by the different rating methods.</dd>
+								<dt>Start the tournament</dt>
+								<dd>Then you can start the tournament and see what odds the different teams have to be world champion.</dd>
+							</dl>
+							</div>
+						</div>
+						<div class="btn-pos">
+							<a href={{ url_for("simple_new_tournament_view") }}>
+							<span class="btn-go btn btn-lg btn-primary">
+							<h1>Play World Cup</h1>
+							</span></a>
+						</div>
+					</div>
+					
+
+				</div>
+				
+			</div>
+		</div>
+		
+		<div class="infotext">
+		<h3>More Information</h3>
+		This world-cup simulator was developed at the Freie&nbsp;Universit&auml;t&nbsp;Berlin in the Artificial&nbsp;Intelligence&nbsp;Group.
+		</div>
       </div>
 # endblock

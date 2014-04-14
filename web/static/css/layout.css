@@ -72,7 +72,14 @@ body {
 	background-color: #cceecc;
 }
 
-/* For the create custom tournament page */
+/* index */
+.infotext {
+	padding: 2em;
+	box-shadow: 0px 0px 20px #888888;
+	background-color:white;
+}
+
+/* create custom tournament */
 .type-button {
 	width: 100%;
 	min-width: 30em;
