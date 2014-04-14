@@ -18,7 +18,6 @@ function correctRuleInfo()
 			{
 				var weight = rule_info[rule];
 				var rule_object = {name: rule, weight: weight};
-				console.log(rule + ": " + weight.toString());
 				var rule_length = rules.length;
 				for (var i = 0; i < rule_length; ++i)
 				{
@@ -48,7 +47,7 @@ function correctTimestamps()
 		{
 			var twodigits = function(x) {if (x >= 10) return x; return "0" + x;}
 			var date = new Date(parseInt($(item).html()) * 1000);
-			$(item).html(twodigits(date.getDate()) + "." + twodigits(date.getMonth()) + ". " + twodigits(date.getHours()) + ":" + twodigits(date.getMinutes()));
+			$(item).html(twodigits(date.getDate()) + "." + twodigits(date.getMonth()+1) + ". " + twodigits(date.getHours()) + ":" + twodigits(date.getMinutes()));
 		}
 	);
 }
