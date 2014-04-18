@@ -9,16 +9,22 @@ import md5
 from database_models import *
 
 admin = None
+cache = None
 
 class LoginView(AdminIndexView):
 	@expose('/', methods=['POST', 'GET'])
 	def index(self):
+		cachecleared = False
 		if "pw" in request.form: # login
 			user_session["adminpw"] = md5.new(request.form["pw"]).digest()
 			return self.render("admin_login.html", refresh=True, logged_in=True)
 		elif request.method == 'POST': # logout
 			user_session["adminpw"] = ""
-		return self.render("admin_login.html", refresh=False, logged_in=LoginView.is_logged_in())
+		elif "clearcache" in request.args:
+			cache.clear()
+			cachecleared = True
+			
+		return self.render("admin_login.html", refresh=False, logged_in=LoginView.is_logged_in(), cachecleared=cachecleared)
 		
 	@staticmethod
 	def is_logged_in():
@@ -35,8 +41,10 @@ class AuthModelView(ModelView):
 	def is_accessible(self):
 		return LoginView.is_logged_in()
 
-def init(app):
+def init(app, new_cache):
 	global admin
+	global cache
+	cache = new_cache
 	admin = Admin(app, index_view=LoginView(name='Login/Logout'))
 	session = getSession()
 	admin.add_view(AuthModelView(RuleType, session))

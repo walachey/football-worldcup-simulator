@@ -1,4 +1,16 @@
 {% extends 'admin/master.html' %}
+{% block head %}
+{{ super() }}
+<style>
+.btn {
+	min-width: 10em;
+	min-height: 3em;
+}
+.fakebtn {
+	padding: 1em;
+}
+</style>
+{% endblock %}
 {% block body %}
 	{% if refresh %}
 		<script>
@@ -8,11 +20,21 @@
 		<p>
 		<form method="POST">
 		{% if logged_in %}
-			<input type="submit" value="Logout">
+			<input class="btn btn-danger" type="submit" value="Logout">
 		{% else %}
 			Admin Passwort: <input name="pw" type="password" value="">
 		{% endif %}
 		</form>
 		</p>
+		
+		{% if logged_in %}
+		<form method="GET">
+			{% if cachecleared %}
+			<span class="fakebtn btn-success">Cache cleared!</span>
+			{% else %}
+			<button class="btn btn-warning" name="clearcache" type="submit" value="1">Clear Cache</button>
+			{% endif %}
+		</form>
+		{% endif %}
 	{% endif %}
 {% endblock %}
