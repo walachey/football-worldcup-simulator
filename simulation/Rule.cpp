@@ -146,7 +146,7 @@ double Rule::calc_homeadvantage_binary(Team &left, Team &right, double *weight, 
 	const double &homeLeft = left.scores["HA"];
 	const double &homeRight = right.scores["HA"];
 	// this rule is only effective if at least one of the teams has a home-advantage assigned
-	*weight = homeLeft / (homeLeft + homeRight);
+	*weight = homeLeft / std::max(1.0, homeLeft + homeRight);
 	assert(((homeLeft + homeRight) == 0.0) || (*weight >= 0.0 && *weight <= 1.0));
 	// if not, the weight will be 0 anyway..
 	if (homeLeft == 0.0) return *currentWinExpectancy;
