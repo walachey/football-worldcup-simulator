@@ -3,6 +3,16 @@ body {
   padding-bottom: 50px;
 }
 
+.navbar-inverse .navbar-nav > .active > a, 
+.navbar-inverse .navbar-nav > .active > a:hover, 
+.navbar-inverse .navbar-nav > .active > a:focus {
+	background-image:url('/static/img/navbarbg_dark.jpg');
+}
+
+.navbar-inverse {
+	background-image:url('/static/img/navbarbg.jpg');
+}
+
 .small {
 	font-size:0.75em;
 }
