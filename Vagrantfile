@@ -23,6 +23,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network "forwarded_port", guest: 80, host: 8080
 
   config.vm.provision "chef_solo" do |chef|
+    chef.custom_config_path = "chef/chef-solo.vagrant.conf"
+    chef.log_level = ENV['CHEF_LOG'] || 'info'
     chef.cookbooks_path = %w{chef/cookbooks chef/site-cookbooks}
     #chef.roles_path = "chef/roles"
     chef.add_recipe "wmsimulator::allinone"

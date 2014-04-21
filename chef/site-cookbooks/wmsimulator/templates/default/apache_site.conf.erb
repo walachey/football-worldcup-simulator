@@ -1,0 +1,13 @@
+<VirtualHost *:80>
+  ServerName localhost
+
+  WSGIDaemonProcess main_frontend python-path=<%= node['wmsimulator']['web_install_dir'] %> user=www-data group=www-data threads=5
+  WSGIScriptAlias / <%= ::File.join node['wmsimulator']['web_install_dir'], 'main_frontend.wsgi' %>
+
+  <Directory <%= ::File.join node['wmsimulator']['web_install_dir'] %> >
+    WSGIProcessGroup main_frontend
+    WSGIApplicationGroup %{GLOBAL}
+    Order deny,allow
+    Allow from all
+  </Directory>
+</VirtualHost>
