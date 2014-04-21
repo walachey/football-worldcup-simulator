@@ -23,6 +23,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network "forwarded_port", guest: 80, host: 8080
 
   config.vm.provision "chef_solo" do |chef|
+    config.librarian_chef.cheffile_dir = "chef" if Vagrant.has_plugin?("vagrant-librarian-chef-nochef")
     chef.custom_config_path = "chef/chef-solo.vagrant.conf"
     chef.log_level = ENV['CHEF_LOG'] || 'info'
     chef.cookbooks_path = %w{chef/cookbooks chef/site-cookbooks}
