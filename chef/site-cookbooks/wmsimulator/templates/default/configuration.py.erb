@@ -1,0 +1,32 @@
+def customize(config):
+	# use None for localhost and '0.0.0.0' for public networks
+	# Attention: only use it on public networks with debug disabled
+	config.flask_host = '0.0.0.0'
+	# config.flask_port = 5000
+	
+	# please choose a secret and unique admin password yourself
+	config.flask_admin_password = "<%= node['wmsimulator']['admin_password'] %>"
+	
+	# database setup. This takes a database connection string for SQLAlchemy
+	# f.e.: "mysql://user:password@localhost/databasename"
+	config.database_connection_string = "mysql://<%= node['wmsimulator']['database']['user']%>:<%= node['wmsimulator']['database']['password'] %>@<%= node['wmsimulator']['database']['host'] %>/<%=  node['wmsimulator']['database']['name'] %>"
+	config.database_connection_password = "<%= node['wmsimulator']['database']['password'] %>"
+	
+	# this is used for storing session data
+	# please choose a random sequence of letters
+	config.session_secret_key = "<%= node['wmsimulator']['session_key'] %>"
+	
+	# there are more options that can be changed
+	# check out "configuration.py" for the option names
+	config.log_file_name = "<%= node['wmsimulator']['log_dir'] %>/weblog.txt"
+	
+	config.show_custom_tournament_page = False
+	
+	config.is_debug_mode_enabled = False
+	config.simulation_thread_count = 8
+	config.simulation_run_count = 500 # total runs per simulation
+	
+	# import dispatcher_qless
+	import dispatcher_qless
+	config.dispatcher_class = dispatcher_qless.DispatcherQLess
+	config.qless_connection_string = "redis://<%= node['wmsimulator']['redis']['host'] %>:<%= node['wmsimulator']['redis']['port'] %>"
