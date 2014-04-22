@@ -1,3 +1,3 @@
 [submodule "simulation/deps"]
 	path = simulation/deps
-	url = git@github.com:walachey/football-worldcup-simulator-deps.git
+	url = https://github.com/walachey/football-worldcup-simulator-deps.git
