@@ -1,7 +1,6 @@
 */venv/
 *.log
 *.pyc
-simulation/deps/
 *.[Oo]bj
 *.user
 *.aps
