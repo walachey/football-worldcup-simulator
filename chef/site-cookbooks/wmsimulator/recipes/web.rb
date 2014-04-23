@@ -8,7 +8,7 @@ include_recipe 'python::package'
 #install pip from source
 include_recipe 'python::pip'
 #install python dependencies
-%w{Flask  Flask-SQLAlchemy Flask-Admin  Flask-Cache  MySQL-python}.each do |python_pkg|
+%w{Flask  Flask-SQLAlchemy Flask-Admin  Flask-Cache  MySQL-python qless-py decorator}.each do |python_pkg|
   python_pip python_pkg
 end
 

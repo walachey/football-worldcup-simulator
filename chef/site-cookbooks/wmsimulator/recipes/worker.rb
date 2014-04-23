@@ -1,3 +1,4 @@
+include_recipe 'apt'
 #install python from package
 include_recipe 'python::package'
 #install pip from source

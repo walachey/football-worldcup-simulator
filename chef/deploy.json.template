@@ -1,0 +1,14 @@
+{
+  "mysql": {
+    "server_root_password": "changeme",
+    "server_debian_password": "metoo"
+  },
+  "wmsimulator": {
+    "admin_password": "secret admin pw",
+    "session_key": "GENERATE_SOMETHING_VERY_LONG_AND_PUT_IT_HERE",
+    "database": {
+      "host": "DATABASE_SERVER",
+      "password": "changemealso"
+    }
+  }
+}
