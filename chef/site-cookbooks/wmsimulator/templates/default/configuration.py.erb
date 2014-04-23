@@ -18,7 +18,7 @@ def customize(config):
 	
 	# there are more options that can be changed
 	# check out "configuration.py" for the option names
-	config.log_file_name = "<%= node['wmsimulator']['log_dir'] %>/weblog.txt"
+	config.log_file_name = "<%= node['wmsimulator']['web_install_base'] %>/current/log/weblog.txt"
 	
 	config.show_custom_tournament_page = False
 	

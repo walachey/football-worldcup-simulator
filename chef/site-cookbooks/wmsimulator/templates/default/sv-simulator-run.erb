@@ -1,0 +1,4 @@
+#!/bin/sh
+exec 2>&1
+cd <%= node['wmsimulator']['worker_install_dir']%> 
+exec /usr/local/bin/qless-py-worker --host redis://<%= node['wmsimulator']['redis']['host'] %>:<%= node['wmsimulator']['redis']['port'] %> -q simulate --interval 1 --import simulation_job --path .

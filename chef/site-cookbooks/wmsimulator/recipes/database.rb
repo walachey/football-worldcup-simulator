@@ -22,6 +22,7 @@ end
 mysql_database_user node['wmsimulator']['database']['user']  do
   connection database_connection
   password node['wmsimulator']['database']['password']
+  host '%'
   action :create
 end
 
