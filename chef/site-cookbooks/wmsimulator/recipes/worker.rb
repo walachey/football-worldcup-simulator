@@ -45,8 +45,17 @@ bash 'update-alternatives g++' do
   action :nothing
 end
 
-
-include_recipe 'wmsimulator::deploy'
+deploy_revision 'simulator' do
+  deploy_to node['wmsimulator']['simulator_install_base']
+  repository node['wmsimulator']['repository'] 
+  revision node['wmsimulator']['revision'] 
+  migrate false 
+  symlink_before_migrate({})
+  enable_submodules true
+  create_dirs_before_symlink []
+  symlinks({})
+  notifies :run, 'bash[build simulator]', :immediately
+end
 
 bash 'build simulator' do
   code <<-EOT
@@ -55,5 +64,14 @@ bash 'build simulator' do
   EOT
   cwd node['wmsimulator']['simulator_install_dir']
   action :nothing
-  subscribes :run, 'deploy_revision[wmsimulator]'
+end
+
+template ::File.join(node['wmsimulator']['worker_install_dir'], 'simulation_job_config.py') do
+  source 'simulation_job_config.py.erb'
+  mode 0644
+end
+
+include_recipe 'runit::default'
+runit_service 'simulator' do
+  default_logger true 
 end

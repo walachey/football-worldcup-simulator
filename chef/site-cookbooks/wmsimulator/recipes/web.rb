@@ -15,26 +15,29 @@ end
 #ensure git is installed
 package 'git'
 
-directory ::File.join node['wmsimulator']['install_dir'], 'shared/log' do
+directory ::File.join node['wmsimulator']['web_install_base'], 'shared/log' do
   recursive true
   owner 'www-data'
 end
 
-template ::File.join node['wmsimulator']['install_dir'], 'shared/configuration_custom.py'  do
+template ::File.join node['wmsimulator']['web_install_base'], 'shared/configuration_custom.py'  do
   source 'configuration.py.erb'
 end
 
-include_recipe 'wmsimulator::deploy'
-
-service 'apache2' do
-  subscribes :reload, 'deploy_revision[wmsimulator]'
-end
-
-execute "seed database" do
-  command "python defaults.py"
-  cwd node['wmsimulator']['web_install_dir']
-  action :nothing
-  subscribes :run, 'deploy_revision[wmsimulator]'
+deploy_revision 'web' do
+  deploy_to node['wmsimulator']['web_install_base']
+  repository node['wmsimulator']['repository'] 
+  revision node['wmsimulator']['revision'] 
+  migrate true 
+  migration_command "python web/defaults.py"
+  symlink_before_migrate({
+    'configuration_custom.py' => 'web/configuration_custom.py'
+  })
+  create_dirs_before_symlink []
+  symlinks({
+    'log' => 'log',
+  })
+  notifies :reload, 'service[apache2]'
 end
 
 #drop apache virtual host configuration

@@ -1,0 +1,5 @@
+source 'https://rubygems.org'
+
+gem 'sinatra'
+gem 'thin'
+gem 'qless', :git => 'http://github.com/seomoz/qless.git'

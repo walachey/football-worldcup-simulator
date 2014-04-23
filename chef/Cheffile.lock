@@ -31,6 +31,10 @@ SITE
       yum-epel (>= 0.0.0)
     redisio (1.7.1)
       ulimit (>= 0.1.2)
+    runit (1.5.10)
+      build-essential (>= 0.0.0)
+      yum (~> 3.0)
+      yum-epel (>= 0.0.0)
     ulimit (0.3.2)
     xfs (1.1.0)
     yum (3.2.0)
@@ -45,4 +49,5 @@ DEPENDENCIES
   mysql (>= 0)
   python (>= 0)
   redisio (>= 0)
+  runit (>= 0)
 
