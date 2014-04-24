@@ -64,6 +64,16 @@ void Simulation::setupRules(json_spirit::Array &ruleData)
 
 void Simulation::execute()
 {
+	// some safety & sanity checks
+	if (teams.empty())
+	{
+		throw "No teams are active. Aborting the tournament.";
+	}
+	if (rules.empty())
+	{
+		throw "No rules are active. Aborting the tournament.";
+	}
+
 	// 16 threads for one tournament sound impractical
 	int realThreadCount = std::min(numberOfThreads, numberOfRuns);
 

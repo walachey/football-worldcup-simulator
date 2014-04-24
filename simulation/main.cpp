@@ -43,9 +43,7 @@ int main(int argc, char* argv[])
 
 	std::set_terminate(debug_terminate);
 
-#define EXCEPTIONDEBUG defined(NDEBUG)
-
-#if EXCEPTIONDEBUG
+#ifdef NDEBUG
 	try
 #endif
 	{
@@ -57,7 +55,7 @@ int main(int argc, char* argv[])
 		std::string json = json_spirit::write(results, json_spirit::remove_trailing_zeros);
 		std::cout << json << std::endl;
 	}
-#if EXCEPTIONDEBUG
+#ifdef NDEBUG
 	catch(const std::runtime_error& re)
 	{
 		std::cerr << "Runtime error: " << re.what() << std::endl;

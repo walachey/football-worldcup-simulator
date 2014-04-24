@@ -179,17 +179,6 @@ void Rule::generateExpectancyMatrix(double (*fun)(Team&, Team&))
 			probabilityLookupMatrix[right.index][left.index] = prob_right;
 		}
 	}
-
-	std::cerr << "Matrix is go\nI1\tI2\tP\t" << std::endl;
-	for (size_t i = 0; i < teamCount; ++i)
-		std::cerr << Simulation::singleton->teams[i].id << "\t";
-	std::cerr << std::endl;
-	for (size_t i = 0; i < teamCount; ++i)
-	{
-		for (size_t c = 0; c < teamCount; ++c)
-			std::cerr << probabilityLookupMatrix[i][c] << "\t";
-		std::cerr << std::endl;
-	}
 }
 
 double Rule::calculateSPIWinExpectancy(Team &left, Team &right)
