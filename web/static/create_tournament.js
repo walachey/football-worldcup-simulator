@@ -153,7 +153,7 @@ function startTournament()
 		url:"json/register_tournament",
 		dataType: "json",
 		data: { get_param: 'value', info: JSON.stringify(json_object) },
-		timeout: 10000,
+		timeout: 30000,
 		success: function(data) 
 			{
 				if (data.status == "FAIL")

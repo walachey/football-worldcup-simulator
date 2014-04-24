@@ -44,7 +44,7 @@ class DispatcherQLess(Dispatcher):
 			returncode = job_data["code"]
 			if returncode == 0 and job_results:
 				tournament.state = TournamentState.finished
-				self.parseJSONResults(job_results, tournament)
+				self.parseJSONResults(job_results, tournament, session)
 			else:
 				if tournament:
 					tournament.state = TournamentState.error
@@ -62,3 +62,5 @@ class DispatcherQLess(Dispatcher):
 				tournament.state = TournamentState.error
 		finally:
 			session.commit()
+			session.close()
+			cleanupSession()

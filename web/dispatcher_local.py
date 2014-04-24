@@ -8,14 +8,14 @@ class DispatcherLocal(Dispatcher):
 	
 	# this should run in a different thread
 	def localDispatchment(self, json_object):
-		session = getSession()
 		# construct command to start the simulation client
 		command = self.config.getCompleteSimulationProgramPath()
 		# the JSON input will the given via stdin
 		json_string = json.dumps(json_object)
 		self.config.logger.debug("TOURNAMENTING " + json_string)
 		
-		tournament = session.query(Tournament).filter_by(id=json_object["tournament_id"]).first()
+		tournament_id = json_object["tournament_id"]
+		tournament = None
 		
 		try:
 			# run and wait for termination
@@ -26,12 +26,13 @@ class DispatcherLocal(Dispatcher):
 			self.config.logger.debug("STDOUT ---------------------" + stdout)
 			if stderr:
 				self.config.logger.warning("STDERR ---------------------" + stderr)
-			
-			
+		
+			session = getSession()
+			tournament = session.query(Tournament).filter_by(id=tournament_id).first()
 			
 			if process.returncode == 0:
 				tournament.state = TournamentState.finished
-				self.parseJSONResults(json.loads(stdout), tournament)
+				self.parseJSONResults(json.loads(stdout), tournament, session)
 			else:
 				tournament.state = TournamentState.error
 				if stderr:
@@ -40,6 +41,9 @@ class DispatcherLocal(Dispatcher):
 							error = TournamentExecutionError(tournament.id, error_text)
 							session.add(error)
 		except Exception as e:
+			if not tournament:
+				session = getSession()
+				tournament = session.query(Tournament).filter_by(id=tournament_id).first()
 			if tournament:
 				tournament.state = TournamentState.error
 				
@@ -54,3 +58,5 @@ class DispatcherLocal(Dispatcher):
 					"Working Directory: " + os.getcwd()))
 		finally:
 			session.commit()
+			session.close()
+			cleanupSession()

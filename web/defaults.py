@@ -157,17 +157,17 @@ assert custom != None
 assert spi_off != None
 assert spi_def != None
 
-elo_rule.score_types.append(elo)
-fifa_rule.score_types.append(fifa)
-value_rule.score_types.append(value)
-age_rule.score_types.append(age)
-ha_rule.score_types.append(ha)
+elo_rule.addScoreType(elo, session)
+fifa_rule.addScoreType(fifa, session)
+value_rule.addScoreType(value, session)
+age_rule.addScoreType(age, session)
+ha_rule.addScoreType(ha, session)
 
-custom_rule.score_types.append(custom)
-custom_rule.parameter_types.append(custom_rule_parameter)
+custom_rule.addScoreType(custom, session)
+custom_rule.addParameterType(custom_rule_parameter, session)
 
-spi_rule.score_types.append(spi_off)
-spi_rule.score_types.append(spi_def)
+spi_rule.addScoreType(spi_off, session)
+spi_rule.addScoreType(spi_def, session)
 
 
 
@@ -186,3 +186,4 @@ for team_data in all_teams:
 
 session.commit()
 print "..done"
+cleanupSession()

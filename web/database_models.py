@@ -10,17 +10,24 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config.database_connection_string
+app.config['SQLALCHEMY_MAX_OVERFLOW'] = config.database_max_pool_overflow
+app.config['SQLALCHEMY_POOL_TIMEOUT'] = config.database_pool_timeout
 db = SQLAlchemy(app)
 db.engine.echo = config.echo_sql
 
+from flask import _app_ctx_stack
 from sqlalchemy.orm import scoped_session, sessionmaker
-Session = scoped_session( sessionmaker() )
+
+Session = scoped_session(sessionmaker(), scopefunc=_app_ctx_stack.__ident_func__)
 Session.configure(bind=db.engine)
 def getSession():
+	global Session
 	session = Session()
 	session._model_changes = {}
 	return session
-
+def cleanupSession():
+	Session.remove()
+	
 nonURLChars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
 URLCharTranslation = ''.join('-' for c in nonURLChars)
 URLCharTranslationTable = string.maketrans(nonURLChars, URLCharTranslation)
@@ -63,7 +70,7 @@ class Tournament(db.Model):
 	hash = db.Column(db.Integer)
 	
 	type_id = db.Column(db.Integer, db.ForeignKey('tournament_types.id'))
-	tournament_type = db.relationship('TournamentType')
+
 	# this is an optimization to quickly have access to rule names & weights that were used for this tournament
 	rule_weight_json = db.Column(db.String(256), unique=False)
 	
@@ -144,8 +151,7 @@ class Team(db.Model):
 		return "[Team " + self.name + " from " + self.country_code + "]"
 	
 	@staticmethod
-	def getAllTeamsForTournament(tournament_id):
-		session = getSession()
+	def getAllTeamsForTournament(tournament_id, session):
 		all_teams = []
 		for participation in session.query(Participation).filter_by(tournament_id=tournament_id):
 			team = session.query(Team).filter_by(id=participation.team_id).first()
@@ -173,16 +179,38 @@ class Participation(db.Model):
 	def __repr__(self):
 		return "[Participation of " + str(self.team_id) + " in play-off " + str(self.tournament_id) + "]"
 
-rule_score_table = db.Table("rule2scores", db.metadata,
-	db.Column("rule_type_id", db.Integer, db.ForeignKey("rule_types.id")),
-	db.Column("score_type_id", db.Integer, db.ForeignKey("score_types.id"))
-	)
-
-rule_parameter_table = db.Table("rule2parameters", db.metadata,
-	db.Column("rule_type_id", db.Integer, db.ForeignKey("rule_types.id")),
-	db.Column("parameter_type_id", db.Integer, db.ForeignKey("rule_parameter_types.id"))
-	)
+class Rule2ScoreAssociation(db.Model):
+	__tablename__ = "rule2scores"
+	query = None
 	
+	id = db.Column(db.Integer, primary_key=True)
+	rule_type_id = db.Column(db.Integer, db.ForeignKey('rule_types.id'))
+	score_type_id = db.Column(db.Integer, db.ForeignKey('score_types.id'))
+	
+	def __init__(self, rule_type, score_type):
+		self.rule_type_id = rule_type.id
+		self.score_type_id = score_type.id
+		
+	def __repr__(self):
+		return "<R2S " + str(self.rule_type_id) + "<-" + str(self.score_type_id) + ">"
+		
+class Rule2ParameterAssociation(db.Model):
+	__tablename__ = "rule2parameters"
+	query = None
+	
+	id = db.Column(db.Integer, primary_key=True)
+	rule_type_id = db.Column(db.Integer, db.ForeignKey('rule_types.id'))
+	parameter_type_id = db.Column(db.Integer, db.ForeignKey('rule_parameter_types.id'))
+	
+	def __init__(self, rule_type, parameter_type):
+		self.rule_type_id = rule_type.id
+		self.parameter_type_id = parameter_type.id
+		
+	def __repr__(self):
+		return "<R2P " + str(self.rule_type_id) + "<-" + str(self.parameter_type_id) + ">"	
+		
+
+
 class RuleType(db.Model):
 	__tablename__ = "rule_types"
 	query = None
@@ -191,8 +219,8 @@ class RuleType(db.Model):
 	name = db.Column(db.String(128), unique=False)
 	long_name = db.Column(db.String(128), unique=False)
 	description = db.Column(db.String(512), unique=False)
-	score_types = db.relationship("ScoreType", secondary=rule_score_table)
-	parameter_types = db.relationship("RuleParameterType", secondary=rule_parameter_table)
+	#score_types = db.relationship("ScoreType", secondary=rule_score_table)
+	#parameter_types = db.relationship("RuleParameterType", secondary=rule_parameter_table)
 	
 	# whether the rule needs the win expectancy output of other rules as its input
 	is_backref_rule = db.Column(db.Boolean, unique=False)
@@ -220,6 +248,28 @@ class RuleType(db.Model):
 		
 		self.standard_weight = 0.0
 		self.is_default_rule = False
+	
+	def addScoreType(self, score_type, session):
+		session.add(Rule2ScoreAssociation(self, score_type))
+	
+	def getScoreTypes(self, session):
+		types = []
+		all_assocs = session.query(Rule2ScoreAssociation).filter_by(rule_type_id=self.id).all()
+		for assoc in all_assocs:
+			score_type = session.query(ScoreType).filter_by(id=assoc.score_type_id).first()
+			types.append(score_type)
+		return types
+	
+	def addParameterType(self, parameter_type, session):
+		session.add(Rule2ParameterAssociation(self, parameter_type))
+	
+	def getParameterTypes(self, session):
+		types = []
+		all_assocs = session.query(Rule2ParameterAssociation).filter_by(rule_type_id=self.id).all()
+		for assoc in all_assocs:
+			type = session.query(RuleParameterType).filter_by(id=assoc.parameter_type_id).first()
+			types.append(type)
+		return types
 	
 	def makeDefaultRule(self, standard_weight):
 		self.is_default_rule = True
@@ -339,8 +389,7 @@ class Score(db.Model):
 	# returns the score value for a team
 	# this can either the the global value or the tournament-specific one
 	@staticmethod
-	def getForTournament(type_id, tournament_id, team_id):
-		session = getSession()
+	def getForTournament(type_id, tournament_id, team_id, session):
 		local_score = session.query(Score).filter_by(type_id=type_id, tournament_id=tournament_id, team_id=team_id).first()
 		if local_score:
 			return local_score
@@ -498,9 +547,7 @@ class MatchResult(db.Model):
 	
 	# returns a list with all matches that lead to this match
 	# usually, this method is called on a finals game and returns the complete brackets
-	def resolveBrackets(self):
-		session = getSession() # no need to clean up, since this will not create a duplicate object but just return the currently active one (which will be cleaned up by a parent function)
-		
+	def resolveBrackets(self, session):
 		resolved = [self]
 		# best of 32? nothing more to resolve..
 		if self.bof_round == 16:

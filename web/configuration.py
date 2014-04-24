@@ -11,6 +11,8 @@ class WCSConfiguration:
 	# database configuration
 	database_connection_string = "mysql://user:password@localhost/databasename"
 	database_connection_password = "secret database pw"
+	database_max_pool_overflow = 40
+	database_pool_timeout = 30
 	
 	# session configuration
 	session_secret_key = "secret session key"

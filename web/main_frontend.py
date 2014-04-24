@@ -74,7 +74,7 @@ def teams_view():
 		# add team to output
 		all_team_data.append(team_info)
 	
-	Session.remove()
+	cleanupSession()
 	return render_template('teams.html', scores=all_score_data, teams=all_team_data)
 
 @app.route("/tournaments")
@@ -88,15 +88,16 @@ def tournaments_view():
 		# get all tournaments including their states
 		for association in user.tournaments:
 			tournament = association.tournament
+			tournament_type = session.query(TournamentType).filter_by(id=tournament.type_id).first()
 			all_tournaments_data.append({
-				"name": tournament.tournament_type.name,
+				"name": tournament_type.name,
 				"state": tournament.getStateName(),
 				"id": tournament.id,
 				"rules": tournament.rule_weight_json,
 				"time": int((association.timestamp - datetime(1970, 1, 1)).total_seconds())
 				})
 			
-	Session.remove()
+	cleanupSession()
 	return render_template('tournaments.html', tournaments=all_tournaments_data)
 
 @app.route("/tournament/<int:id>")
@@ -105,18 +106,20 @@ def tournament_view(id):
 	
 	tournament = session.query(Tournament).filter_by(id=id).first()
 	if not tournament:
-		Session.remove()
+		cleanupSession()
 		abort(404)
 	if tournament.state == TournamentState.running:
+		cleanupSession()
 		return "Tournament still running.."
 	elif tournament.state == TournamentState.pending:
+		cleanupSession()
 		return "Tournament not yet started.."
 	elif tournament.state == TournamentState.error:
 		all_errors = session.query(TournamentExecutionError).filter_by(tournament_id=id).all()
-		Session.remove()
+		cleanupSession()
 		return render_template('tournament_errors.html', errors=all_errors)
 		
-	all_teams = Team.getAllTeamsForTournament(tournament.id)
+	all_teams = Team.getAllTeamsForTournament(tournament.id, session)
 	all_result_place_types = session.query(ResultPlaceType).filter_by(tournament_id=tournament.id).order_by(ResultPlaceType.place).all()
 	
 	colors = ['#dddd00', '#eeeeee', '#ee9900', '#a4a4ff', '#cccccc', '#bbbbbb']
@@ -158,8 +161,9 @@ def tournament_view(id):
 		"run_count": tournament.run_count
 		}
 	
-	custom_view_function = tournament.tournament_type.custom_view_function
-	Session.remove()
+	tournament_type = session.query(TournamentType).filter_by(id=tournament.type_id).first()
+	custom_view_function = tournament_type.custom_view_function
+	cleanupSession()
 	
 
 	if custom_view_function:
@@ -171,36 +175,38 @@ def tournament_view(id):
 def new_tournament_view():
 	session = getSession()
 	all_tournament_types = session.query(TournamentType).all()
-	Session.remove()
+	cleanupSession()
 	return render_template('create.html', types=all_tournament_types, run_count=config.simulation_run_count)
 
 @app.route('/create_simple')
 @cache.cached()
 def simple_new_tournament_view():
 	session = getSession();
-	tournament_type = Session.query(TournamentType).filter_by(internal_identifier="worldcup").first()
-	all_standard_rule_types = Session.query(RuleType).filter_by(is_default_rule=True).all()
-	all_teams = Session.query(Team).limit(tournament_type.team_count).all()
+	tournament_type = session.query(TournamentType).filter_by(internal_identifier="worldcup").first()
+	all_standard_rule_types = session.query(RuleType).filter_by(is_default_rule=True).all()
+	all_teams = session.query(Team).limit(tournament_type.team_count).all()
 	# special treatment for the "custom score" rule
 	custom_score_info = {}
 	for rule_type in all_standard_rule_types:
 		if rule_type.name != "Custom":
 			continue
-		custom_score_info["score_type"] = rule_type.score_types[0].id
-		custom_score_info["par_type"] = rule_type.parameter_types[0].id
+		custom_score_info["score_type"] = rule_type.getScoreTypes(session)[0].id
+		custom_score_info["par_type"] = rule_type.getParameterTypes(session)[0].id
 		break
 	
-	Session.remove()
+	cleanupSession()
 	return render_template('create_simple.html', tournament_type=tournament_type, rules=all_standard_rule_types, teams=all_teams, run_count=config.simulation_run_count, custom_score_rule=custom_score_info)
 
 @app.route('/json/state/tournament:<int:id>')
 def tournament_state_json(id):
 	session = getSession()
 	tournament = session.query(Tournament).filter_by(id=id).first()
-	Session.remove();
+	cleanupSession()
 	if not tournament:
 		abort(404)
-	return json.dumps({"state":tournament.getStateName()})
+		
+	state_info = json.dumps({"state":tournament.getStateName()})
+	return state_info
 	
 @app.route('/json/rules/tournament:<int:id>')
 def rules_json(id):
@@ -209,7 +215,7 @@ def rules_json(id):
 	rules = []
 	for rule in all_rules:
 		rules.append(rule.toDictionary())
-	Session.remove()
+	cleanupSession()
 	return json.dumps({'rules':rules})
 
 @app.route('/json/teams', methods=['POST'])
@@ -225,7 +231,7 @@ def teams_json():
 	# collect all score types for the active rules
 	for rule in info["rules"]:
 		rule_type = session.query(RuleType).filter_by(id=rule).first()
-		for score_type in rule_type.score_types:
+		for score_type in rule_type.getScoreTypes(session):
 			all_score_data[str(score_type.id)] = {"name":score_type.name, "desc":score_type.description}
 		
 	# now the teams
@@ -240,19 +246,20 @@ def teams_json():
 				team_data["scores"][str(score.type_id)] = score.value;
 		all_team_data["teams"].append(team_data)
 	all_team_data["scores"] = all_score_data;
-	Session.remove()
+	cleanupSession()
 	# print all_team_data
 	return json.dumps(all_team_data)
 	
 @app.route('/json/register_tournament', methods=['POST'])
 def register_tournament_json():
-	session = getSession()
-	
 	info = json.loads(request.form["info"])
 	hash_code = hash(repr(info))
 	
+	session = getSession()
+	
 	return_value = {"status":"OK", "message":"Your tournament has been created!"}
 	def abort(message):
+		cleanupSession()
 		return_value["status"] = "FAIL"
 		return_value["message"] = message
 		return json.dumps(return_value)
@@ -281,7 +288,7 @@ def register_tournament_json():
 				score_type_id = int(custom_rating)
 				custom_score = float(team_data["ratings"][custom_rating])
 				
-				default_score = Session.query(Score).filter_by(tournament_id=None, team_id=team.id, type_id=score_type_id).first()
+				default_score = session.query(Score).filter_by(tournament_id=None, team_id=team.id, type_id=score_type_id).first()
 				if default_score and default_score.value == custom_score:
 					continue
 				else:
@@ -307,7 +314,7 @@ def register_tournament_json():
 				continue
 			all_rules.append((rule, rule_weight)) # add as tuple
 			# and require parameters for that rule
-			for parameter_type in rule.parameter_types:
+			for parameter_type in rule.getParameterTypes(session):
 				needed_rule_parameters.append(parameter_type)
 		if len(all_rules) == 0:
 			raise Exception("You need to have active rules.")
@@ -327,10 +334,8 @@ def register_tournament_json():
 				break
 		
 	except ValueError:
-		Session.remove()
 		return abort("Type check failed.")
 	except Exception as e:
-		Session.remove()
 		return abort(str(e))
 	
 	# all checks passed
@@ -365,10 +370,12 @@ def register_tournament_json():
 	if not existing_association: 
 		session.add(UserTournamentMapping(user, tournament))
 	
+	tournament_id = None
 	if not existing_tournament:
 		session.add(tournament)
 		# commit so that we have a correct ID
 		session.commit()
+		tournament_id = tournament.id
 		
 		# make the teams join the tournament
 		for i in range(0, len(all_teams)):
@@ -396,12 +403,17 @@ def register_tournament_json():
 		tournament.rule_weight_json = json.dumps(rule_quick_lookup)
 		# tournament is go
 		session.commit()
-		simulation_dispatcher.checkDispatchment()
+
+		simulation_dispatcher.dispatchTournament(tournament_id, session)
 	else:
 		# commit the new user-tournament relationship
 		session.commit()
-	return_value["tournament_id"] = tournament.id
-	Session.remove()
+		tournament_id = tournament.id
+	cleanupSession()
+		
+	# note that the original "tournament" object is not valid anymore since the session has been removed
+	return_value["tournament_id"] = tournament_id
+	
 	return json.dumps(return_value)
 
 # custom view function for FIFA style tournament
@@ -435,7 +447,7 @@ def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_dat
 
 			match_dict["game_" + str(bracket) + "_" + str(game_in_round)] = team_list
 	
-	Session.remove()
+	cleanupSession()
 	
 	# create a quick lookup table for team names
 	team_lookup = {}
@@ -445,5 +457,11 @@ def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_dat
 	return render_template('tournament_fifa.html', teams=all_team_data, matches=json.dumps(match_dict), team_lookup=json.dumps(team_lookup), general=general)
 	
 if __name__ == '__main__':
-	# "threaded=True" to fix an error with the IE9..
+	# "threaded=True" to fix an error with the IE9 in local deployment mode..
+	# the IE9 might hang the whole application that way. There is a fix available, but not in the released packages.
 	app.run(host=config.flask_host, port=config.flask_port, threaded=True)
+
+	
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+	cleanupSession()

@@ -13,25 +13,27 @@ class Dispatcher():
 		self.config = config
 		
 	# looks for a pending tournament and starts a simulation if one is found
-	def checkDispatchment(self):
-		session = getSession() # no need to remove, because this is generally called from a request
-		
+	def checkDispatchment(self, tournament_id, session):
 		open_tournament = session.query(Tournament).filter_by(state=TournamentState.pending).with_lockmode("update").first()
 		# no open jobs?
 		if not open_tournament:
 			return
 			
-		self.dispatchTournament(open_tournament)
-	
+		self.dispatchTournament(open_tournament, session)
+		
 	# prepare tournament data and finally executeDispatchment
-	def dispatchTournament(self, tournament):
-		session = getSession() # no need to clean up because called from a request
-		tournament.state = TournamentState.running
-		session.commit()
-				
+	def dispatchTournament(self, tournament_id, session):
 		# from here on everything needs to be protected to reset tournaments in case of failures
+		tournament = None
 		try:
-			json_object = self.toDictForSimulationInput(tournament)
+			tournament = session.query(Tournament).filter_by(id=tournament_id).first()
+			if not tournament:
+				config.logger.warning("Tournament object not found for dispatchment.. ID " + str(tournament_id))
+				return
+			tournament.state = TournamentState.running
+			session.commit()
+			
+			json_object = self.toDictForSimulationInput(tournament, session)
 			self.executeDispatchment(json_object)
 		except Exception as e:
 			tournament.state = TournamentState.error
@@ -51,17 +53,15 @@ class Dispatcher():
 		pass
 		
 	# creates a dictionary that can be used to create JSON from it and pass it to the simulation program
-	def toDictForSimulationInput(self, tournament):
-		session = getSession()
-		
+	def toDictForSimulationInput(self, tournament, session):	
 		# this is the root of the tree with all global config settings for the simulation
+		tournament_type = session.query(TournamentType).filter_by(id=tournament.type_id).first()
 		dict = {
 			"thread_count": self.config.simulation_thread_count,
 			"tournament_id": tournament.id,
 			"run_count": self.config.simulation_run_count,
-			"tournament_type": tournament.tournament_type.internal_identifier
+			"tournament_type": tournament_type.internal_identifier
 			}
-		
 		# get all active rules for this tournament and calculate needed scores
 		rules = []
 		all_rules = session.query(Rule).filter_by(tournament_id=tournament.id).all()
@@ -74,19 +74,20 @@ class Dispatcher():
 				"function": rule_type.internal_function_identifier,
 				"backref": rule_type.is_backref_rule
 				}
+			
 			# every rule has certain scores associated
 			needed_score_types_data = []
-			for score_type in rule_type.score_types:
+			for score_type in rule_type.getScoreTypes(session):
 				needed_score_types_data.append(score_type.name)
 				
 				# remember score type for later
 				if not score_type in all_unique_score_types:
 					all_unique_score_types.append(score_type)
 			rule_data["scores"] = needed_score_types_data
-			
+
 			# rules might need custom parameters from the user
 			parameters = {}
-			for parameter_type in rule_type.parameter_types:
+			for parameter_type in rule_type.getParameterTypes(session):
 				# check if parameter for this tournament exists
 				parameter = session.query(RuleParameter).filter_by(type_id=parameter_type.id, tournament_id=tournament.id).first()
 				value = parameter.value if parameter != None else parameter_type.default_value
@@ -104,18 +105,17 @@ class Dispatcher():
 			team_data = {"id": team.id}
 			score_data = {}
 			for score_type in all_unique_score_types:
-				score = Score.getForTournament(score_type.id, tournament.id, team.id)
+				score = Score.getForTournament(score_type.id, tournament.id, team.id, session)
 				score_data[score_type.name] = score.value
 			team_data["scores"] = score_data
 			
 			teams.append(team_data)
 		dict["teams"] = teams
-			
+
 		return dict
 	
 	# after a successful simulation, the result needs to be put into the DB
-	def parseJSONResults(self, json_object, tournament):
-		session = getSession()
+	def parseJSONResults(self, json_object, tournament, session):
 		try:
 			# first get the general ranking layout (aka "1, 2, 3, 4, REST") and save it
 			rank_counter = 0 # for correct sorting later
@@ -173,4 +173,3 @@ class Dispatcher():
 					session.add(error)
 		
 		session.commit()
-		
