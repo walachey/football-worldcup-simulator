@@ -1,3 +1,6 @@
 [submodule "simulation/deps"]
 	path = simulation/deps
 	url = https://github.com/walachey/football-worldcup-simulator-deps.git
+[submodule "chef"]
+	path = chef
+	url = https://github.com/databus23/football-worldcup-simulator-chef.git
