@@ -252,11 +252,9 @@ def teams_json():
 	
 @app.route('/json/register_tournament', methods=['POST'])
 def register_tournament_json():
-	info = json.loads(request.form["info"])
-	hash_code = hash(repr(info))
-	
+	# some preparations
 	session = getSession()
-	
+
 	return_value = {"status":"OK", "message":"Your tournament has been created!"}
 	def abort(message):
 		cleanupSession()
@@ -269,74 +267,88 @@ def register_tournament_json():
 	all_custom_scores = [] # {team_id, score_type_id, score}
 	all_rule_parameters = [] # {par_type_id, value}
 	
-	try:
-		# check valid tournament type
-		tournament_type = session.query(TournamentType).filter_by(id=int(info["tournament_type"])).first()
-		if not tournament_type:
-			raise Exception("No valid tournament type selected.")
-		# check all teams
-		for team_data in info["teams"]:
-			team = session.query(Team).filter_by(id=int(team_data["id"])).first()
-			if not team:
-				raise Exception("Invalid team selected (ID " + str(team_data["id"]) + ").")
-			if team in all_teams:
-				raise Exception("Selected team twice.")
-			all_teams.append(team)
+	# get request string from parameters and create a hash
+	# only one tournament per hash will ever be simulated
+	json_request_string = request.form["info"]
+	hash_code = hash(json_request_string)
+
+	# we can now check whether a tournament with the exact same parameters has already been simulated.
+	# instead of running the simulation another time, we can simply present that tournament to the user.
+	existing_tournament = session.query(Tournament).filter_by(hash=hash_code).filter(Tournament.state!=TournamentState.error).first()
+	
+	
+	# if no existing tournament was found, we actually have to parse the parameters
+	if not existing_tournament:
+		try:
+			info = json.loads(json_request_string)
 			
-			# now go through customized ratings and add them iff they differ from the default rating
-			for custom_rating in team_data["ratings"]:
-				score_type_id = int(custom_rating)
-				custom_score = float(team_data["ratings"][custom_rating])
+			# check valid tournament type
+			tournament_type = session.query(TournamentType).filter_by(id=int(info["tournament_type"])).first()
+			if not tournament_type:
+				raise Exception("No valid tournament type selected.")
+			# check all teams
+			for team_data in info["teams"]:
+				team = session.query(Team).filter_by(id=int(team_data["id"])).first()
+				if not team:
+					raise Exception("Invalid team selected (ID " + str(team_data["id"]) + ").")
+				if team in all_teams:
+					raise Exception("Selected team twice.")
+				all_teams.append(team)
 				
-				default_score = session.query(Score).filter_by(tournament_id=None, team_id=team.id, type_id=score_type_id).first()
-				if default_score and default_score.value == custom_score:
+				# now go through customized ratings and add them iff they differ from the default rating
+				for custom_rating in team_data["ratings"]:
+					score_type_id = int(custom_rating)
+					custom_score = float(team_data["ratings"][custom_rating])
+					
+					default_score = session.query(Score).filter_by(tournament_id=None, team_id=team.id, type_id=score_type_id).first()
+					if default_score and default_score.value == custom_score:
+						continue
+					else:
+						all_custom_scores.append({"team_id": team.id, "score_type_id":score_type_id, "score":custom_score})
+				
+			# every tournament type has an obligatory team count
+			if len(all_teams) != tournament_type.team_count:
+				return abort("Selected an invalid amount of teams.")
+			# and every tournament needs active rules
+			needed_rule_parameters = []
+			for rule_data in info["rules"]:
+				rule = session.query(RuleType).filter_by(id=int(rule_data["id"])).first()
+				if not rule:
+					abort("Invalid rule selected.")
+				for (old_rule, old_weight) in all_rules:
+					if old_rule == rule:
+						raise Exception("Selected rule twice.")
+				rule_weight = float(rule_data["weight"])
+				if rule_weight < 0.0:
+					# the only possibility to reach this code-point is when the user tampered with the POST data..
+					raise Exception("Rules with negative weight not allowed.")
+				if rule_weight == 0.0:
 					continue
-				else:
-					all_custom_scores.append({"team_id": team.id, "score_type_id":score_type_id, "score":custom_score})
+				all_rules.append((rule, rule_weight)) # add as tuple
+				# and require parameters for that rule
+				for parameter_type in rule.getParameterTypes(session):
+					needed_rule_parameters.append(parameter_type)
+			if len(all_rules) == 0:
+				raise Exception("You need to have active rules.")
 			
-		# every tournament type has an obligatory team count
-		if len(all_teams) != tournament_type.team_count:
-			return abort("Selected an invalid amount of teams.")
-		# and every tournament needs active rules
-		needed_rule_parameters = []
-		for rule_data in info["rules"]:
-			rule = session.query(RuleType).filter_by(id=int(rule_data["id"])).first()
-			if not rule:
-				abort("Invalid rule selected.")
-			for (old_rule, old_weight) in all_rules:
-				if old_rule == rule:
-					raise Exception("Selected rule twice.")
-			rule_weight = float(rule_data["weight"])
-			if rule_weight < 0.0:
-				# the only possibility to reach this code-point is when the user tampered with the POST data..
-				raise Exception("Rules with negative weight not allowed.")
-			if rule_weight == 0.0:
-				continue
-			all_rules.append((rule, rule_weight)) # add as tuple
-			# and require parameters for that rule
-			for parameter_type in rule.getParameterTypes(session):
-				needed_rule_parameters.append(parameter_type)
-		if len(all_rules) == 0:
-			raise Exception("You need to have active rules.")
-		
-		# the rules can have custom parameters
-		for parameter in info["rule_parameters"]:
-			par_id = int(parameter)
-			par_value = float(info["rule_parameters"][parameter])
+			# the rules can have custom parameters
+			for parameter in info["rule_parameters"]:
+				par_id = int(parameter)
+				par_value = float(info["rule_parameters"][parameter])
+				
+				# only remember if required
+				for i in range(len(needed_rule_parameters)):
+					parameter = needed_rule_parameters[i]
+					if not parameter or parameter.id != par_id:
+						continue
+					all_rule_parameters.append({"par_type_id": par_id, "value":par_value})
+					needed_rule_parameters[i] = None
+					break
 			
-			# only remember if required
-			for i in range(len(needed_rule_parameters)):
-				parameter = needed_rule_parameters[i]
-				if not parameter or parameter.id != par_id:
-					continue
-				all_rule_parameters.append({"par_type_id": par_id, "value":par_value})
-				needed_rule_parameters[i] = None
-				break
-		
-	except ValueError:
-		return abort("Type check failed.")
-	except Exception as e:
-		return abort(str(e))
+		except ValueError:
+			return abort("Type check failed.")
+		except Exception as e:
+			return abort(str(e))
 	
 	# all checks passed
 	# firstly, get the user ID from the browser session or generate a new one that is not in use yet
@@ -352,9 +364,6 @@ def register_tournament_json():
 		user_session.permanent = True
 	else:
 		user_existed = True
-	# we can now check whether a tournament with the exact same parameters has already been simulated.
-	# instead of running the simulation another time, we can simply present that tournament to the user.
-	existing_tournament = session.query(Tournament).filter_by(hash=hash_code).filter(Tournament.state!=TournamentState.error).first()
 		
 	# we can now create a new tournament execution request
 	tournament = existing_tournament or Tournament(tournament_type.id, hash_code, config.simulation_run_count)
@@ -455,6 +464,11 @@ def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_dat
 		team_lookup[team.id] = {"name": team.name, "country_code":team.country_code}
 	
 	return render_template('tournament_fifa.html', teams=all_team_data, matches=json.dumps(match_dict), team_lookup=json.dumps(team_lookup), general=general)
+
+# this apparently needs to be before the app.run() call to work correctly
+@app.teardown_request
+def teardown_request(exception):
+	cleanupSession()
 	
 if __name__ == '__main__':
 	# "threaded=True" to fix an error with the IE9 in local deployment mode..
@@ -462,6 +476,3 @@ if __name__ == '__main__':
 	app.run(host=config.flask_host, port=config.flask_port, threaded=True)
 
 	
-@app.teardown_appcontext
-def shutdown_session(exception=None):
-	cleanupSession()
