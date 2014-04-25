@@ -1,6 +1,7 @@
 CPP_FILES := $(wildcard *.cpp) $(wildcard deps/json_spirit/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
-LD_FLAGS := -pthread
+LD_FLAGS := 
+LD_LIBS := -Wl,--no-as-needed -pthread
 CC_FLAGS := -std=c++11 -I deps -pthread
 
 
@@ -13,7 +14,7 @@ else
 endif
 
 simulator: $(OBJ_FILES)
-	g++ $(LD_FLAGS) -o $@ $^
+	g++ $(LD_FLAGS) -o $@ $^ $(LD_LIBS) 
 	
 ifdef MOVE
 	@echo "Moving simulator to worker directory.."
