@@ -22,6 +22,7 @@ end
 
 template ::File.join node['wmsimulator']['web_install_base'], 'shared/configuration_custom.py'  do
   source 'configuration.py.erb'
+  notifies :reload, 'service[apache2]'
 end
 
 deploy_revision 'web' do
