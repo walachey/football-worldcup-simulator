@@ -6,7 +6,7 @@ default['wmsimulator']['simulator_install_base'] = '/opt/wmsimulator/simulation'
 default['wmsimulator']['simulator_install_dir'] =  ::File.join node['wmsimulator']['simulator_install_base'], 'current', 'simulation'
 default['wmsimulator']['worker_install_dir'] =  ::File.join node['wmsimulator']['simulator_install_base'], 'current', 'worker'
 default['wmsimulator']['qless_install_dir'] = '/opt/wmsimulator/qless-web' 
-default['wmsimulator']['repository'] = 'https://github.com/databus23/football-worldcup-simulator.git' 
+default['wmsimulator']['repository'] = 'https://github.com/walachey/football-worldcup-simulator.git' 
 default['wmsimulator']['revision'] = 'master' 
 default['wmsimulator']['thread_count'] = 8
 
