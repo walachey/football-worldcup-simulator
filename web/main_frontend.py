@@ -2,6 +2,7 @@ import sys
 import random
 from datetime import datetime
 from os.path import abspath, dirname # to fix app.root_path issues when deploying via wsgi
+import hashlib
 
 # local includes
 from configuration import main_configuration as config
@@ -270,7 +271,7 @@ def register_tournament_json():
 	# get request string from parameters and create a hash
 	# only one tournament per hash will ever be simulated
 	json_request_string = request.form["info"]
-	hash_code = hash(json_request_string)
+	hash_code = hashlib.md5(json_request_string).hexdigest()
 
 	# we can now check whether a tournament with the exact same parameters has already been simulated.
 	# instead of running the simulation another time, we can simply present that tournament to the user.

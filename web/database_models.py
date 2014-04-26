@@ -67,7 +67,7 @@ class Tournament(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	state = db.Column(db.SmallInteger, unique=False, default=TournamentState.pending)
 	run_count = db.Column(db.Integer)
-	hash = db.Column(db.Integer)
+	hash = db.Column(db.String(32))
 	
 	type_id = db.Column(db.Integer, db.ForeignKey('tournament_types.id'))
 
