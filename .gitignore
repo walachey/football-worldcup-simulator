@@ -29,5 +29,5 @@ ipch/
 [Rr]elease*/
 Ankh.NoLoad
 .vagrant/
-chef/cookbooks
 tmp/
+berks-cookbooks
