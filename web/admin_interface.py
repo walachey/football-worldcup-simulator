@@ -44,12 +44,13 @@ class AuthModelView(ModelView):
 def init(app, new_cache):
 	global admin
 	global cache
-	global Session
+	session = getSession()
 	cache = new_cache
 	admin = Admin(app, index_view=LoginView(name='Login/Logout'))
 
-	admin.add_view(AuthModelView(RuleType, Session))
-	admin.add_view(AuthModelView(ScoreType, Session))
-	admin.add_view(AuthModelView(TournamentType, Session))
-	admin.add_view(AuthModelView(Team, Session))
-	admin.add_view(AuthModelView(TournamentExecutionError, Session))
+	admin.add_view(AuthModelView(RuleType, session))
+	admin.add_view(AuthModelView(ScoreType, session))
+	admin.add_view(AuthModelView(TournamentType, session))
+	admin.add_view(AuthModelView(Team, session))
+	admin.add_view(AuthModelView(TournamentExecutionError, session))
+	cleanupSession()
