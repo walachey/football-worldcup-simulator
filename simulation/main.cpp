@@ -68,6 +68,18 @@ int main(int argc, char* argv[])
 		assert (false);
 		exit(1);
 	}
+	catch (const char *s)
+	{
+		std::cerr << s << std::endl;
+		assert(false);
+		exit(1);
+	}
+	catch (std::string &s)
+	{
+		std::cerr << s << std::endl;
+		assert(false);
+		exit(1);
+	}
 	catch(...)
 	{
 		std::cerr << "An unexpected error occurred." << std::endl;

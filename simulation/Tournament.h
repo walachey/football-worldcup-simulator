@@ -41,6 +41,9 @@ public:
 	static Tournament* newOfType(std::string type, Simulation *sim, int runs);
 	// after all matches have been played, extract team results
 	void calculateTeamResults();
+	// different tournament types can require different setups
+	// to catch possible errors with the data transmission, the setup can be checked and the simulation can be aborted here
+	virtual void doSanityChecks(){};
 private:
 	// initializes certain values and prepares for the runs
 	void init();
@@ -78,6 +81,7 @@ class FIFAStyleTournament : public Tournament
 {
 public:
 	FIFAStyleTournament(Simulation *sim, int runs) : Tournament(sim, runs) {}
+	virtual void doSanityChecks();
 private:
 	virtual void execRun();
 	// both functions will return the winner for the current stage

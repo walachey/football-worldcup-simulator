@@ -372,4 +372,15 @@ std::vector<Team*> FIFAStyleTournament::runKnockout(int matches)
 	return winners;
 }
 
+
+void FIFAStyleTournament::doSanityChecks()
+{
+	if (simulation->teams.size() != 32)
+	{
+		std::ostringstream os;
+		os << "Tournament has " << simulation->teams.size() << " teams. 32 are expected.\nThe simulation will be stopped.";
+		throw os.str();
+	}
+}
+
 }; // namespace sim

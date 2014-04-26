@@ -88,6 +88,7 @@ void Simulation::execute()
 	{
 		int runsForTournament = std::min(remainingRuns, runsPerThread);
 		tournaments[i] = Tournament::newOfType(tournamentType, this, runsForTournament);
+		tournaments[i]->doSanityChecks(); // allow the tournament some checking prior to the launch
 		threads[i] = std::thread(&Tournament::start, tournaments[i]);
 	}
 	
