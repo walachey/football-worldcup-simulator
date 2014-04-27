@@ -109,12 +109,9 @@ def tournament_view(id):
 	if not tournament:
 		cleanupSession()
 		abort(404)
-	if tournament.state == TournamentState.running:
+	if tournament.state == TournamentState.running or tournament.state == TournamentState.pending:
 		cleanupSession()
-		return "Tournament still running.."
-	elif tournament.state == TournamentState.pending:
-		cleanupSession()
-		return "Tournament not yet started.."
+		return render_template('tournament_running.html')
 	elif tournament.state == TournamentState.error:
 		all_errors = session.query(TournamentExecutionError).filter_by(tournament_id=id).all()
 		cleanupSession()
