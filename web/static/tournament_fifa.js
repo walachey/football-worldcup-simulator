@@ -29,7 +29,7 @@ function fillBrackets(json_data, team_lookup)
 		
 		if (round == 16)
 		{
-			round_table.append('<h3><small>The expected number of points are shown.</small></h3>');
+			round_table.append('<h3><small>groups with expected number of points</small></h3>');
 		}
 		
 		for (var game_index = 0; game_index < games_count; ++game_index)
