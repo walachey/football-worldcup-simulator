@@ -121,7 +121,7 @@ value_rule.makeDefaultRule(0.25)
 session.add(value_rule)
 
 ha_rule = RuleType("HA", "Adjust the win expectancy based on the home-advantage", "homeadvantage_binary", long_name="Home-advantage", is_backref_rule=True)
-ha_rule.makeDefaultRule(0.0)
+ha_rule.makeDefaultRule(1.0)
 session.add(ha_rule)
 
 age_rule = RuleType("Age", "Calculation based on average age", "age_binary")
