@@ -47,6 +47,11 @@ def index_view():
 @cache.cached()
 def impressum_view():
 	return render_template('impressum.html')
+
+@app.route('/technical_details')
+@cache.cached()
+def technical_details_view():
+	return render_template('technical_details.html')
 	
 @app.route('/teams')
 @cache.cached()

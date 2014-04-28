@@ -1,0 +1,97 @@
+# extends "base_layout.html"
+# block head
+{{ super() }}
+<script language="javascript">
+$(document).ready(
+	function() 
+    { 
+		$("#nav_technical_details").toggleClass("active");
+    } 
+);
+</script>
+<style>
+{{'#'}}main_container {
+	font-size: medium;
+}
+.infotext {
+	margin-top: 2em;
+	margin-bottom: 2em;
+	padding: 1em;
+}
+
+blockquote {
+	margin-top:1em;
+}
+</style>
+# endblock
+
+# block contents
+<h1>Technical Details<br><small>This is meant as a short and concise overview about the simulation itself.</h1>
+
+<div class="infotext">
+The simulator plays through both the group phase and the knockout stage, simulating the results of every single match. To determine the winner of a match, the win expectancy for both teams is calculated based on the rules that the user has selected (see <a href="#rules"><i>The Rules</i></a>).<br>
+After having calculated the win expectancy, the probability of a draw (during the group phase) and the estimated goals are calculated <i>based on the win expectancy</i>. As an example, imagine a match between a strong team and a weaker team: the win expectancy for the strong team could be much higher than 50%, maybe 70%. In this uneven match, the probability for draws is lower than in an even match and the stronger team is more likely to score more goals.
+<br><br>
+When all probabilities are known, random rolls are made to determine whether the match is a draw, who is the winning team, and the amount of goals for both sides.
+<br><br>
+The tournament is simulated multiple times and in the end statistics over all runs are collected. All results that the user can see are direct observations from the tournament. Since the simulation is a probabilistic process, meaning it involves a lot of randomness, only higher simulation counts provide an accurate overview of the results and minimize the influence of luck. When you play only one simulation, the winner is not necessarily the team with the highest chance to win the World Cup - they might just have been lucky!
+</div>
+
+<div class="infotext">
+<h2 id="rules">The Rules</h2>
+The simulator uses certain rules to calculate the win expectancy between two teams. All rules are based on one of the two team's ratings (see the page <a href='{{ url_for("teams_view") }}'><i>Team&#8217;s Data</i></a>).
+
+<div class="infotext">
+<h3>Elo Rating</h3>
+Originally developed for chess, the Elo rating has proven to be a good estimate of team's strength in different types of sports.
+To calculate a win expectancy from the Elo rating, we use the standard formula that is also used in chess.
+The most recent soccer Elo ratings can be found on <a href="http://www.eloratings.net/">eloratings.net</a>.
+</div>
+
+<div class="infotext">
+<h3>SPI Rating</h3>
+The SPI rating system was designed by Nate Silver for <a href="http://ESPN.com/">ESPN.com</a> specifically to rate the strength of soccer teams. After every match, the SPI system takes different factors into account to adjust a team's rating so that the rating always represents the current shape of a team. A team always has an offensive and a defensive SPI score. For a detailed explanation, see <a href="http://www.espnfc.com/world-cup/story/_/id/4447078/ce/us/guide-espn-spi-ratings">here</a>.<br>
+Unlike Elo, the SPI system does not come with a simple formula to calculate the win expectancy based on two team's SPI ratings. For this simulation, an own approach has been chosen:<br>
+Since the SPI ratings represent the expected amount of goals a team would score and receive on average, we combine the offensive rating from one team with the defensive rating from the other team to estimate the average amount of goals for each side. When the expected goals for both sides are known, a Poisson distribution around those goals is assumed, from which the probability to win the game for both sides can be computed.
+<blockquote>
+<h4>An Example:</h4>
+Imagine a match between Brazil with an offensive SPI rating of 3.4 and an defensive SPI rating of 0.5 versus Croatia with 1.7 and 0.9 respectively.<br>
+The expected amount of goals for Brazil would then be (3.4 + 0.9)/2 = 2.15 and for Croatia (1.7 + 0.5)/2 = 1.1 resulting in a win expectancy of around 77% for Brazil (not including draws).
+</blockquote>
+</div>
+
+<div class="infotext">
+<h3>FIFA Rating</h3>
+The official <a href="http://www.fifa.com/worldranking/rankingtable/">FIFA/Coca-Cola World Ranking</a> is used to rank all national teams based on their performance in recent matches.<br>
+The FIFA rating does not come with a formula to calculate the win expectancy in a single match, either. We had a look at past World Cup games and the teams' FIFA ratings from that time to deduce such a formula ourselves. The simulator uses a sigmoidal model similar to the formula used in Elo for the final calculation.
+</div>
+
+<div class="infotext">
+<h3>Market Value</h3>
+The average market value is the average of the market values of the team's players. A market value for a player is determined whenever the player transfers to a different club and the site <a href="http://www.transfermarkt.de/en/nationalmannschaften/startseite/nationalmannschaften.html">transfermarkt.de</a> archives and provides the team's market values.<br>
+Similar to the FIFA rating, an own formula to calculate the win expectancy based on two team's market values has been deduced from past FIFA World Cup games.
+</div>
+
+<div class="infotext">
+<h3>Average Age</h3>
+The average age of a team, provided by <a href="http://www.transfermarkt.de/">transfermarkt.de</a>, is the average age from all participating players of a team.<br>
+Looking at past FIFA games, a formula that portrays the influence of the average age on a team's performance has been deduced. However, since the influence is much lower than with the other rating rules, the default weight is precautionarily set to 0.
+</div>
+
+<div class="infotext">
+<h3>Home-Advantage</h3>
+Unlike the other rules, the home-advantage rule is applied <i>after</i> the other rules and only adjusts the win expectancy of a team. For example, when a team would have a win expectancy of 50% and has the home-advantage, the win expectancy would be adjusted to around 66%.
+</div>
+</div>
+
+<div class="infotext">
+<h2>Draws</h2>
+A formula to calculate the probability for a draw based on the win expectancies of two teams in a match has been derived from historical FIFA World Cup matches.
+This formula is applied to the final win expectancy of a team in a match and is not influenced by the user-selected weights of the different rules.
+</div>
+
+<div class="infotext">
+<h2>Number of Goals</h2>
+Similar to the formula for draws, a formula for the expected amount of goals based on the known win expectancies of two teams in a match has been derived from archived FIFA World Cup matches. The formula uses a Poisson distribution with the lambda calculated from the resulting win expectancy of a team.
+</div>
+# endblock
