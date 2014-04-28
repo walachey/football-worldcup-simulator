@@ -8,7 +8,7 @@ $(document).ready(
 	function()
 	{
 		setGeneralTournamentPageLink("{{ url_for("tournament_view", id=0) }}");
-		setTournamentRunCount({{ run_count }});
+		setMaxTournamentRunCount({{ run_count_max }});
 	}
 );
 </script>
@@ -74,7 +74,8 @@ $(document).ready(
 	<div class="selbox-con" style="display:none">
 	<div class="headtab"><span>Run</span></div>
 	<div id="finish_setup" class="container selbox selbox-info">
-		<div class="headpart"><h2>You are done with the setup!<br><small>This will simulate the complete tournament with your custom rules {{ run_count }} times.</small></h2>
+		<div class="headpart"><h2>You are done with the setup!<br><small>This will simulate the complete tournament with your custom rules {{ run_count_max }} times.</small></h2>
+		<div style="text-align:left;">Simulations: <input value="{{ run_count_max }}" id="run_count_par" class="rule_parameter" data-type_id="{{ run_count_par.id }}"></div>
 		<div class="btn btn-default" style="margin-bottom:20px;" onclick="javascript:startTournament();">Start the Tournament Simulation</div>
 		</div>
 		<div id="goto_tournament" style="display:none;"><div class="info small"></div></div>

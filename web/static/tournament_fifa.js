@@ -26,6 +26,12 @@ function fillBrackets(json_data, team_lookup)
 			"<td id='column_" + round_index.toString() + "' style='z-index:100'><table class='round' name='" + round_name + "' id='round_index_" + round_index + "' style='z-index:" + (100-round) + "'>" +
 			"</table></td>");
 		var round_table = table_body.find("#round_index_" + round_index).first();
+		
+		if (round == 16)
+		{
+			round_table.append('<h3><small>The expected number of points are shown.</small></h3>');
+		}
+		
 		for (var game_index = 0; game_index < games_count; ++game_index)
 		{
 			var game = games_in_rounds[round_index][game_index];
@@ -34,7 +40,7 @@ function fillBrackets(json_data, team_lookup)
 				"<table class='game' id='" + name + "'>" +
 				"</table>");
 			var game_table = round_table.find("#" + name).first();
-			//console.log("Game: " + name);
+
 			// the group get assigned their letter, because they are not in the expected order for better overview..
 			if (round == 16)
 			{

@@ -25,7 +25,7 @@ import socket # for catching socket.error
 
 app = config.getFlaskApp()
 app.root_path = abspath(dirname(__file__)) # this fixes incorrect root-path deployment issues
-cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+cache = Cache(app, config={'CACHE_TYPE': 'null'})
 admin_interface.init(app, cache)
 simulation_dispatcher = config.dispatcher_class(db, config)
 # initialize random numbers for user ID generation
@@ -41,7 +41,7 @@ def define_globals():
 @app.route('/')
 @cache.cached()
 def index_view():
-	return render_template('index.html')
+	return render_template('index.html', run_count_max=config.simulation_max_run_count)
 
 @app.route('/impressum')
 @cache.cached()
@@ -95,6 +95,7 @@ def tournaments_view():
 				"state": tournament.getStateName(),
 				"id": tournament.id,
 				"rules": tournament.rule_weight_json,
+				"run_count": tournament.run_count,
 				"time": int((association.timestamp - datetime(1970, 1, 1)).total_seconds())
 				})
 			
@@ -151,7 +152,7 @@ def tournament_view(id):
 		
 		team_data["general"] = session.query(Result).filter_by(tournament_id=tournament.id, team_id=team.id).first()
 		all_team_data.append(team_data)
-	
+		
 	# now allow for custom rendering
 	general = {
 		"colors": colors[:len(all_result_place_types)],
@@ -173,8 +174,9 @@ def tournament_view(id):
 def new_tournament_view():
 	session = getSession()
 	all_tournament_types = session.query(TournamentType).all()
+	run_count_par = session.query(RuleParameterType).filter_by(internal_identifier="simulation_run_count").first()
 	cleanupSession()
-	return render_template('create.html', types=all_tournament_types, run_count=config.simulation_run_count)
+	return render_template('create.html', types=all_tournament_types, run_count_max=config.simulation_max_run_count, run_count_par=run_count_par)
 
 @app.route('/create_simple')
 @cache.cached()
@@ -183,6 +185,7 @@ def simple_new_tournament_view():
 	tournament_type = session.query(TournamentType).filter_by(internal_identifier="worldcup").first()
 	all_standard_rule_types = session.query(RuleType).filter_by(is_default_rule=True).all()
 	all_teams = session.query(Team).limit(tournament_type.team_count).all()
+	run_count_par = session.query(RuleParameterType).filter_by(internal_identifier="simulation_run_count").first()
 	# special treatment for the "custom score" rule
 	custom_score_info = {}
 	for rule_type in all_standard_rule_types:
@@ -193,7 +196,7 @@ def simple_new_tournament_view():
 		break
 	
 	cleanupSession()
-	return render_template('create_simple.html', tournament_type=tournament_type, rules=all_standard_rule_types, teams=all_teams, run_count=config.simulation_run_count, custom_score_rule=custom_score_info)
+	return render_template('create_simple.html', tournament_type=tournament_type, rules=all_standard_rule_types, teams=all_teams, run_count_max=config.simulation_max_run_count, custom_score_rule=custom_score_info, run_count_par=run_count_par)
 
 @app.route('/json/state/tournament:<int:id>')
 def tournament_state_json(id):
@@ -263,15 +266,17 @@ def register_tournament_json():
 	all_rules = []
 	all_teams = []
 	all_custom_scores = [] # {team_id, score_type_id, score}
-	all_rule_parameters = [] # {par_type_id, value}
+	all_simulation_parameters = [] # {par_type_id, value}, contains both rule and global simulation parameters
+	needed_simulation_parameters = [] # the parameter types that are needed by the tournament
+	tournament_run_count = None # shortcut for the parameter value
 	
 	# get request string from parameters and create a hash
 	# only one tournament per hash will ever be simulated
 	json_request_string = request.form["info"]
 	hash_code = hashlib.md5(json_request_string).hexdigest()
 
-	# we can now check whether a tournament with the exact same parameters has already been simulated.
-	# instead of running the simulation another time, we can simply present that tournament to the user.
+	# We can now check whether a tournament with the exact same parameters has already been simulated.
+	# Instead of running the simulation another time, we can simply present that tournament to the user.
 	existing_tournament = session.query(Tournament).filter_by(hash=hash_code).filter(Tournament.state!=TournamentState.error).first()
 	
 	
@@ -308,7 +313,6 @@ def register_tournament_json():
 			if len(all_teams) != tournament_type.team_count:
 				return abort("Selected an invalid amount of teams.")
 			# and every tournament needs active rules
-			needed_rule_parameters = []
 			for rule_data in info["rules"]:
 				rule = session.query(RuleType).filter_by(id=int(rule_data["id"])).first()
 				if not rule:
@@ -325,9 +329,13 @@ def register_tournament_json():
 				all_rules.append((rule, rule_weight)) # add as tuple
 				# and require parameters for that rule
 				for parameter_type in rule.getParameterTypes(session):
-					needed_rule_parameters.append(parameter_type)
+					needed_simulation_parameters.append(parameter_type)
 			if len(all_rules) == 0:
 				raise Exception("You need to have active rules.")
+			
+			# the tournament always needs a few parameters
+			simulation_run_count_parameter = session.query(RuleParameterType).filter_by(internal_identifier="simulation_run_count").first()
+			needed_simulation_parameters.append(simulation_run_count_parameter)
 			
 			# the rules can have custom parameters
 			for parameter in info["rule_parameters"]:
@@ -335,12 +343,20 @@ def register_tournament_json():
 				par_value = float(info["rule_parameters"][parameter])
 				
 				# only remember if required
-				for i in range(len(needed_rule_parameters)):
-					parameter = needed_rule_parameters[i]
+				for i in range(len(needed_simulation_parameters)):
+					parameter = needed_simulation_parameters[i]
 					if not parameter or parameter.id != par_id:
 						continue
-					all_rule_parameters.append({"par_type_id": par_id, "value":par_value})
-					needed_rule_parameters[i] = None
+					all_simulation_parameters.append({"par_type_id": par_id, "value":par_value})
+					needed_simulation_parameters[i] = None
+					
+					# safety checks
+					if parameter == simulation_run_count_parameter:
+						number_of_runs = int(par_value)
+						if number_of_runs <= 0 or number_of_runs > config.simulation_max_run_count:
+							raise Exception("Number of runs must be between 1 and " + str(config.simulation_max_run_count) + ".")
+							
+						tournament_run_count = number_of_runs
 					break
 			
 		except ValueError:
@@ -364,7 +380,7 @@ def register_tournament_json():
 		user_existed = True
 		
 	# we can now create a new tournament execution request
-	tournament = existing_tournament or Tournament(tournament_type.id, hash_code, config.simulation_run_count)
+	tournament = existing_tournament or Tournament(tournament_type.id, hash_code, tournament_run_count)
 	
 	# check if the user already did the simulation before
 	# if so, move it to the end of the My Tournaments list by adjusting the timestamp
@@ -403,7 +419,7 @@ def register_tournament_json():
 			# optimization for the tournament list
 			rule_quick_lookup[rule_type.name] = weight
 		# and add parameters to the rules if necessary
-		for rule_parameter in all_rule_parameters:
+		for rule_parameter in all_simulation_parameters:
 			par = RuleParameter(tournament.id, rule_parameter["par_type_id"], rule_parameter["value"])
 			session.add(par)
 		# save rule setup quick-access for tournaments list

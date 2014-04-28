@@ -67,7 +67,7 @@ function populateRuleSelectionDialog(json_results)
 								function(index, item)
 								{
 									rule_list.append(
-										'<tr class="btn btn-default" onclick="javascript:onRuleSelected(' + item.id + ', \'' + item.name + '\', \'' + item.desc + '\');">' +
+										'<tr class="btn btn-default" onclick="javascript:onRuleSelected(' + item.id + ', \'' + escape(item.name) + '\', \'' + escape(item.desc) + '\');">' +
 										'<td>' + item.long_name + '</td>' + 
 										'<td>' + item.desc + '</td>' +
 										'</tr>'

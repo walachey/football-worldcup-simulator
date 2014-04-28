@@ -7,7 +7,10 @@
 # block contents
 <div style="height:4em;width:100%;">
 <h3 style="position:absolute;margin-left:0px;">The result distribution</h3>
-<div style="width:100%" align="right"><span class="btn btn-default" onclick="javascript:viewDataForSpreadsheets()">data for spreadsheets</span></div>
+<div style="width:100%;" align="right">
+	<span style="float:right" class="btn btn-default" onclick="javascript:viewDataForSpreadsheets()">data for spreadsheets</span>
+	<img style="float:right" src="{{ url_for('static', filename='img/ArrowDown.png') }}">
+</div>
 </div>
 <div id="spreadsheet_dialog" style="margin-left:auto;margin-right:auto;text-align:center;display:none;"><em>This can be copied and pasted into spreadsheet software:</em><br><textarea id="spreadsheet_text" rows="20" cols="60"></textarea></div>
 
@@ -21,7 +24,7 @@
 	<div class="bar" style="background-color:{{ general.colors[i] }};width:20%;">{{ general.result_names[i] }}{% if i < general.colors|length - 1 %} place{% endif %}</div>
 # endfor
 </small></th>
-<th>Avg. Goals</th><th>In Finals</th>
+<th>Avg. Goals</th><th style="width:10em;">1st or 2nd place</th>
 </tr></thead>
 <tbody>
 # for team in teams

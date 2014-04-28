@@ -101,8 +101,10 @@ session.add(ScoreType("SPI Def", "ESPN SPI Defensive Rating", long_name="SPI Def
 custom_rule_parameter = RuleParameterType("normalization_constant", 10.0)
 session.add(custom_rule_parameter)
 
+session.add(RuleParameterType("simulation_run_count", 1))
+
 # add default ELO calculation rule
-elo_rule = RuleType("ELO", "Calculation using the ELO score.", "elo_binary")
+elo_rule = RuleType("ELO", "Calculation using the ELO score", "elo_binary")
 elo_rule.makeDefaultRule(1.0)
 session.add(elo_rule)
 
@@ -110,23 +112,23 @@ spi_rule = RuleType("SPI", "Calculation based on ESPN's Soccer-Power-Index", "sp
 spi_rule.makeDefaultRule(1.0)
 session.add(spi_rule)
 
-fifa_rule = RuleType("FIFA", "Calculation using the FIFA ranking.", "fifa_binary")
+fifa_rule = RuleType("FIFA", "Calculation using the FIFA ranking", "fifa_binary")
 fifa_rule.makeDefaultRule(0.5)
 session.add(fifa_rule)
 
-value_rule = RuleType("Value", "Calculation based on average player value.", "value_binary")
+value_rule = RuleType("Value", "Calculation based on average player market value", "value_binary")
 value_rule.makeDefaultRule(0.25)
 session.add(value_rule)
 
-ha_rule = RuleType("HA", "Adjust the win expectancy based on the home-advantage.", "homeadvantage_binary", long_name="Home-advantage", is_backref_rule=True)
-ha_rule.makeDefaultRule(1.0)
+ha_rule = RuleType("HA", "Adjust the win expectancy based on the home-advantage", "homeadvantage_binary", long_name="Home-advantage", is_backref_rule=True)
+ha_rule.makeDefaultRule(0.0)
 session.add(ha_rule)
 
-age_rule = RuleType("Age", "Calculation based on average age.", "age_binary")
+age_rule = RuleType("Age", "Calculation based on average age", "age_binary")
 age_rule.makeDefaultRule(0.0)
 session.add(age_rule)
 
-luck_rule = RuleType("Luck", "Even the unexpected can happen!", "luck_binary")
+luck_rule = RuleType("Luck", "Each team has the same probability of winning", "luck_binary")
 luck_rule.makeDefaultRule(0.0)
 session.add(luck_rule)
 

@@ -9,7 +9,7 @@ $(document).ready(
 	{
 		setGeneralTournamentPageLink("{{ url_for("tournament_view", id=0) }}");
 		setSelectedTournamentTypeID({{ tournament_type.id }});
-		setTournamentRunCount({{ run_count }});
+		setMaxTournamentRunCount({{ run_count_max }});
 	}
 );
 </script>
@@ -23,13 +23,23 @@ $(document).ready(
 	</table></div>
 	## The rule selection widget.
 	<div class="selbox-con selbox-con-ok">
-	<div class="headtab"><span>Rules</span></div>
+	<div class="headtab"><span style="margin-top:6em;">New&nbsp;Tournament</span></div>
 	<div id="choose_rules" class="container selbox selbox-ok" style="pointer-events: auto;padding-bottom:0px;">
 		<div class="headpart"><h2>Customize the rules<br><small>You can customize the weights of the different ranking rules and define how much influence they will have on the simulation.</small></h2>
 		</div>
+		## the radar chart
 		<div class="row-fluid full">
 		<div class="col-xs-12 col-md-3" style="min-width:300px;text-align:center;">
 		<canvas id="rulecanvas" width="300" height="300"></canvas>
+		## the start-tournament button below
+		<div id="finish_setup" style="margin-top:-2em">
+		<div class="headpart">
+			<div style="text-align:left;">Simulations: <input value="{{ run_count_max }}" id="run_count_par" class="rule_parameter" data-type_id="{{ run_count_par.id }}"><small style="display:none;" class="error"><br>Must be between 1 and {{ run_count_max }}!</small></div>
+			<div class="btn btn-success btn-lg" style="margin-bottom:1em;margin-top:0.5em;width:100%;" onclick="javascript:if (validateRuleSelection()) startTournament();">Start the Simulations</div>
+		</div>
+		<div id="goto_tournament" style="display:none;"><div class="info small"></div></div>
+		<div id="starting_progressbar" style="width:100%;display:none;"></div>
+		</div>
 		</div>
 		
 		<div class="col-xs-12 col-md-8">
@@ -129,19 +139,6 @@ $(document).ready(
 		# endfor
 		</tbody>
 		</table>
-	</div>
-	</div>
-	
-	## User confirmation before starting the tournament.
-	<div class="selbox-con">
-	<div class="headtab"><span>Run</span></div>
-	<div id="finish_setup" class="container selbox selbox-info">
-		<div class="headpart">
-		<h2><small>This will simulate the complete tournament with your custom rules {{ run_count }} times.</small></h2>
-		<div class="btn btn-success btn-lg" style="margin-bottom:0px; width:100%;" onclick="javascript:if (validateRuleSelection()) startTournament();">Start the Tournament Simulation</div>
-		</div>
-		<div id="goto_tournament" style="display:none;"><div class="info small"></div></div>
-		<div id="starting_progressbar" style="width:100%;display:none;"></div>
 	</div>
 	</div>
 # endblock

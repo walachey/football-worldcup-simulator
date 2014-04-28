@@ -32,7 +32,6 @@ $(document).ready(
 .all_games > table > tbody > td {
 	border: 1px dashed black;
 }
-
 .round {
 	margin-top: 2em;
 	vertical-align: middle;
@@ -79,6 +78,16 @@ table[name='round_16'] tbody{
 	background-color: #eeffee;
 }
 
+.all_games > table > tbody > td {
+	height:60em;
+}
+
+table[name='round_16'] h3 {
+	position:absolute;
+	margin-top:-6em;
+	text-align:center;
+}
+
 .flag {
 	border:1px solid black;
 }
@@ -93,7 +102,8 @@ table[name='round_16'] tbody{
 # endblock
 
 # block contents
-<h1>Results<small>Probabilities under 1% are not shown.</small></h1>
+<h1>Results</h1>
+<h3><small>Probabilities under 1% are not shown.</small></h3>
 <div class="all_games">
 	<table>
 	<thead>

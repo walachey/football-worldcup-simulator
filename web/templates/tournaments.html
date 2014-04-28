@@ -20,7 +20,7 @@
 	<h1>Your tournaments<br><small>These are your previously simulated tournaments.</small></h1>
 	<table id="tournamentstable" class="tablesorter-green">
 	<thead><tr>
-	<th>Tournament Page</th><th>Date/Time</th><th>Active Rules</th><th>State</th>
+	<th>Tournament Page</th><th>Date/Time</th><th>Active Rules</th><th>Number of Simulations</th><th>State</th>
 	</tr></thead>
 	<tbody>
 	# for tournament in tournaments
@@ -30,6 +30,7 @@
 		</td>
 		<td class="timestamp">{{ tournament.time }}</td>
 		<td class="rule_info">{{ tournament.rules }}</td>
+		<td>{{ tournament.run_count }}</td>
 		<td>{{ tournament.state }}</td>
 		</tr>
 	# endfor

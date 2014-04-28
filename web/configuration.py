@@ -19,7 +19,7 @@ class WCSConfiguration:
 	session_auto_timeout = 7200
 	
 	# for running the actual simulation
-	simulation_run_count = 1000 # total runs per simulation
+	simulation_max_run_count = 1000 # maximum runs per simulation
 	dispatcher_class = None # if None, the local dispatcher will be used
 	
 	# for the local dispatcher

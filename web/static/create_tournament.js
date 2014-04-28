@@ -1,6 +1,13 @@
 // we need the IE to not cache AJAX responses..
 $.ajaxSetup({ cache: false });
 
+$(document).ready(
+	function() 
+    { 	
+		$("#run_count_par").change(function() { onRunCountParChange(); });
+    } 
+);
+
 /*
 	Some global variables and getter/setters are used to pass information over dialogs/ajax requests and the like.
 */
@@ -12,9 +19,9 @@ function setSelectedTournamentTypeID(to) { window.selected_tournament_type_id = 
 window.general_tournament_page_link = null;
 function getGeneralTournamentPageLink() { return window.general_tournament_page_link; }
 function setGeneralTournamentPageLink(to) { window.general_tournament_page_link = to; }
-window.tournament_run_count = 0;
-function getTournamentRunCount() { return window.tournament_run_count; }
-function setTournamentRunCount(to) { window.tournament_run_count = to; }
+window.tournament_max_run_count = 0;
+function getMaxTournamentRunCount() { return window.tournament_max_run_count; }
+function setMaxTournamentRunCount(to) { window.tournament_max_run_count = to; }
 
 function setSectionState(id, to_state)
 {
@@ -38,6 +45,30 @@ function setSectionState(id, to_state)
 	{
 		$(id).parent().hide("blind");
 	}
+}
+
+function onRunCountParChange()
+{
+	var run_count_par = $("#run_count_par");
+	var value = parseInt(run_count_par.val());
+	var valid = true;
+	
+	if (!value || isNaN(value) || value > getMaxTournamentRunCount() || value <= 0)
+	{
+		valid = false;
+		
+		if (value < 1)
+			value = 1;
+		else if (value > getMaxTournamentRunCount() || isNaN(value))
+			value = getMaxTournamentRunCount();
+		$("#finish_setup .error").show("fade");
+		run_count_par.val(value);
+	}
+	
+	if (valid)
+		run_count_par.removeClass("error");
+	else
+		run_count_par.addClass("error");
 }
 
 // validates the rule input and (may) put the selected rules into an array passed as the /rule_ids/ argument. The remaining rule data will be put into the /rule_data/ object
@@ -180,7 +211,7 @@ function startTournament()
 
 function redirectTo(tournament_id, tournament_link)
 {
-	var html = '<div id="loading_dialog" style="margin-left:auto;margin-right:auto;text-align:center;">Please wait while ' + getTournamentRunCount().toString() + ' simulations are running..<br><img src="static/img/loader.gif"><small style="display:none;"><br><hr>If you are not redirected automatically, visit the <strong><a href="/tournaments">My Tournaments</a></strong> page.</small></div>';
+	var html = '<div id="loading_dialog" style="margin-left:auto;margin-right:auto;text-align:center;">Please wait while ' + parseInt($("#run_count_par").val()).toString() + ' simulations are running..<br><img src="static/img/loader.gif"><small style="display:none;"><br><hr>If you are not redirected automatically, visit the <strong><a href="/tournaments">My Tournaments</a></strong> page.</small></div>';
 	$("#main_container").append(html);
 	$("#loading_dialog").dialog(
 		{
@@ -228,6 +259,9 @@ function redirectionTimer(tournament_id, tournament_link, seconds_passed)
 				
 				if (data.state == "finished")
 				{
+					// this is a fix for certain browsers which show the active dialogs on history.back
+					$("#loading_dialog").dialog('close');
+					
 					window.location = tournament_link;
 					return;
 				}

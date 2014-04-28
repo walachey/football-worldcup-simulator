@@ -17,7 +17,7 @@ $(document).ready(
         <h1>World Cup Simulator</h1>
 		
 		<div class="infotext">
-		This is a probabilistic simulator for the upcoming football world-cup. It applies different rules to rate the strength of the teams and to calculate a team's chance to win in a match.<br>
+		This is a probabilistic simulator for the upcoming soccer World Cup. It applies different rules to rate the strength of the teams and to calculate a team's chance to win in a match.<br>
 		Repeating the simulation of the tournament multiple times results in a probability distribution, that shows how likely a team is to advance to the finals.
 		</div>
 
@@ -32,15 +32,14 @@ $(document).ready(
 					<div class="right-side">
 						<div class="right-text">
 							<div class="infotext">
-							<h3>What to do?</h3><br>
+							<h3>What to do?</h3>
+							 After clicking the <i>Play World Cup</i> button below, do the following:<br><br>
 							<dl class="dl">
-                <dt></dt>
-                <dd>After clicking the <i>Play World Cup</i> button below, do the following:</dd>
 								<dt>Select Rules</dt>
 								<dd>Select weights for the rules (or use the default values).<br>
 								The rule weights determine how much your simulation will be influenced by the different rating methods.</dd>
 								<dt>Start the tournament</dt>
-								<dd>Click the <i>Start Tournament</i> button and %i simulations of the World Cup will be run. The probability of winning will be computed.</dd>
+								<dd>Click the <i>Start Tournament</i> button and {{ run_count_max }} simulations of the World Cup will be run. The probability of winning will be computed for every team.</dd>
 							</dl>
 							</div>
 						</div>
@@ -59,7 +58,7 @@ $(document).ready(
 		</div>
 		
 		<div class="infotext">
-		This world Cup simulator was developed at Freie&nbsp;Universit&auml;t&nbsp;Berlin in the Artificial&nbsp;Intelligence&nbsp;Group.
+		This World Cup simulator was developed at Freie&nbsp;Universit&auml;t&nbsp;Berlin in the Artificial&nbsp;Intelligence&nbsp;Group.
 		</div>
       </div>
 # endblock

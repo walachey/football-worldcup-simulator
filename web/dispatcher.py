@@ -56,10 +56,11 @@ class Dispatcher():
 	def toDictForSimulationInput(self, tournament, session):	
 		# this is the root of the tree with all global config settings for the simulation
 		tournament_type = session.query(TournamentType).filter_by(id=tournament.type_id).first()
+		
 		dict = {
 			"thread_count": self.config.simulation_thread_count,
 			"tournament_id": tournament.id,
-			"run_count": self.config.simulation_run_count,
+			"run_count": tournament.run_count,
 			"tournament_type": tournament_type.internal_identifier
 			}
 		# get all active rules for this tournament and calculate needed scores
