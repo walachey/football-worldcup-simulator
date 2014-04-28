@@ -277,7 +277,7 @@ def register_tournament_json():
 
 	# We can now check whether a tournament with the exact same parameters has already been simulated.
 	# Instead of running the simulation another time, we can simply present that tournament to the user.
-	existing_tournament = session.query(Tournament).filter_by(hash=hash_code).filter(Tournament.state!=TournamentState.error).first()
+	existing_tournament = session.query(Tournament).filter_by(hash=hash_code).filter(Tournament.state!=TournamentState.error, Tournament.run_count > 10).first()
 	
 	
 	# if no existing tournament was found, we actually have to parse the parameters
