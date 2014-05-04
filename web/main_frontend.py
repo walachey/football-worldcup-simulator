@@ -25,7 +25,7 @@ import socket # for catching socket.error
 
 app = config.getFlaskApp()
 app.root_path = abspath(dirname(__file__)) # this fixes incorrect root-path deployment issues
-cache = Cache(app, config={'CACHE_TYPE': 'null'})
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 admin_interface.init(app, cache)
 simulation_dispatcher = config.dispatcher_class(db, config)
 # initialize random numbers for user ID generation
@@ -35,7 +35,8 @@ random.seed()
 @app.context_processor
 def define_globals():
 	return {
-		"show_custom_tournament_page": config.show_custom_tournament_page
+		"show_custom_tournament_page": config.show_custom_tournament_page,
+		"google_analytics_code": config.google_analytics_code
 	}
 
 @app.route('/')

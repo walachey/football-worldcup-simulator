@@ -38,6 +38,11 @@ class WCSConfiguration:
 	# whether the "custom tournament" page will be visible
 	show_custom_tournament_page = False
 	
+	# this is the custom Google Analytics codeline that is unique for every webpage
+	# for example: "ga('create', 'UA-1234556-8', 'example.com');"
+	# can be set to None to disable GA
+	google_analytics_code = None
+	
 	# this will be set on initialization
 	logger = None
 	
