@@ -3,6 +3,22 @@
 
 #include "Simulation.h"
 
+#ifdef __GNUC__
+#include <execinfo.h>
+#include <signal.h>
+
+void handler(int sig)
+{
+	void *array[20];
+	size_t size;
+	size = backtrace(array, 20);
+	fprintf(stderr, "Error: signal %d:\n", sig);
+	backtrace_symbols_fd(array, size, STDERR_FILENO);
+	exit(-11);
+}
+
+#endif
+
 void debug_terminate()
 {
 	std::cerr << "Uncaught exception." << std::endl;
@@ -11,6 +27,13 @@ void debug_terminate()
 
 int main(int argc, char* argv[])
 {
+
+	std::set_terminate(debug_terminate);
+	
+#ifdef __GNUC__
+	signal(SIGSEGV, handler);
+#endif
+
 	// options can either be passed as a filename in the command line or as input to stdin
 	std::string inputFilename = "";
 	for (int i = 1; i < argc; ++i)
@@ -41,7 +64,6 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 
-	std::set_terminate(debug_terminate);
 
 #ifdef NDEBUG
 	try
