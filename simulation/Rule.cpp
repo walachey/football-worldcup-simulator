@@ -44,6 +44,10 @@ Rule::Rule(json_spirit::Object &data)
 		}
 	}
 
+	if (calculationFunction == &Rule::calc_spi_binary)
+	{
+		generateExpectancyMatrix(&Rule::calculateSPIWinExpectancy);
+	}
 }
 
 
@@ -136,8 +140,6 @@ double Rule::calc_age_binary(Team &left, Team &right, double *weight, double *cu
 
 double Rule::calc_spi_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy)
 {
-	if (probabilityLookupMatrix.empty())
-		generateExpectancyMatrix(&Rule::calculateSPIWinExpectancy);
 	return probabilityLookupMatrix[left.index][right.index];
 }
 
