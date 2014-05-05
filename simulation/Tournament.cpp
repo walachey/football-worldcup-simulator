@@ -198,7 +198,7 @@ std::vector<Team*> FIFAStyleTournament::runQualification()
 				result.gameInRound = bracketNumber;
 				addMatchResult(result);
 
-				for (size_t resultIndex = 0; resultIndex < 2; ++resultIndex)
+				for (int resultIndex = 0; resultIndex < 2; ++resultIndex)
 				{
 					Team &team = (resultIndex == 0) ? teamOne : teamTwo;
 					Team &opposingTeam = (resultIndex == 0) ? teamTwo : teamOne;

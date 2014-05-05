@@ -3,7 +3,6 @@
 #include "Simulation.h"
 
 #include <random>
-#include <chrono>
 
 namespace sim
 {
@@ -102,8 +101,6 @@ Match::~Match()
 
 MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &left, Team &right, bool forceWinner)
 {
-	static unsigned int SEED = (unsigned int)std::chrono::system_clock::now().time_since_epoch().count();
-	++SEED;
 	// use two chances for scoring - some rules are not necessarily symmetrical and should still work as good as possible
 	double chanceLeftVsRight(0.0), chanceRightVsLeft(0.0);
 	// the maximum weight of the normal rules. Used to scale backreferencing rules correctly
@@ -177,9 +174,9 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 	int winnerIndex = -1;
 
 	std::random_device seeder;
-	auto leftSideGoalRoller = std::bind(std::poisson_distribution<>(2.0 * (normalizedChanceLeftVsRight)+(1.0 / 3.0)), std::mt19937(SEED + seeder()));
-	auto rightSideGoalRoller = std::bind(std::poisson_distribution<>(2.0 * (1.0 - normalizedChanceLeftVsRight)+(1.0 / 3.0)), std::mt19937(SEED + seeder()));
-	auto uniformRoller = std::bind(std::uniform_real_distribution<double>(0.0, 1.0), std::mt19937(SEED + seeder()));
+	auto leftSideGoalRoller = std::bind(std::poisson_distribution<>(2.0 * (normalizedChanceLeftVsRight)+(1.0 / 3.0)), std::mt19937(simulation->randomSeed + seeder()));
+	auto rightSideGoalRoller = std::bind(std::poisson_distribution<>(2.0 * (1.0 - normalizedChanceLeftVsRight) + (1.0 / 3.0)), std::mt19937(simulation->randomSeed + seeder()));
+	auto uniformRoller = std::bind(std::uniform_real_distribution<double>(0.0, 1.0), std::mt19937(simulation->randomSeed + seeder()));
 
 	bool hadOvertime = false;
 
@@ -197,15 +194,11 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 
 	if (!isDraw)
 	{
-		do
-		{
-			const double winnerSide = uniformRoller();
-			if (winnerSide < normalizedChanceLeftVsRight)
-				winnerIndex = 0;
-			else
-				winnerIndex = 1;
-			break;
-		} while (true);
+		const double winnerSide = uniformRoller();
+		if (winnerSide < normalizedChanceLeftVsRight)
+			winnerIndex = 0;
+		else
+			winnerIndex = 1;
 
 		// roll goals until someone wins
 		do
@@ -233,7 +226,7 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 		if (safetyCounter <= 0)
 		{
 			std::cerr << "Goal rolling did not terminate!" << std::endl;
-			std::cerr << "Chance: " << chanceLeftVsRight << ", C4D: " << chanceForDraw << ", chance: " << (2.0 * (normalizedChanceLeftVsRight)+(1.0 / 3.0)) << ", seed: " << SEED << std::endl;
+			std::cerr << "Chance: " << chanceLeftVsRight << ", C4D: " << chanceForDraw << ", chance: " << (2.0 * (normalizedChanceLeftVsRight)+(1.0 / 3.0)) << std::endl;
 			std::cerr << "Current sample: " << goals[0] << ":" << goals[1] << ", winner: " << winnerIndex << std::endl;
 			exit(1);
 		}

@@ -18,7 +18,7 @@ public:
 	static int NoPlace;
 
 	Tournament(Simulation *sim, int runs) : simulation(sim), remainingRuns(runs) { init(); };
-	~Tournament();
+	virtual ~Tournament();
 
 	Simulation *simulation;
 
@@ -56,6 +56,7 @@ class OneVersusOneTournament : public Tournament
 {
 public:
 	OneVersusOneTournament(Simulation *sim, int runs) : Tournament(sim, runs) {}
+	virtual ~OneVersusOneTournament() {}
 private:
 	virtual void execRun();
 };
@@ -81,6 +82,7 @@ class FIFAStyleTournament : public Tournament
 {
 public:
 	FIFAStyleTournament(Simulation *sim, int runs) : Tournament(sim, runs) {}
+	virtual ~FIFAStyleTournament() {}
 	virtual void doSanityChecks();
 private:
 	virtual void execRun();

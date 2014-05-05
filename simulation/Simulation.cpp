@@ -2,6 +2,7 @@
 #include "Simulation.h"
 
 #include <thread>
+#include <chrono>
 
 namespace sim
 {
@@ -15,6 +16,7 @@ void Simulation::reset()
 
 	numberOfThreads = 1;
 	tournamentID = 0;
+	randomSeed = (unsigned int)std::chrono::system_clock::now().time_since_epoch().count();
 }
 
 Simulation::Simulation(json_spirit::Value &jsonData)

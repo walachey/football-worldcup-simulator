@@ -173,6 +173,8 @@ void Rule::generateExpectancyMatrix(double (*fun)(Team&, Team&))
 	{
 		for (Team &right : Simulation::singleton->teams)
 		{
+			assert(left.index >= 0 && left.index < Simulation::singleton->teams.size());
+			assert(right.index >= 0 && right.index < Simulation::singleton->teams.size());
 			double prob_left = fun(left, right);
 			double prob_right = fun(right, left);
 			probabilityLookupMatrix[left.index][right.index] = prob_left;

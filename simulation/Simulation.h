@@ -41,6 +41,8 @@ public:
 	void fillRankResults(json_spirit::Array &ranks);
 	void fillTeamResults(json_spirit::Array &teams, std::string cluster);
 	void fillMatchResults(json_spirit::Array &results, std::string cluster);
+
+	unsigned int randomSeed;
 };
 
 }
