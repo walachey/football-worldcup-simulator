@@ -64,8 +64,6 @@ body {
 {
 	width: 25%;
 	direction:ltr;
-	float:left;
-	display: inline;
 	position:absolute;
 }
 .right-side
@@ -77,7 +75,6 @@ body {
 {
 	padding: 2em;
 	padding-top: 3em;
-	height: 450px;
 }
 .right-text dd
 {
@@ -92,5 +89,4 @@ body {
 .btn-go
 {
 	width: 100%;
-	
 }

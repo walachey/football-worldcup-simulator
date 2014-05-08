@@ -1,0 +1,91 @@
+
+.container {
+	min-width: 81em;
+}
+
+.all_games {
+	width: 100%;
+}
+
+.table_header {
+	width: 9em;
+	background-color: #eeeeee;
+	text-align: center;
+	vertical-align: middle;
+	font-variant: small-caps;
+	font-weight: bold;
+	border: 1px dashed black;
+}
+.all_games > table > tbody > td {
+	border: 1px dashed black;
+}
+.round {
+	margin-top: 2em;
+	vertical-align: middle;
+	text-align: left;
+	position: relative;
+	width: 100%;
+}
+.game {
+	margin-bottom: 2em;
+	vertical-align: middle;
+	text-align: left;
+	width: 100%;
+	font-size:0.75em;
+	
+	box-shadow: 0px 0px 20px #888888;
+}
+
+.highlighted {
+	background-color: #aaaaaa;
+	box-shadow: 0px 0px 5px #111111;
+}
+
+td.chance {
+	text-align: right;
+}
+
+table[name='round_1'] tbody{
+	background-color: #ffffee;
+}
+
+table[name='round_2'] tbody{
+	background-color: #eeeeee;
+}
+
+table[name='round_4'] tbody{
+	background-color: #ffeeee;
+}
+
+table[name='round_8'] tbody{
+	background-color: #eeeeff;
+}
+
+table[name='round_16'] tbody{
+	background-color: #eeffee;
+}
+
+.all_games > table > tbody > td {
+	height:60em;
+}
+
+table[name='round_16'] h3 {
+	position:absolute;
+	margin-top:-6em;
+	text-align:center;
+}
+
+.flag {
+	border:1px solid black;
+}
+
+.arrowdiv {
+	width: 100%;
+	max-height: 0px;
+}
+img.arrowcenter {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	padding-top: 40px;
+}
