@@ -15,16 +15,25 @@ class LoginView(AdminIndexView):
 	@expose('/', methods=['POST', 'GET'])
 	def index(self):
 		cachecleared = False
+		invalidated_tournaments = False
 		if "pw" in request.form: # login
 			user_session["adminpw"] = md5.new(request.form["pw"]).digest()
 			return self.render("admin_login.html", refresh=True, logged_in=True)
-		elif request.method == 'POST': # logout
-			user_session["adminpw"] = ""
-		elif "clearcache" in request.args:
+		elif "invalidate_tournament_cache" in request.form:
+			session = getSession()
+			tournaments = session.query(Tournament).all()
+			for tournament in tournaments:
+				tournament.hash = ""
+			session.commit()
+			cleanupSession()
+			invalidated_tournaments = True
+		elif "clearcache" in request.form:
 			cache.clear()
 			cachecleared = True
+		elif request.method == 'POST': # logout
+			user_session["adminpw"] = ""
 			
-		return self.render("admin_login.html", refresh=False, logged_in=LoginView.is_logged_in(), cachecleared=cachecleared)
+		return self.render("admin_login.html", refresh=False, logged_in=LoginView.is_logged_in(), cachecleared=cachecleared, invalidated_tournaments=invalidated_tournaments)
 		
 	@staticmethod
 	def is_logged_in():

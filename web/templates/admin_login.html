@@ -25,14 +25,26 @@
 			Admin Passwort: <input name="pw" type="password" value="">
 		{% endif %}
 		</form>
-		</p>
 		
 		{% if logged_in %}
-		<form method="GET">
+		<hr>
+		<form method="POST">
 			{% if cachecleared %}
 			<span class="fakebtn btn-success">Cache cleared!</span>
 			{% else %}
-			<button class="btn btn-warning" name="clearcache" type="submit" value="1">Clear Cache</button>
+			<input type="hidden" name="clearcache" value="1">
+			<button class="btn btn-warning" type="submit" value="1">Clear Cache</button>
+			<h4><small>All web pages will be generated fresh from the database.</small></h4>
+			{% endif %}
+		</form>
+		<hr>
+		<form method="POST" onsubmit="return confirm('Really invalidate tournament cache?');">
+			{% if invalidated_tournaments %}
+			<span class="fakebtn btn-success">Cached tournaments invalidated!</span>
+			{% else %}
+			<input type="hidden" name="invalidate_tournament_cache" value="1">
+			<button class="btn btn-warning" type="submit" value="1">Invalidate Cached Tournaments</button>
+			<h4><small>After invalidating the saved hashes of all tournaments, all new tournament request will lead to a new tournament generation. This is necessary when updating the simulation model or the teams' scores. Old tournaments will not be deleted.</small></h4>
 			{% endif %}
 		</form>
 		{% endif %}
