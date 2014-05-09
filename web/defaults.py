@@ -53,45 +53,45 @@ class CompactTeamData:
 
 all_teams = [
 	# group A
-	CompactTeamData("Brazil", "BR", "A", 2110, 1125, 440500000 / 19.0, 27.60, SPI(91.7, 3.4, 0.5), homeadvantage=1.0),
-	CompactTeamData("Croatia", "HR", "A", 1779, 966, 193200000 / 22.0, 27.60, SPI(75.0, 1.7, 0.9)),
-	CompactTeamData("Mexico", "MX", "A", 1784, 887, 39250000 / 18.0, 27.80, SPI(76.7, 1.6, 0.7)),
-	CompactTeamData("Cameroon", "CM", "A", 1593, 626, 114300000 / 23.0, 26.80, SPI(71.0, 1.5, 1.0)),
+	CompactTeamData("Brazil", "BR", "A", 2113, 1210, 467500000 / 23.0, 28.30, SPI(91.7, 3.4, 0.5), homeadvantage=1.0),
+	CompactTeamData("Croatia", "HR", "A", 1784, 871, 193200000 / 22.0, 27.70, SPI(75.1, 1.7, 0.9)),
+	CompactTeamData("Mexico", "MX", "A", 1799, 877, 39250000 / 18.0, 27.90, SPI(76.7, 1.6, 0.7)),
+	CompactTeamData("Cameroon", "CM", "A", 1590, 583, 114300000 / 24.0, 26.70, SPI(71.0, 1.5, 1.0)),
 	# group B
-	CompactTeamData("Spain", "ES", "B", 2082, 1506, 577000000 / 21.0, 28.0, SPI(89.3, 2.8, 0.5)),
-	CompactTeamData("Netherlands", "NL", "B", 1979, 1122, 197000000 / 24.0, 26.10, SPI(82.4, 2.4, 0.9)),
-	CompactTeamData("Chile", "CL", "B", 1896, 1038, 142850000 / 24.0, 28.20, SPI(87.1, 2.7, 0.7)),
-	CompactTeamData("Australia", "AU", "B", 1711, 576, 25550000 / 23.0, 26.40, SPI(69.9, 1.7, 1.3)),
+	CompactTeamData("Spain", "ES", "B", 2085, 1460, 577000000 / 21.0, 28.0, SPI(89.4, 2.8, 0.5)),
+	CompactTeamData("Netherlands", "NL", "B", 1963, 967, 97500000 / 20.0, 22.40, SPI(82.3, 2.4, 0.9)),
+	CompactTeamData("Chile", "CL", "B", 1892, 1037, 142850000 / 24.0, 28.30, SPI(87.3, 2.8, 0.7)),
+	CompactTeamData("Australia", "AU", "B", 1705, 545, 25550000 / 23.0, 26.50, SPI(70.1, 1.7, 1.3)),
 	# group C
-	CompactTeamData("Colombia", "CO", "C", 1912, 1211, 194550000 / 26.0, 27.70, SPI(86.0, 2.2, 0.4)),
-	CompactTeamData("Greece", "GR", "C", 1813, 1084, 80400000 / 22.0, 28.70, SPI(76.1, 1.4, 0.6)),
-	CompactTeamData("Ivory Coast", "CI", "C", 1786, 841, 142900000 / 26.0, 27.30, SPI(79.2, 2.3, 1.0)),
-	CompactTeamData("Japan", "JP", "C", 1747, 601, 91700000 / 22.0, 26.90, SPI(72.9, 1.9, 1.2)),
+	CompactTeamData("Colombia", "CO", "C", 1904, 1186, 194550000 / 26.0, 27.80, SPI(86.2, 2.2, 0.4)),
+	CompactTeamData("Greece", "GR", "C", 1790, 1082, 80400000 / 22.0, 28.80, SPI(76.0, 1.4, 0.6)),
+	CompactTeamData("Ivory Coast", "CI", "C", 1789, 830, 142900000 / 26.0, 27.30, SPI(79.2, 2.3, 1.0)),
+	CompactTeamData("Japan", "JP", "C", 1752, 613, 91700000 / 22.0, 27.00, SPI(72.7, 1.9, 1.2)),
 	# group D
-	CompactTeamData("Uruguay", "UY", "D", 1898, 1157, 154925000 / 21.0, 28.30, SPI(84.0, 2.4, 0.7)),
-	CompactTeamData("Costa Rica", "CR", "D", 1700, 734, 30200000 / 22.0, 26.70, SPI(76.7, 1.4, 0.6)),
-	CompactTeamData("England", "EN", "D", 1906, 1032, 387500000 / 30.0, 26.60, SPI(83.1, 2.2, 0.7)),
-	CompactTeamData("Italy", "IT", "D", 1887, 1135, 339000000 / 26.0, 27.90, SPI(80.9, 2.1, 0.8)),
+	CompactTeamData("Uruguay", "UY", "D", 1894, 1181, 154925000 / 21.0, 28.40, SPI(84.1, 2.4, 0.7)),
+	CompactTeamData("Costa Rica", "CR", "D", 1707, 748, 31900000 / 27.0, 27.20, SPI(76.8, 1.4, 0.6)),
+	CompactTeamData("England", "EN", "D", 1909, 1043, 373000000 / 28.0, 26.80, SPI(83.1, 2.2, 0.7)),
+	CompactTeamData("Italy", "IT", "D", 1885, 1115, 339000000 / 26.0, 28.00, SPI(81.0, 2.1, 0.8)),
 	# group E
-	CompactTeamData("Switzerland", "CH", "E", 1822, 1159, 171000000 / 21.0, 26.10, SPI(77.3, 2.0, 1.0)),
-	CompactTeamData("Ecuador", "EC", "E", 1816, 831, 54550000 / 20.0, 27.90, SPI(81.7, 2.0, 0.7)),
-	CompactTeamData("France", "FR", "E", 1855, 917, 447500000 / 25.0, 26.60, SPI(85.2, 2.4, 0.6)),
-	CompactTeamData("Honduras", "HN", "E", 1664, 716, 18400000 / 23.0, 27.50, SPI(73.3, 1.7, 1.0)),
+	CompactTeamData("Switzerland", "CH", "E", 1818, 1161, 171000000 / 21.0, 26.20, SPI(77.3, 2.0, 1.0)),
+	CompactTeamData("Ecuador", "EC", "E", 1823, 794, 63250000 / 24.0, 27.20, SPI(82.1, 2.0, 0.7)),
+	CompactTeamData("France", "FR", "E", 1872, 935, 447500000 / 25.0, 26.60, SPI(85.2, 2.4, 0.6)),
+	CompactTeamData("Honduras", "HN", "E", 1673, 759, 21150000 / 23.0, 28.40, SPI(73.4, 1.7, 1.0)),
 	# group F
-	CompactTeamData("Argentina", "AR", "F", 1994, 1255, 423500000 / 22.0, 27.50, SPI(90.3, 2.9, 0.4), homeadvantage=0.5),
-	CompactTeamData("Bosnia and Herzegovina", "BA", "F", 1758, 919, 112000000 / 22.0, 26.80, SPI(79.4, 2.3, 1.0)),
-	CompactTeamData("Iran", "IR", "F", 1719, 729, 30700000 / 34.0, 27.70, SPI(70.7, 1.4, 1.0)),
-	CompactTeamData("Nigeria", "NG", "F", 1718, 616, 88650000 / 23.0, 24.80, SPI(75.9, 1.7, 0.9)),
+	CompactTeamData("Argentina", "AR", "F", 1989, 1178, 423500000 / 22.0, 27.60, SPI(90.3, 2.9, 0.4), homeadvantage=0.0),
+	CompactTeamData("Bosnia and Herzegovina", "BA", "F", 1740, 795, 116750000 / 24.0, 27.00, SPI(79.5, 2.3, 1.0)),
+	CompactTeamData("Iran", "IR", "F", 1709, 715, 27450000 / 28.0, 27.70, SPI(70.7, 1.4, 1.0)),
+	CompactTeamData("Nigeria", "NG", "F", 1720, 631, 96100000 / 29.0, 25.50, SPI(75.9, 1.7, 0.9)),
 	# group G
-	CompactTeamData("Germany", "DE", "G", 2060, 1314, 400000000 / 19.0, 26.80, SPI(88.7, 3.1, 0.7)),
-	CompactTeamData("Portugal", "PT", "G", 1905, 1219, 258250000 / 22.0, 27.80, SPI(79.5, 2.1, 0.9)),
-	CompactTeamData("Ghana", "GH", "G", 1700, 733, 97200000 / 21.0, 25.50, SPI(76.1, 1.9, 1.0)),
-	CompactTeamData("USA", "US", "G", 1841, 1044, 28750000 / 23.0, 28.00, SPI(77.5, 2.1, 1.0)),
+	CompactTeamData("Germany", "DE", "G", 2064, 1340, 691000000 / 38.0, 24.90, SPI(88.7, 3.1, 0.7)),
+	CompactTeamData("Portugal", "PT", "G", 1908, 1245, 258250000 / 22.0, 27.90, SPI(79.6, 2.1, 0.9)),
+	CompactTeamData("Ghana", "GH", "G", 1689, 713, 97200000 / 21.0, 25.50, SPI(76.1, 1.9, 1.0)),
+	CompactTeamData("USA", "US", "G", 1825, 1015, 28750000 / 23.0, 28.10, SPI(77.7, 2.1, 1.0)),
 	# group H
-	CompactTeamData("Belgium", "BE", "H", 1807, 1117, 341450000 / 22.0, 26.50, SPI(80.7, 2.1, 0.8)),
-	CompactTeamData("Algeria", "DZ", "H", 1582, 819, 54000000 / 28.0, 27.10, SPI(63.1, 1.1, 1.2)),
-	CompactTeamData("Russia", "RU", "H", 1819, 862, 193600000 / 25.0, 27.60, SPI(79.0, 1.7, 0.7)),
-	CompactTeamData("Korea Republic", "KR", "H", 1683, 556, 52500000 / 22.0, 25.50, SPI(73.4, 1.7, 1.0))
+	CompactTeamData("Belgium", "BE", "H", 1805, 1039, 347450000 / 23.0, 26.30, SPI(80.8, 2.1, 0.8)),
+	CompactTeamData("Algeria", "DZ", "H", 1595, 795, 54000000 / 28.0, 27.20, SPI(62.9, 1.1, 1.2)),
+	CompactTeamData("Russia", "RU", "H", 1822, 903, 193600000 / 25.0, 27.70, SPI(78.9, 1.7, 0.7)),
+	CompactTeamData("Korea Republic", "KR", "H", 1690, 551, 52125000 / 23.0, 25.90, SPI(73.5, 1.7, 1.0))
 	]
 
 if not args.update:
