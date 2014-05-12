@@ -100,11 +100,11 @@ if not args.update:
 		team = Team(team_data.name, team_data.country_code)
 		session.add(team)
 	# add new rating score types
-	session.add(ScoreType("ELO", "The ELO rating known from chess.", long_name="ELO rating"))
+	session.add(ScoreType("ELO", "The ELO rating known from chess.", long_name="Elo rating"))
 	session.add(ScoreType("FIFA", "FIFA ranking points", long_name="FIFA rating"))
 	session.add(ScoreType("Value", "Average value of the players in Euro", long_name="&#216; value in &euro;"))
 	session.add(ScoreType("Age", "Average age of the team", long_name="&#216; age"))
-	session.add(ScoreType("HA", "Home-advantage of the team", long_name="Home-advantage"))
+	session.add(ScoreType("HA", "Home advantage of the team", long_name="Home advantage"))
 	session.add(ScoreType("Custom", "User-defined custom rating", long_name="Custom rating", hidden=True))
 	session.add(ScoreType("SPI Off", "ESPN SPI Offensive Rating", long_name="SPI Offensive Rating"))
 	session.add(ScoreType("SPI Def", "ESPN SPI Defensive Rating", long_name="SPI Defensive Rating"))
@@ -116,11 +116,11 @@ if not args.update:
 	session.add(RuleParameterType("simulation_run_count", 1))
 
 	# add default ELO calculation rule
-	elo_rule = RuleType("ELO", "Calculation using the ELO score", "elo_binary")
+	elo_rule = RuleType("Elo", "Calculation using the Elo rating", "elo_binary")
 	elo_rule.makeDefaultRule(1.0)
 	session.add(elo_rule)
 
-	spi_rule = RuleType("SPI", "Calculation based on ESPN's Soccer-Power-Index", "spi_binary")
+	spi_rule = RuleType("SPI", "Calculation based on ESPN's Soccer Power Index", "spi_binary")
 	spi_rule.makeDefaultRule(1.0)
 	session.add(spi_rule)
 
@@ -132,7 +132,7 @@ if not args.update:
 	value_rule.makeDefaultRule(0.25)
 	session.add(value_rule)
 
-	ha_rule = RuleType("HA", "Adjust the win expectancy based on the home-advantage", "homeadvantage_binary", long_name="Home-advantage", is_backref_rule=True)
+	ha_rule = RuleType("HA", "Adjust the win expectancy based on the home advantage", "homeadvantage_binary", long_name="Home advantage", is_backref_rule=True)
 	ha_rule.makeDefaultRule(1.0)
 	session.add(ha_rule)
 
