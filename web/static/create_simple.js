@@ -24,8 +24,6 @@ function updateRuleSpiderChart()
 	var dataset = {
 		fillColor: "rgba(50, 50, 150, 0.5)",
 		strokeColor: "rgba(0, 0, 50, 1.0)",
-		pointColor: "rgba(25, 25, 100, 0.5)",
-		pointStrokeColor: "rgba(0, 0, 0, 1)",
 		data: []
 	};
 	var maxValue = 1.0;
@@ -52,7 +50,8 @@ function updateRuleSpiderChart()
 		scaleOverride: true,
 		scaleStartValue: 0.0,
 		scaleSteps: 3.0,
-		scaleStepWidth: maxValue / 3.0
+		scaleStepWidth: maxValue / 3.0,
+		pointDot : false,
 	};
 	new Chart(ctx).Radar({labels: labels, datasets: [dataset]}, options);
 }
