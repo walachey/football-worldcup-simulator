@@ -174,15 +174,15 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 	int winnerIndex = -1;
 
 	std::random_device seeder;
-	auto leftSideGoalRoller = std::bind(std::poisson_distribution<>(2.0 * (normalizedChanceLeftVsRight)+(1.0 / 3.0)), std::mt19937(simulation->randomSeed + seeder()));
-	auto rightSideGoalRoller = std::bind(std::poisson_distribution<>(2.0 * (1.0 - normalizedChanceLeftVsRight) + (1.0 / 3.0)), std::mt19937(simulation->randomSeed + seeder()));
+	auto leftSideGoalRoller = std::bind(std::poisson_distribution<>(1.8 * (normalizedChanceLeftVsRight) + 0.27), std::mt19937(simulation->randomSeed + seeder()));
+	auto rightSideGoalRoller = std::bind(std::poisson_distribution<>(1.8 * (1.0 - normalizedChanceLeftVsRight) + 0.27), std::mt19937(simulation->randomSeed + seeder()));
 	auto uniformRoller = std::bind(std::uniform_real_distribution<double>(0.0, 1.0), std::mt19937(simulation->randomSeed + seeder()));
 
 	bool hadOvertime = false;
 
 	// roll for draws first
-	// 0.33 * exp(-(x - 0.5) ^ 2 / (2 * 0.33 ^ 2))
-	double chanceForDraw = 0.33 * std::exp(-std::pow((normalizedChanceLeftVsRight - 0.5), 2.0) / (2.0 * std::pow(0.33, 2.0)));
+	// 0.33 * exp(-(x - 0.5) ^ 2 / (2 * 0.28 ^ 2))
+	double chanceForDraw = (1.0 / 3.0) * std::exp(-std::pow((normalizedChanceLeftVsRight - 0.5), 2.0) / (2.0 * std::pow(0.28, 2.0)));
 	bool isDraw = false;
 	if (uniformRoller() < chanceForDraw)
 	{
