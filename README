@@ -2,13 +2,14 @@ If not stated otherwise, all files, including but not limited to those in
 	simulation/
 	web/
 	web/templates
-	web/static/img
 	web/static/img/icons
 	web/static/img/rules
 	web/static/css
 are licensed under the MIT-License, see LICENSE.
 
 Notable exceptions are:
+	- the logo of the FU Berlin, found in web/img:
+		All rights remain with the Freie Universität Berlin.
 	- third party libraries in web/static:
 		The third party libraries (f.e. jQuery, jQuery-metadata, jQuery-tablesorter, Chart.js) are covered in their respective LICENSE file
 	- flag icons in web/static/img/flags:

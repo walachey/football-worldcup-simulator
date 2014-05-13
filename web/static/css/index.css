@@ -7,6 +7,15 @@ body {
 	height: 100%;
 }
 
+#main_head {
+	min-height: 90px;
+	padding-top: 9px;
+}
+#fulogo {
+	padding-left: 20px;
+	padding-bottom: 12px;
+}
+
 #main_container {
 	min-height: 100%;
 	margin-bottom: 3.5em;

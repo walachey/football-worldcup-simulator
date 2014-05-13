@@ -14,8 +14,10 @@ $(document).ready(
 
 # block contents
       <div class="starter-template">
-        <h1>World Cup Simulator</h1>
-		
+		<div id="main_head">
+			<div class="pull-right"><a href="http://www.fu-berlin.de/"><img src="{{ url_for('static', filename='img/Logo_Web_RGB.gif') }}" id="fulogo"></a></div>
+			<div><h1>World&nbsp;Cup&nbsp;Simulator</h1></div>
+		</div>
 		<div class="infotext">
 		This is a probabilistic simulator for the upcoming soccer World Cup. It applies different rules to rate the strength of the teams and to calculate a team's chance to win in a match.<br>
 		Repeating the simulation of the tournament multiple times results in a probability distribution, that shows how likely a team is to advance to the finals.
