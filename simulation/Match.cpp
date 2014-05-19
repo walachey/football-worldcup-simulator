@@ -138,7 +138,7 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 	}
 
 	// this can happen if a rule reduces its custom weight to 0
-	if (chanceLeftVsRight == 0.0 && chanceRightVsLeft == 0.0)
+	if ((chanceLeftVsRight == 0.0 && chanceRightVsLeft == 0.0) || !std::isfinite(chanceLeftVsRight) || !std::isfinite(chanceRightVsLeft))
 	{
 		chanceLeftVsRight = chanceRightVsLeft = 0.5;
 	}
