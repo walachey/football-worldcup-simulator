@@ -186,8 +186,9 @@ def new_tournament_view():
 	session = getSession()
 	all_tournament_types = session.query(TournamentType).all()
 	run_count_par = session.query(RuleParameterType).filter_by(internal_identifier="simulation_run_count").first()
+	use_match_db_par = session.query(RuleParameterType).filter_by(internal_identifier="use_match_database").first()
 	cleanupSession()
-	return render_template('create.html', types=all_tournament_types, run_count_max=config.simulation_max_run_count, run_count_par=run_count_par)
+	return render_template('create.html', types=all_tournament_types, run_count_max=config.simulation_max_run_count, run_count_par=run_count_par, use_match_db_par=use_match_db_par)
 
 @app.route('/create_simple')
 @cache.cached()
@@ -197,6 +198,7 @@ def simple_new_tournament_view():
 	all_standard_rule_types = session.query(RuleType).filter_by(is_default_rule=True).all()
 	all_teams = session.query(Team).limit(tournament_type.team_count).all()
 	run_count_par = session.query(RuleParameterType).filter_by(internal_identifier="simulation_run_count").first()
+	use_match_db_par = session.query(RuleParameterType).filter_by(internal_identifier="use_match_database").first()
 	# special treatment for the "custom score" rule
 	custom_score_info = {}
 	for rule_type in all_standard_rule_types:
@@ -207,7 +209,7 @@ def simple_new_tournament_view():
 		break
 	
 	cleanupSession()
-	return render_template('create_simple.html', tournament_type=tournament_type, rules=all_standard_rule_types, teams=all_teams, run_count_max=config.simulation_max_run_count, custom_score_rule=custom_score_info, run_count_par=run_count_par)
+	return render_template('create_simple.html', tournament_type=tournament_type, rules=all_standard_rule_types, teams=all_teams, run_count_max=config.simulation_max_run_count, custom_score_rule=custom_score_info, run_count_par=run_count_par, use_match_db_par=use_match_db_par)
 
 @app.route('/json/state/tournament:<int:id>')
 def tournament_state_json(id):
@@ -345,8 +347,12 @@ def register_tournament_json():
 				raise Exception("You need to have active rules.")
 			
 			# the tournament always needs a few parameters
+			# run count parameter
 			simulation_run_count_parameter = session.query(RuleParameterType).filter_by(internal_identifier="simulation_run_count").first()
 			needed_simulation_parameters.append(simulation_run_count_parameter)
+			# match database usage parameter
+			match_database_parameter = session.query(RuleParameterType).filter_by(internal_identifier="use_match_database").first()
+			needed_simulation_parameters.append(match_database_parameter)
 			
 			# the rules can have custom parameters
 			for parameter in info["rule_parameters"]:
@@ -362,6 +368,7 @@ def register_tournament_json():
 					needed_simulation_parameters[i] = None
 					
 					# safety checks
+					# run count
 					if parameter == simulation_run_count_parameter:
 						number_of_runs = int(par_value)
 						if number_of_runs <= 0 or number_of_runs > config.simulation_max_run_count:
@@ -373,7 +380,7 @@ def register_tournament_json():
 		except ValueError:
 			return abort("Type check failed.")
 		except Exception as e:
-			return abort(str(e))
+			return abort(repr(e))
 	
 	# all checks passed
 	# firstly, get the user ID from the browser session or generate a new one that is not in use yet
@@ -468,7 +475,7 @@ def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_dat
 			team_list = []
 			for result in session.query(BracketTeamResult)\
 				.filter(BracketTeamResult.tournament_id==tournament_id, BracketTeamResult.bof_round==bracket, BracketTeamResult.game_in_round==game_in_round)\
-				.order_by(BracketTeamResult.wins.desc()):
+				.order_by(BracketTeamResult.wins.desc(), BracketTeamResult.draws.desc()):
 				if result.matches > 0:
 					chance = (
 						(result.wins if not use_round_robin_scores else (3.0 * result.wins + 1.0 * result.draws))

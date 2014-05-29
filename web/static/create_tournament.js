@@ -75,7 +75,7 @@ function onRunCountParChange()
 function validateRuleSelection(rule_ids, rule_data)
 {
 	// no rules? nope nope nope
-	if ($("#rules tr").length <= 1)
+	if ($("#rules tr.rule_row").length <= 1)
 	{
 		$("#rules").effect("shake");
 		return false;
@@ -121,7 +121,7 @@ function startTournament()
 	json_object.rules = [];
 	
 	// figure out active rules and respective weights
-	$("#rules > tbody > tr").each(
+	$("#rules > tbody > tr.rule_row").each(
 		function (index, item)
 		{
 			var input_box = $(item).find("input");
@@ -165,6 +165,9 @@ function startTournament()
 		{
 			var type_id = $(item).data("type_id");
 			var value = parseFloat($(item).val());
+			
+			if ($(item).is(':checkbox') && !$(item).is(':checked'))
+				value = 0.0;
 			json_object.rule_parameters[type_id.toString()] = value;
 		}
 	);

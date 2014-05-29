@@ -99,8 +99,31 @@ Match::~Match()
 }
 
 
-MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &left, Team &right, bool forceWinner)
+MatchResult Match::execute(int bofRound, std::string cluster, Simulation *simulation, Team &left, Team &right, bool forceWinner)
 {
+	// firstly, check whether the match already exists in the known match database
+	if (simulation->knownMatchResults.count(bofRound))
+	{
+		for (auto &knownResult : simulation->knownMatchResults[bofRound])
+		{
+			if ((knownResult.teams[0] == left.id && knownResult.teams[1] == right.id)
+				|| (knownResult.teams[0] == right.id && knownResult.teams[1] == left.id))
+			{
+				int teams[2] = { knownResult.teams[0], knownResult.teams[1] };
+				int goals[2] = { knownResult.goals[0], knownResult.goals[1] };
+				// make sure to keep the exact order as the normal simulation would, though
+				if (teams[0] != left.id)
+				{
+					std::swap(teams[0], teams[1]);
+					std::swap(goals[0], goals[1]);
+				}
+				return MatchResult(knownResult.bofRound, cluster, teams, goals, knownResult.hadOvertime);
+			}
+		}
+	}
+
+	// if not in the known matches, we will have to simulate the match:
+
 	// use two chances for scoring - some rules are not necessarily symmetrical and should still work as good as possible
 	double chanceLeftVsRight(0.0), chanceRightVsLeft(0.0);
 	// the maximum weight of the normal rules. Used to scale backreferencing rules correctly
@@ -234,7 +257,7 @@ MatchResult Match::execute(std::string cluster, Simulation *simulation, Team &le
 	}
 
 	assert(!forceWinner || goals[0] != goals[1]);
-	return MatchResult(cluster, teams, goals, hadOvertime);
+	return MatchResult(bofRound, cluster, teams, goals, hadOvertime);
 }
 
 }; // namespace sim

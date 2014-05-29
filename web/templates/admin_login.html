@@ -27,26 +27,50 @@
 		</form>
 		
 		{% if logged_in %}
-		<hr>
-		<form method="POST">
-			{% if cachecleared %}
-			<span class="fakebtn btn-success">Cache cleared!</span>
-			{% else %}
-			<input type="hidden" name="clearcache" value="1">
-			<button class="btn btn-warning" type="submit" value="1">Clear Cache</button>
-			<h4><small>All web pages will be generated fresh from the database.</small></h4>
-			{% endif %}
-		</form>
-		<hr>
-		<form method="POST" onsubmit="return confirm('Really invalidate tournament cache?');">
-			{% if invalidated_tournaments %}
-			<span class="fakebtn btn-success">Cached tournaments invalidated!</span>
-			{% else %}
-			<input type="hidden" name="invalidate_tournament_cache" value="1">
-			<button class="btn btn-warning" type="submit" value="1">Invalidate Cached Tournaments</button>
-			<h4><small>After invalidating the saved hashes of all tournaments, all new tournament request will lead to a new tournament generation. This is necessary when updating the simulation model or the teams' scores. Old tournaments will not be deleted.</small></h4>
-			{% endif %}
-		</form>
+			<hr>
+			<form method="POST">
+				<h4>Enter a match for the match database:</h4>
+				Select the phase:
+					<select name="bof_round">
+						<option value="-1" selected>Please select...</option>
+						<option value="0">Group Phase</option>
+						<option value="8">Best of 16</option>
+						<option value="4">Quarter Finals</option>
+						<option value="2">Semi Finals</option>
+						<option value="1">Finals and Third place</option>
+					</select> 
+				<br>
+				Please enter the country code of the participating teams and the result (goals):<br>
+				Teams: <input type="text" name="team_left" value="" maxlength="2"> vs. <input type="text" name="team_right" value="" maxlength="2">
+				<br>
+				Result: <input type="number" name="goals_left" value="" maxlength="2"> : <input type="number" name="goals_right" value="" maxlength="2">
+				<br>
+				<button class="btn btn-primary" type="submit" value="1">Save Result</button>
+				{% if result_entered %}
+				<span class="fakebtn btn-warning">{{ result_entered }}</span>
+				{% endif %}
+				<h4><small>Saves a match that has been played in reality to be used in the simulation.</small></h4>
+			</form>
+			<hr>
+			<form method="POST">
+				{% if cachecleared %}
+				<span class="fakebtn btn-success">Cache cleared!</span>
+				{% else %}
+				<input type="hidden" name="clearcache" value="1">
+				<button class="btn btn-warning" type="submit" value="1">Clear Cache</button>
+				<h4><small>All web pages will be generated fresh from the database.</small></h4>
+				{% endif %}
+			</form>
+			<hr>
+			<form method="POST" onsubmit="return confirm('Really invalidate tournament cache?');">
+				{% if invalidated_tournaments %}
+				<span class="fakebtn btn-success">Cached tournaments invalidated!</span>
+				{% else %}
+				<input type="hidden" name="invalidate_tournament_cache" value="1">
+				<button class="btn btn-warning" type="submit" value="1">Invalidate Cached Tournaments</button>
+				<h4><small>After invalidating the saved hashes of all tournaments, all new tournament request will lead to a new tournament generation. This is necessary when updating the simulation model or the teams' scores. Old tournaments will not be deleted.</small></h4>
+				{% endif %}
+			</form>
 		{% endif %}
 	{% endif %}
 {% endblock %}

@@ -63,6 +63,26 @@ class Dispatcher():
 			"run_count": tournament.run_count,
 			"tournament_type": tournament_type.internal_identifier
 			}
+			
+		# check if we need to fetch matches from the match database
+		use_match_database_parameter_type = session.query(RuleParameterType).filter_by(internal_identifier="use_match_database").first()
+		use_match_database_parameter = session.query(RuleParameter).filter_by(type_id=use_match_database_parameter_type.id, tournament_id=tournament.id).first()
+		
+		if use_match_database_parameter and use_match_database_parameter.value != 0:
+			# query all matches from the database
+			database_matches = []
+			all_database_matches = session.query(DatabaseMatchResult).all()
+			
+			for db_match in all_database_matches:
+				db_match_data = {
+					"bof_round": db_match.bof_round,
+					"teams": [db_match.team_left_id, db_match.team_right_id],
+					"goals": [db_match.goals_left, db_match.goals_right]
+				}
+				database_matches.append(db_match_data)
+				
+			dict["match_database"] = database_matches
+			
 		# get all active rules for this tournament and calculate needed scores
 		rules = []
 		all_rules = session.query(Rule).filter_by(tournament_id=tournament.id).all()

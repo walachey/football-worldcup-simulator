@@ -34,6 +34,7 @@ $(document).ready(
 		## the start-tournament button below
 		<div id="finish_setup" style="margin-top:-2em">
 		<div class="headpart">
+			## the run count selection
 			<div style="text-align:left;">Simulations: <input value="{{ run_count_max }}" id="run_count_par" class="rule_parameter" data-type_id="{{ run_count_par.id }}"><small style="display:none;" class="error"><br>Must be between 1 and {{ run_count_max }}!</small></div>
 			<div class="btn btn-success btn-lg" style="margin-bottom:1em;margin-top:0.5em;width:100%;" onclick="javascript:if (validateRuleSelection()) startTournament();">Start the Simulations</div>
 		</div>
@@ -69,6 +70,20 @@ $(document).ready(
 				</tr>
 				# endif
 			# endfor
+			</tbody>
+			</table>
+			
+			<table class="table table-hover"><tbody>
+			## add the indicator to use already played matches below the rules
+			<tr class="custom_par_row">
+				<td>
+				<input type="checkbox" id="use_match_database" class="rule_parameter" title="Use Real Data" value="1" data-type_id="{{ use_match_db_par.id }}" name="Test" checked><label for="use_match_database">
+				<div class="ruletitle"><h5 style="padding:0px;margin:0px;"><strong>Use already played matches</strong><br>
+				<small>Instead of simulating the matches that have already been played, use the real data.</small>
+				</h5></div>
+				</label></td>
+				<td>&nbsp;</td>
+			</tr>
 			</tbody>
 			</table>
 		</div>

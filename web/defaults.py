@@ -114,6 +114,7 @@ if not args.update:
 	session.add(custom_rule_parameter)
 
 	session.add(RuleParameterType("simulation_run_count", 1))
+	session.add(RuleParameterType("use_match_database", 1))
 
 	# add default ELO calculation rule
 	elo_rule = RuleType("ELO", "Calculation using the Elo rating", "elo_binary", long_name="Elo")

@@ -4,7 +4,7 @@ $(document).ready(
        // $("#teamstable").tablesorter(); 
 		$("#nav_create_simple").toggleClass("active");
 
-		$("#rules > tbody > tr input").each(
+		$("#rules > tbody > tr.rule_row input").each(
 			function (index, item)
 			{
 				$(item).change(function() { updateRuleSpiderChart(); });

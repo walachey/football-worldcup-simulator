@@ -120,8 +120,7 @@ void OneVersusOneTournament::execRun()
 	Team &teamOne = simulation->teams.at(0);
 	Team &teamTwo = simulation->teams.at(1);
 
-	MatchResult result(Match::execute("all", simulation, teamOne, teamTwo, false));
-	result.bofRound = 1;
+	MatchResult result(Match::execute(1, "all", simulation, teamOne, teamTwo, false));
 	result.gameInRound = 1;
 	addMatchResult(result);
 
@@ -193,8 +192,7 @@ std::vector<Team*> FIFAStyleTournament::runQualification()
 				matchCounter += 1;
 
 				std::string matchCluster = getMatchClusterName(0, bracketNumber);
-				MatchResult result(Match::execute(matchCluster, simulation, teamOne, teamTwo, false));
-				result.bofRound = 16;
+				MatchResult result(Match::execute(16, matchCluster, simulation, teamOne, teamTwo, false));
 				result.gameInRound = bracketNumber;
 				addMatchResult(result);
 
@@ -295,8 +293,7 @@ std::vector<Team*> FIFAStyleTournament::runKnockout(int matches)
 		Team &teamTwo = *competingTeams.at(i + 1);
 
 		std::string matchCluster = getMatchClusterName(matches, ++matchCount);
-		MatchResult result(Match::execute(matchCluster, simulation, teamOne, teamTwo, true));
-		result.bofRound = matches;
+		MatchResult result(Match::execute(matches, matchCluster, simulation, teamOne, teamTwo, true));
 		result.gameInRound = matchCount;
 		addMatchResult(result);
 
@@ -347,8 +344,7 @@ std::vector<Team*> FIFAStyleTournament::runKnockout(int matches)
 		Team &teamTwo = *semiFinalists.at(1);
 
 		std::string matchCluster = getMatchClusterName(1, 2); // second match of the "finale" cluster
-		MatchResult result(Match::execute(matchCluster, simulation, teamOne, teamTwo, true));
-		result.bofRound = 1;
+		MatchResult result(Match::execute(1, matchCluster, simulation, teamOne, teamTwo, true));
 		result.gameInRound = 2;
 		addMatchResult(result);
 

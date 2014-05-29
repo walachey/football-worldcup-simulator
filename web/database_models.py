@@ -500,6 +500,30 @@ class BracketTeamResult(db.Model):
 			"chance": self.wins / float(self.matches) if self.matches != 0 else 0.0
 		}
 	
+
+# this table contains all the available match results that can be used in the simulation instead of actually simulating the match
+class DatabaseMatchResult(db.Model):
+	__tablename__ = "database_match_results"
+	query = None
+	
+	id = db.Column(db.Integer, primary_key=True)
+	bof_round = db.Column(db.Integer)
+	
+	team_left_id = db.Column(db.Integer, db.ForeignKey('teams.id'))
+	team_right_id = db.Column(db.Integer, db.ForeignKey('teams.id'))
+	
+	goals_left = db.Column(db.Integer)
+	goals_right = db.Column(db.Integer)
+	
+	def __init__(self, bof_round, team_left, team_right, goals_left, goals_right):
+		self.bof_round = bof_round
+		self.team_left_id = team_left.id
+		self.team_right_id = team_right.id
+		self.goals_left = goals_left
+		self.goals_right = goals_right
+		
+	def __repr__(self):
+		return "[Known Result in bof" + str(self.bof_round) + " " + str(self.team_left_id) + "vs" + str(self.team_right_id) + " -> " + str(self.goals_left) + ":" + str(left.goals_right) + "]"
 	
 class MatchResult(db.Model):
 	__tablename__ = "match_results"

@@ -62,7 +62,7 @@ public:
 class MatchResult
 {
 public:
-	MatchResult(std::string cluster, int teams[], int goals[], bool hadOvertime) : cluster(cluster), bofRound(0), gameInRound(0), hadOvertime(hadOvertime)
+	MatchResult(int bofRound, std::string cluster, int teams[], int goals[], bool hadOvertime) : cluster(cluster), bofRound(bofRound), gameInRound(0), hadOvertime(hadOvertime)
 	{
 		for (size_t i = 0; i < 2; ++i)
 		{
@@ -88,13 +88,27 @@ public:
 	bool isDraw() { return goals[0] == goals[1]; }
 };
 
+// when outcomes for certain matches are already known a-priori, those matches do not need to be simulated
+class KnownMatchResult : public MatchResult
+{
+public:
+	/*
+	replace copy & pasted constructor with the following line, once VS supports constructor inheritance:
+	using MatchResult::MatchResult;
+	*/
+	KnownMatchResult(int bofRound, std::string cluster, int teams[], int goals[], bool hadOvertime) : MatchResult(bofRound, cluster, teams, goals, hadOvertime)
+	{
+	}
+
+};
+
 class Match
 {
 public:
 	Match();
 	~Match();
 
-	static MatchResult execute(std::string cluster, Simulation *simulation, Team &left, Team &right, bool forceWinner);
+	static MatchResult execute(int bofRound, std::string cluster, Simulation *simulation, Team &left, Team &right, bool forceWinner);
 };
 
 }

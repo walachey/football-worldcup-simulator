@@ -103,6 +103,14 @@ body {
 
 /* create_simple */
 
+.custom_par_row {
+	border-top: 2px solid grey;
+}
+
+.custom_par_row input {
+	float: left;
+}
+
 .rule_row {
 	border-top: 2px solid grey;
 }

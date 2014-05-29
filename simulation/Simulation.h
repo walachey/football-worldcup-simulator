@@ -21,6 +21,7 @@ public:
 	void reset();
 	void setupTeams(json_spirit::Array &teamData);
 	void setupRules(json_spirit::Array &teamData);
+	void setupKnownMatches(json_spirit::Array &matches);
 
 	int numberOfRuns;
 	int numberOfThreads;
@@ -31,6 +32,9 @@ public:
 	std::vector<Rule> rules;
 	std::vector<Tournament*> tournaments;
 	std::vector<RankData> ranks;
+	// Known match results that will be taken instead of the simulation.
+	// The key is the "bof_round".
+	std::map<int, std::vector<KnownMatchResult>> knownMatchResults;
 	// will only be filled after the simulation has finished
 	std::map<std::string, std::map<int, TeamResult>> clusterTeamResults;
 	std::map<std::string, MatchResultStatisticsList> clusterMatchResultStatisticsLists;

@@ -35,6 +35,7 @@ Simulation::Simulation(json_spirit::Value &jsonData)
 		else if (key == "tournament_type") tournamentType = pair.value_.get_str();
 		else if (key == "teams") setupTeams(pair.value_.get_array());
 		else if (key == "rules") setupRules(pair.value_.get_array());
+		else if (key == "match_database") setupKnownMatches(pair.value_.get_array());
 		else
 			std::cerr << "sim::Simulation: invalid property \"" << key << "\"" << std::endl;
 	}
@@ -64,6 +65,46 @@ void Simulation::setupRules(json_spirit::Array &ruleData)
 	}
 }
 
+void Simulation::setupKnownMatches(json_spirit::Array &matches)
+{
+	for (json_spirit::Value &val : matches)
+	{
+		json_spirit::Object &data = val.get_obj();
+		int teams[2] = { -1, -1 };
+		int goals[2] = { -1, -1 };
+		bool hadOvertime = false;
+		std::string cluster = "all";
+		int bofRound = -1;
+
+		for (json_spirit::Pair &pair : data)
+		{
+			std::string &key = pair.name_;
+			
+			if (key == "teams")
+			{
+				for (int i = 0; i < 2; ++i)
+					teams[i] = pair.value_.get_array().at(i).get_int();
+			}
+			else if (key == "goals")
+			{
+				for (int i = 0; i < 2; ++i)
+					goals[i] = pair.value_.get_array().at(i).get_int();
+			}
+			else if (key == "bof_round")
+			{
+				bofRound = pair.value_.get_int();
+			}
+		}
+
+		assert(bofRound != -1);
+		assert(teams[0] != -1);
+		assert(goals[0] != -1);
+		if (!knownMatchResults.count(bofRound))
+			knownMatchResults[bofRound] = std::vector<KnownMatchResult>();
+		knownMatchResults[bofRound].push_back(KnownMatchResult(bofRound, cluster, teams, goals, hadOvertime));
+	}
+}
+
 void Simulation::execute()
 {
 	// some safety & sanity checks
@@ -89,6 +130,11 @@ void Simulation::execute()
 	for (int i = 0; i < realThreadCount; ++i, remainingRuns -= runsPerThread)
 	{
 		int runsForTournament = std::min(remainingRuns, runsPerThread);
+		// make sure that there are no remaining runs that don't get distributed
+		// example: 20 runs and 8 threads, runs per thread = 2, only 2*8=16 tournaments would be started
+		if (i == realThreadCount - 1)
+			runsForTournament = remainingRuns;
+
 		tournaments[i] = Tournament::newOfType(tournamentType, this, runsForTournament);
 		tournaments[i]->doSanityChecks(); // allow the tournament some checking prior to the launch
 		threads[i] = std::thread(&Tournament::start, tournaments[i]);
