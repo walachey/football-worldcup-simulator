@@ -26,7 +26,7 @@ blockquote {
 # endblock
 
 # block contents
-<h1>Technical Details<br><small>This is meant as a short and concise overview about the simulation itself.</h1>
+<h1>Overview<br><small>This is meant as a short and concise overview about the simulation itself.</h1>
 
 <div class="infotext">
 The simulator plays through both the group phase and the knockout stage, simulating the results of every single match. To determine the winner of a match, the win expectancy for both teams is calculated based on the rules that the user has selected (see <a href="#rules"><i>The Rules</i></a>).<br>
@@ -80,7 +80,8 @@ Looking at past FIFA games, a formula that portrays the influence of the average
 
 <div class="infotext">
 <h3>Home Advantage</h3>
-Unlike the other rules, the home advantage rule is applied <i>after</i> the other rules and only adjusts the win expectancy of a team. For example, when a team would have a win expectancy of 50% and has the home advantage, the win expectancy would be adjusted to around 66%.
+Unlike the other rules, the home advantage rule is applied <i>after</i> the other rules and only adjusts the win expectancy of a team. For example, when a team would have a win expectancy of 50% and has the home advantage, the win expectancy would be adjusted to around 66%.<br>
+When the user gives less weight to the home advantage compared to the other rules, the home teams' win expectancies will be raised less - however, never will that lead to a reduction of the win expectancy of a home team.
 </div>
 </div>
 

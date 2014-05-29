@@ -1,0 +1,47 @@
+# extends "base_layout.html"
+# block head
+{{ super() }}
+<script language="javascript">
+$(document).ready(
+	function() 
+    { 
+		$("#nav_docu").toggleClass("active");
+    } 
+);
+</script>
+<style>
+{{'#'}}main_container {
+	font-size: medium;
+}
+.infotext {
+	margin-top: 2em;
+	margin-bottom: 2em;
+	padding: 1em;
+}
+
+blockquote {
+	margin-top:1em;
+}
+</style>
+# endblock
+
+# block contents
+<h1>Documentation<br><small>You can find the available documentation for the simulator here.</h1>
+
+<div class="infotext">
+<h2><img class="flag" src="{{ url_for('static', filename='img/flags/UK.png') }}"> English</h2>
+<ul>
+<li><h3><a href="{{ url_for('static', filename='data/Dormagen_2014_World_Cup_Simulator_2014-05-29.pdf') }}">Development of a Simulator for the FIFA World Cup 2014</a>
+<br><small>This is a <strong>detailed documentation</strong> of both the simulation model and the application.</small></h3></li>
+</ul>
+</div>
+
+<div class="infotext">
+<h2><img class="flag" src="{{ url_for('static', filename='img/flags/DE.png') }}"> Deutsch</h2>
+<ul>
+<li><h3><a href="http://www.heise.de/tp/artikel/41/41867/1.html">Wer gewinnt die Weltmeisterschaft?</a>
+<br><small>Dies ist ein <strong>Artikel</strong> zu dem Simulator <strong>auf Telepolis</strong>.</small></h3></li>
+</ul>
+</div>
+
+# endblock

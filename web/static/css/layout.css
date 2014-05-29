@@ -84,6 +84,10 @@ body {
 	background-color:white;
 }
 
+.flag {
+	border:1px solid black;
+}
+
 /* create custom tournament */
 .type-button {
 	width: 100%;

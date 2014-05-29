@@ -53,6 +53,11 @@ def impressum_view():
 @cache.cached()
 def technical_details_view():
 	return render_template('technical_details.html')
+
+@app.route('/documentation')
+@cache.cached()
+def documentation_view():
+	return render_template('documentation.html')
 	
 @app.route('/teams')
 @cache.cached()
