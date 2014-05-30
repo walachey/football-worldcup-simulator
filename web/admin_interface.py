@@ -37,12 +37,28 @@ class LoginView(AdminIndexView):
 					teams = [session.query(Team).filter_by(country_code=cc1).first(), session.query(Team).filter_by(country_code=cc2).first()]
 					
 					if not None in teams:
+						# enter new match result
 						result = DatabaseMatchResult(bof_round, teams[0], teams[1], int(goals[0]), int(goals[1]))
 						session.add(result)
+						
+						# reset all tournaments with match database enabled
+						parameter_type = session.query(RuleParameterType).filter_by(internal_identifier="use_match_database").first()
+						all_parameters = session.query(RuleParameter).filter_by(type_id=parameter_type.id).all()
+						
+						for par in all_parameters:
+							if par.value == 0.0:
+								continue
+							
+							tournament = session.query(Tournament).filter_by(id=par.tournament_id).first()
+							tournament.hash = ""
 						session.commit()
+						
 						result_entered = "Result saved!"
 					else:
 						result_entered = "Invalid Country Code"
+						
+					
+						
 					cleanupSession()
 					
 				
