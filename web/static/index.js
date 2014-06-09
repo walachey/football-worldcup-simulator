@@ -1,11 +1,14 @@
 function createProcessGraphs(json_data)
 {
-	var graphs = ["bets", "elo", "spi", "fifa"];
+	var graphs = ["bets", "elo", "spi", "fifa", "value"];
 	var max_day = 32;
 	var labels = [];
 	for (var i = 0; i < max_day + 1; ++i)
-		labels.push("" + (i+1).toString());
-
+	{
+		var day = (12 + i - 1) % 30 + 1;
+		var mon = Math.floor((12 + i - 1) / 30) + 6;
+		labels.push(day.toString() + "." + mon.toString() + ".");
+	}
 	var colorstep = 360 / json_data.length;
 	var legend = false;
 	
@@ -22,20 +25,19 @@ function createProcessGraphs(json_data)
 			var series = team[graphs[i]];
 			if (!series)
 				series = []
-			
-			//while (series.length < max_day)
-			//	series.push(null);
-			
-			var clr = (colorstep * team_index).toString();
+			var clr = ((colorstep * team_index + 120) % 360).toString();
+			var l = 100;
+			if (team_index % 2 == 0) l = 50;
 			data.datasets.push({
 				data: series,
-				strokeColor : "hsla(" + clr + ",75%,75%,0.5)",
-				pointColor : "hsla(" + clr + ",50%,50%,0.5)",
-				pointStrokeColor : "hsla(" + clr + ",75%,50%,0.5)",
+				strokeColor : "hsla(" + clr + ",100%," + (l)/100 + "%,0.5)",
+				pointColor : "hsla(" + clr + ",75%," + (75*l)/100 + "%,0.5)",
+				pointStrokeColor : "hsla(" + clr + ",100%," + (75*l)/100 + "%,0.5)",
 				title: team.name
 				});
 		}
 		
+		$("#" + graphs[i]).replaceWith('<canvas id="' + graphs[i] + '" width="600" height="100"></canvas>');
 		$("#" + graphs[i]).attr("width", $("#graph_" + graphs[i]).width());
 		var ctx = document.getElementById(graphs[i]).getContext("2d");
 		var chart = new Chart(ctx).Line(data, {datasetFill : false});
@@ -44,6 +46,7 @@ function createProcessGraphs(json_data)
 		{
 			legend = true;
 			var legend_div = $("#graph_legend");
+			legend_div.empty();
 			for (var t = 0; t < data.datasets.length; ++t)
 			{
 				var info = data.datasets[t];

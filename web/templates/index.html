@@ -5,8 +5,10 @@
 <script language="javascript">
 $(document).ready(
 	function() 
-    { 
-		createProcessGraphs({{ team_data_json|safe }});
+    {
+		var data = {{ team_data_json|safe }};
+		createProcessGraphs(data);
+		$(window).resize(function() { createProcessGraphs(data) });
     } 
 );
 </script>
@@ -14,68 +16,55 @@ $(document).ready(
 # endblock
 
 # block contents
-      <div class="starter-template">
-		<div id="main_head">
-			<div class="pull-right"><a href="http://www.fu-berlin.de/"><img src="{{ url_for('static', filename='img/Logo_Web_RGB.gif') }}" id="fulogo"></a></div>
-			<div><h1>World&nbsp;Cup&nbsp;Simulator</h1></div>
-		</div>
+	<div id="main_head">
+		<div class="pull-right"><a href="http://www.fu-berlin.de/"><img src="{{ url_for('static', filename='img/Logo_Web_RGB.gif') }}" id="fulogo"></a></div>
+		<div><h1>World&nbsp;Cup&nbsp;Simulator</h1></div>
+	</div>
+	<div class="infotext">
+	This is a probabilistic simulator for the upcoming soccer World Cup. It applies different rules to rate the strength of the teams and to calculate a team's chance to win in a match.<br>
+	Repeating the simulation of the tournament multiple times results in a probability distribution, that shows how likely a team is to advance to the finals.
+	</div>
+	
+	<div class="row-fluid full">
+	# if team_data_json|safe != "[]"
+	<div class="col-xs-12 col-md-8">
+	<div class="infotext graphs">
+	<h2>Probability of winning the World Cup</h2>
+	<ul id="graph_legend"></ul>
+	<div id="graph_bets" class="graph"><h1><small>Betting&nbsp;Odds</small></h1><canvas id="bets" width="600" height="100"></canvas></div>
+	<div id="graph_spi" class="graph"><h1><small>Soccer&nbsp;Power&nbsp;Index</small></h1><canvas id="spi" width="600" height="100"></canvas></div>
+	<div id="graph_elo" class="graph"><h1><small>Elo&nbsp;Ranking</small></h1><canvas id="elo" width="600" height="100"></canvas></div>
+	<div id="graph_fifa" class="graph"><h1><small>FIFA&nbsp;World&nbsp;Ranking</small></h1><canvas id="fifa" width="600" height="100"></canvas></div>
+	<div id="graph_value" class="graph"><h1><small>Market&nbsp;Value</small></h1><canvas id="value" width="600" height="100"></canvas></div>
+	</div>
+	</div>
+	# endif
+	
+	<div class="col-xs-12 col-md-4 pull-right">
 		<div class="infotext">
-		This is a probabilistic simulator for the upcoming soccer World Cup. It applies different rules to rate the strength of the teams and to calculate a team's chance to win in a match.<br>
-		Repeating the simulation of the tournament multiple times results in a probability distribution, that shows how likely a team is to advance to the finals.
+		<h3>What to do?</h3>
+		 After clicking the <i>Play World Cup</i> button below, do the following:<br><br>
+		<dl class="dl">
+			<dt>Select Rules</dt>
+			<dd>Select weights for the rules (or use the default values).<br>
+			The rule weights determine how much your simulation will be influenced by the different rating methods.</dd>
+			<dt>Start the tournament</dt>
+			<dd>Click the <i>Start Tournament</i> button and {{ run_count_max }} simulations of the World Cup will be run. The probability of winning will be computed for every team.</dd>
+		</dl>
 		</div>
-		
-		# if team_data_json|safe != "[]"
-		<div class="infotext graphs">
-		<h2>Chance to become World Champion</h2>
-		<ul id="graph_legend"></ul>
-		<div id="graph_bets" class="graph"><h1><small>Betting&nbsp;Odds</small></h1><canvas id="bets" width="600" height="100"></canvas></div>
-		<div id="graph_spi" class="graph"><h1><small>Soccer&nbsp;Power&nbsp;Index</small></h1><canvas id="spi" width="600" height="100"></canvas></div>
-		<div id="graph_elo" class="graph"><h1><small>Elo&nbsp;ranking</small></h1><canvas id="elo" width="600" height="100"></canvas></div>
-		<div id="graph_fifa" class="graph"><h1><small>FIFA&nbsp;World&nbsp;Ranking</small></h1><canvas id="fifa" width="600" height="100"></canvas></div>
-		<h2><small>The X-axis shows the days of the tournament.</small></h2>
-		</div>
-		# endif
-		
-		<div class="big-con">
-			<div class="bg-con">
-				<div class="bg-img">
-				<img src="{{ url_for('static', filename='img/MainPageBG.jpg') }}">
-				</div>
-				
-				<div class="right-con">
-					
-					<div class="right-side">
-						<div class="right-text">
-							<div class="infotext">
-							<h3>What to do?</h3>
-							 After clicking the <i>Play World Cup</i> button below, do the following:<br><br>
-							<dl class="dl">
-								<dt>Select Rules</dt>
-								<dd>Select weights for the rules (or use the default values).<br>
-								The rule weights determine how much your simulation will be influenced by the different rating methods.</dd>
-								<dt>Start the tournament</dt>
-								<dd>Click the <i>Start Tournament</i> button and {{ run_count_max }} simulations of the World Cup will be run. The probability of winning will be computed for every team.</dd>
-							</dl>
-							</div>
-						</div>
-						<div class="btn-pos">
-							<a href={{ url_for("simple_new_tournament_view") }}>
-							<span class="btn-go btn btn-lg btn-primary">
-							<h1>Play World Cup</h1>
-							</span></a>
-						</div>
-					</div>
-					
 
-				</div>
-				
-			</div>
+		<div class="btn-pos">
+			<a href={{ url_for("simple_new_tournament_view") }}>
+			<span class="btn-go btn btn-lg btn-primary">
+			<h1>Play World Cup</h1>
+			</span></a>
 		</div>
-		
-		<div class="infotext">
-		This World Cup simulator was developed at Freie&nbsp;Universit&auml;t&nbsp;Berlin in the Artificial&nbsp;Intelligence&nbsp;Group.
-		</div>
-      </div>
+	</div>
+	</div>
+	
+	<div class="col-xs-12 infotext">
+	This World Cup simulator was developed at Freie&nbsp;Universit&auml;t&nbsp;Berlin in the Artificial&nbsp;Intelligence&nbsp;Group.
+	</div>
 # endblock
 
 # block footer  

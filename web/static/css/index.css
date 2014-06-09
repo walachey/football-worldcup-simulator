@@ -49,46 +49,6 @@ body {
 	color: black;
 }
 
-.big-con
-{
-	width: 100%;
-	direction:rtl;
-	
-}
-.bg-con
-{
-	height: 650px;
-	direction:rtl;
-	margin-right: -2em;
-}
-.bg-img
-{
-	float:right;
-	display: inline;
-	position: absolute;
-	margin-right:0px;
-	z-index: -10;
-}
-.right-con
-{
-	width: 25%;
-	direction:ltr;
-	position:absolute;
-}
-.right-side
-{
-	float:right;
-	z-index: 20;
-}
-.right-text
-{
-	padding: 2em;
-	padding-top: 3em;
-}
-.right-text dd
-{
-	margin-left: 1em;
-}
 .btn-pos
 {
 	width: 100%;
@@ -123,6 +83,12 @@ body {
 
 .graph canvas {
 	display: inline;
+}
+
+.infotext {
+	margin-top: 2em;
+	margin-bottom: 2em;
+	padding: 1em;
 }
 
 #graph_legend {

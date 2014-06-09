@@ -117,7 +117,7 @@ class EnterOddsView(BaseView):
 					else:
 						results.append({"team_name": "ERROR", "CC": "XX", "odds": 1.0 / (1.0 + odd.getAvg())})
 				fetched = True
-			elif request.form["source"] in ["spi", "elo", "fifa"]:
+			elif request.form["source"] in ["spi", "elo", "fifa", "value"]:
 				tournament = session.query(Tournament).filter_by(id=request.form["tournament_id"]).first()
 				if tournament:
 					# get all finals results
@@ -127,7 +127,7 @@ class EnterOddsView(BaseView):
 				fetched = True
 		elif "save" in request.form:
 			source = source=request.form["source"]
-			if source in ["bets", "spi", "elo", "fifa"]:
+			if source in ["bets", "spi", "elo", "fifa", "value"]:
 				# check date
 				date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
 				
