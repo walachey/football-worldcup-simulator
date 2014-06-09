@@ -533,7 +533,7 @@ def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_dat
 					chance = (
 						(result.wins if not use_round_robin_scores else (3.0 * result.wins + 1.0 * result.draws))
 						/ float(run_count))
-					if chance >= 0.005:
+					if chance >= 0.005 or bracket == 16:
 						team_list.append({
 							"team": result.team_id,
 							"chance" : chance
