@@ -5,6 +5,7 @@ from flask.ext.admin import Admin, BaseView, expose
 from flask.ext.admin.contrib.sqla import ModelView
 from flask.ext.admin import AdminIndexView
 import md5
+import datetime
 
 from database_models import *
 
@@ -94,13 +95,71 @@ class AuthModelView(ModelView):
 	def is_accessible(self):
 		return LoginView.is_logged_in()
 
+class EnterOddsView(BaseView):
+
+	@expose('/', methods=['POST', 'GET'])
+	def index(self):
+		session = getSession()
+		fetched = False
+		result_entered = False
+		results = []
+		date = None
+		if "fetch" in request.form:
+			date = str(datetime.today().date())
+			if request.form["source"] == "bets":
+				import retrieve_betting_odds
+				odds = retrieve_betting_odds.getResults()
+				
+				for odd in odds:
+					team = session.query(Team).filter_by(name=odd.name).first()
+					if team:
+						results.append({"team_name": team.name, "CC": team.country_code, "odds": 1.0 / (1.0 + odd.getAvg())})
+					else:
+						results.append({"team_name": "ERROR", "CC": "XX", "odds": 1.0 / (1.0 + odd.getAvg())})
+				fetched = True
+			elif request.form["source"] in ["spi", "elo", "fifa"]:
+				tournament = session.query(Tournament).filter_by(id=request.form["tournament_id"]).first()
+				if tournament:
+					# get all finals results
+					for bracket_team_result in session.query(BracketTeamResult).filter_by(tournament_id=tournament.id,bof_round=1,game_in_round=1).order_by(BracketTeamResult.wins.desc()):
+						team = session.query(Team).filter_by(id=bracket_team_result.team_id).first()
+						results.append({"team_name": team.name, "CC": team.country_code, "odds": bracket_team_result.wins / float(tournament.run_count)})
+				fetched = True
+		elif "save" in request.form:
+			source = source=request.form["source"]
+			if source in ["bets", "spi", "elo", "fifa"]:
+				# check date
+				date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
+				
+				# we need data for all the teams
+				all_odds_data = []
+				for team in session.query(Team):
+					odds = request.form[team.country_code]
+					all_odds_data.append(OddsData(team, odds, date, source))
+				# now remove all old info for this date
+				old_odds = session.query(OddsData).filter_by(date=date, source=source).all()
+				for old in old_odds:
+					session.delete(old)
+				# and add the new ones
+				for odd in all_odds_data:
+					session.add(odd)
+				session.commit()
+				result_entered = True
+			
+		cleanupSession()
+		return self.render("admin_enter_odds.html", results=results, fetched=fetched, result_entered=result_entered, date=date)
+	
+	def is_accessible(self):
+		return LoginView.is_logged_in()
+		
 def init(app, new_cache):
 	global admin
 	global cache
 	session = getSession()
 	cache = new_cache
 	admin = Admin(app, index_view=LoginView(name='Login/Logout'))
-
+	admin.add_view(EnterOddsView(name="Enter Odds"))
+	
 	admin.add_view(AuthModelView(RuleType, session))
 	admin.add_view(AuthModelView(ScoreType, session))
 	admin.add_view(AuthModelView(TournamentType, session))

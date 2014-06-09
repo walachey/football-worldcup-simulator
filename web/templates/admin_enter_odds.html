@@ -1,0 +1,53 @@
+{% extends 'admin/master.html' %}
+{% block head %}
+{{ super() }}
+<style>
+.btn {
+	min-width: 10em;
+	min-height: 3em;
+}
+.fakebtn {
+	padding: 1em;
+}
+</style>
+{% endblock %}
+{% block body %}
+
+			<form method="POST">
+				<h4>Enter odds for a specified source:</h4>
+				Select the source:
+					<select name="source">
+						<option value="0" selected>Please select...</option>
+						<option value="bets">Bookmakers' Odds</option>
+						<option value="elo">Elo Ranking</option>
+						<option value="spi">Soccer Power Index</option>
+						<option value="fifa">FIFA World Ranking</option>
+					</select> 
+				Tournament ID: <input type="number" name="tournament_id" value="" maxlength="10">
+				<br>
+				<button class="btn btn-primary" type="submit" name="fetch" value="1">Fetch Results</button>
+				<br>
+				{% if fetched %}
+					Date: <input type="date" name="date" value="{{ date }}">
+					<br>
+					<table>
+					{% for result in results %}
+						<tr>
+						<td>{{ result.team_name }}:</td>
+						<td><input type="text" name="{{ result.CC }}" value="{{ result.odds }}"></td>
+						</tr>
+					{% endfor %}
+					</table>
+				{% endif %}
+				{% if result_entered %}
+				<span class="fakebtn btn-warning">{{ result_entered }} for {{ date }}</span>
+				{% else %}
+				{% if fetched %}
+					<button class="btn btn-primary" type="submit" name="save" value="1">Save Data</button>
+				{% endif %}
+				{% endif %}
+				<h4><small>Saves the betting odds from some point in time.</small></h4>
+			</form>
+			
+
+{% endblock %}

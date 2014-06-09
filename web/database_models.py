@@ -587,3 +587,24 @@ class MatchResult(db.Model):
 			for previous_match in parent_match.resolveBrackets():
 				resolved.append(previous_match)
 		return resolved
+
+		
+class OddsData(db.Model):
+	__tablename__ = "odds_data"
+	query = None
+	
+	id = db.Column(db.Integer, primary_key=True)
+	team_id = db.Column(db.Integer, db.ForeignKey('teams.id'))
+	odds = db.Column(db.Float)
+	date = db.Column(db.Date)
+	source = db.Column(db.String(32))
+	
+	def __init__(self, team, odds, date, source):
+		self.team_id = team.id
+		self.odds = odds
+		self.date = date
+		self.source = source
+		
+	def __repr__(self):
+		return "[odds " + self.source + str(self.team_id) + " " + str(self.date) + " " + str(self.odds) + "]"
+	

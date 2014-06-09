@@ -13,6 +13,7 @@ import admin_interface
 from flask import abort, redirect, url_for, render_template, flash, request, session as user_session, make_response, Response
 from flask import Flask
 from flask.ext.cache import Cache
+from sqlalchemy import func
 import jinja2
 import re, md5
 import subprocess
@@ -25,7 +26,7 @@ import socket # for catching socket.error
 
 app = config.getFlaskApp()
 app.root_path = abspath(dirname(__file__)) # this fixes incorrect root-path deployment issues
-cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+cache = Cache(app, config={'CACHE_TYPE': 'simple'}) # "null" to disable caching, "simple" for default
 admin_interface.init(app, cache)
 simulation_dispatcher = config.dispatcher_class(db, config)
 # initialize random numbers for user ID generation
@@ -42,7 +43,27 @@ def define_globals():
 @app.route('/')
 @cache.cached()
 def index_view():
-	return render_template('index.html', run_count_max=config.simulation_max_run_count)
+	# get current odds
+	session = getSession()
+	date = session.query(func.max(OddsData.date)).filter_by(source="bets")
+	teams = []
+	# get 8 highest teams
+	for odd in session.query(OddsData).filter_by(date=date, source="bets").order_by(OddsData.odds.desc()):
+		if len(teams) >= 8 or odd.odds <= 0.001:
+			break
+		team = session.query(Team).filter_by(id=odd.team_id).first()
+		teams.append(team)
+	# and now just get all odds for those teams..
+	all_team_data = []
+	for team in teams:
+		team_data = {"name":team.name}
+		for odd in session.query(OddsData).filter_by(team_id=team.id).order_by(OddsData.date):
+			if not odd.source in team_data:
+				team_data[odd.source] = []
+			team_data[odd.source].append(odd.odds)
+		all_team_data.append(team_data)
+	cleanupSession()
+	return render_template('index.html', run_count_max=config.simulation_max_run_count, team_data_json=json.dumps(all_team_data))
 
 @app.route('/impressum')
 @cache.cached()

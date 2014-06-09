@@ -99,3 +99,42 @@ body {
 {
 	width: 100%;
 }
+
+/* graphs */
+
+.graphs
+{
+	margin-top: 2em;
+}
+
+.graph
+{
+	margin-left: auto;
+	margin-right: auto;
+	text-align:center;
+}
+
+.graph h1
+{
+	position:absolute;
+	left:0;
+	right:0;
+}
+
+.graph canvas {
+	display: inline;
+}
+
+#graph_legend {
+display: table;
+width: 100%;
+list-style: none;
+padding:0px;
+}
+#graph_legend li {
+display: table-cell;
+text-align: center;
+}
+#graph_legend li a {
+display: block;
+}

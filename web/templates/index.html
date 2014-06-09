@@ -1,11 +1,12 @@
 # extends "base_layout.html"
 # block head
 {{ super() }}
+<script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script> 
 <script language="javascript">
 $(document).ready(
 	function() 
     { 
-
+		createProcessGraphs({{ team_data_json|safe }});
     } 
 );
 </script>
@@ -22,7 +23,19 @@ $(document).ready(
 		This is a probabilistic simulator for the upcoming soccer World Cup. It applies different rules to rate the strength of the teams and to calculate a team's chance to win in a match.<br>
 		Repeating the simulation of the tournament multiple times results in a probability distribution, that shows how likely a team is to advance to the finals.
 		</div>
-
+		
+		# if team_data_json|safe != "[]"
+		<div class="infotext graphs">
+		<h2>Chance to become World Champion</h2>
+		<ul id="graph_legend"></ul>
+		<div id="graph_bets" class="graph"><h1><small>Betting&nbsp;Odds</small></h1><canvas id="bets" width="600" height="100"></canvas></div>
+		<div id="graph_spi" class="graph"><h1><small>Soccer&nbsp;Power&nbsp;Index</small></h1><canvas id="spi" width="600" height="100"></canvas></div>
+		<div id="graph_elo" class="graph"><h1><small>Elo&nbsp;ranking</small></h1><canvas id="elo" width="600" height="100"></canvas></div>
+		<div id="graph_fifa" class="graph"><h1><small>FIFA&nbsp;World&nbsp;Ranking</small></h1><canvas id="fifa" width="600" height="100"></canvas></div>
+		<h2><small>The X-axis shows the days of the tournament.</small></h2>
+		</div>
+		# endif
+		
 		<div class="big-con">
 			<div class="bg-con">
 				<div class="bg-img">
