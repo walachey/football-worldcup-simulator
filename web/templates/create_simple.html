@@ -82,12 +82,23 @@ $(document).ready(
 				<small>Instead of simulating the matches that have already been played, use the real data.</small>
 				</h5></div>
 				</label></td>
-				<td>&nbsp;</td>
+				<td align="right"><span class="btn btn-primary" onclick="javascript:showPlayedMatches();">info</span></td>
 			</tr>
 			</tbody>
 			</table>
 		</div>
 		</div>
+	</div>
+	</div>
+	
+	## this can be expanded at will and then be filled with the already played matches
+	<div class="selbox-con selbox-con-ok" id="show_matches" style="display:none;">
+	<div class="headtab"><span>Matches</span></div>
+	<div class="container selbox selbox-info">
+	<h2><small>The simulation will use the following match results:</small></h2>
+	<table class="table table-hover tablesorter-green">
+	</table>
+	<div class="spacer"><img src="static/img/loader.gif"></div>
 	</div>
 	</div>
 	

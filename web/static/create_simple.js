@@ -118,3 +118,47 @@ function showCustomTeamRatingsDialog(id)
 	$("#choose_teams_con").dialog('option', 'height', $(window).height() * 0.8);
 	$("#choose_teams_con").dialog('option', 'width', width);
 }
+
+function showPlayedMatches()
+{
+	// just fade out?
+	if ($("#show_matches").is(":visible"))
+	{
+		$("#show_matches").hide("clip");
+		return;
+	}
+	$("#show_matches").show("clip");
+	
+	// get matches via AJAX
+	if ($("#show_matches table td").length == 0)
+	{
+		$.ajax(
+		{
+			url:"matchtable",
+			dataType: "html",
+			data: { get_param: 'value' }, 
+			success: function(data) { populatePlayedMatches(data); },
+			error: function() { populatePlayedMatchesFail(); }
+		}
+		);
+	}
+}
+
+function scroll(element, parent){
+     $(parent).animate({ scrollTop: $(parent).scrollTop() + $(element).offset().top - $(parent).offset().top }, { duration: 'slow', easing: 'swing'});
+     $('html,body').animate({ scrollTop: $(parent).offset().top - $(window).height() + $(element).height() }, { duration: 1000, easing: 'swing'});
+}
+
+function populatePlayedMatchesFail()
+{
+	$("#show_matches .spacer").append("<h3><small>Could not load matches!</small></h3>");
+}
+function populatePlayedMatches(html)
+{
+	$("#show_matches .spacer").hide();
+	$("#show_matches table").replaceWith(html);
+	
+	//$("#show_matches table")[0].scrollIntoView();
+	scroll("#show_matches table", "#show_matches");
+	setTimeout(function(){ $("#show_matches table").effect("highlight"); }, 1000);
+}

@@ -58,6 +58,38 @@ def technical_details_view():
 @cache.cached()
 def documentation_view():
 	return render_template('documentation.html')
+
+@app.route('/matchtable')
+@cache.cached()
+def matchtable_view():	
+	session = getSession()
+	all_database_matches = session.query(DatabaseMatchResult).order_by(DatabaseMatchResult.bof_round.desc()).all()
+	
+	database_matches = []
+	for db_match in all_database_matches:
+		team1 = session.query(Team).filter_by(id=db_match.team_left_id).first()
+		team2 = session.query(Team).filter_by(id=db_match.team_right_id).first()
+		name = "Group Phase"
+		if db_match.bof_round == 8:
+			name = "Round Of Sixteen"
+		elif db_match.bof_round == 4:
+			name = "Quarter Finals"
+		elif db_match.bof_round == 2:
+			name = "Semi Finals"
+		elif db_match.bof_round == 1:
+			name = "Finals"
+			
+		db_match_data = {
+			"name": name,
+			"bof_round": db_match.bof_round,
+			"teams": [
+					{"name": team1.name, "CC": team1.country_code, "goals": db_match.goals_left},
+					{"name": team2.name, "CC": team2.country_code, "goals": db_match.goals_right}
+				]
+		}
+		database_matches.append(db_match_data)
+	cleanupSession()
+	return render_template('matchtable.html', matches=database_matches)
 	
 @app.route('/teams')
 @cache.cached()

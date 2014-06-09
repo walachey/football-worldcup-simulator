@@ -103,6 +103,35 @@ body {
 
 /* create_simple */
 
+.matches_head  {
+	text-align: center;
+	vertical-align: middle;
+}
+.matches_head span {
+	font-variant: small-caps;
+	font-weight: bold;
+}
+
+#show_matches .spacer {
+	min-height: 10em;
+}
+
+#show_matches .goal {
+	font-size: 1.5em;
+}
+
+#show_matches td{
+	vertical-align: middle;
+}
+
+.teamflag {
+	min-width: 10em;
+}
+.teamname {
+	text-transform: uppercase;
+	font-weight: bold;
+}
+
 .custom_par_row {
 	border-top: 2px solid grey;
 }
@@ -165,4 +194,12 @@ td.input {
 	height: 2em;
 	vertical-align:middle;
 	text-align:center;
+}
+
+/* teams */
+td.r, th.r {
+	text-align: right;
+}
+td.l, th.l {
+	text-align: left;
 }
