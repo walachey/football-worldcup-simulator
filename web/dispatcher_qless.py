@@ -23,9 +23,9 @@ class DispatcherQLess(Dispatcher):
 			sleep(1.0)
 			job = self.client.queues["finished"].pop() or self.client.queues["failed"].pop()
 
-		job.complete()
 		job_data = job.data
 		job_results = None
+		
 		if "stdout" in job_data and job_data["stdout"]:
 			job_results = job_data["stdout"]
 			if isinstance(job_results, basestring):
@@ -45,6 +45,7 @@ class DispatcherQLess(Dispatcher):
 			if returncode == 0 and job_results:
 				tournament.state = TournamentState.finished
 				self.parseJSONResults(job_results, tournament, session)
+				job.data = {"state": "OK"}
 			else:
 				if tournament:
 					tournament.state = TournamentState.error
@@ -61,6 +62,7 @@ class DispatcherQLess(Dispatcher):
 			if tournament:
 				tournament.state = TournamentState.error
 		finally:
+			job.complete()
 			session.commit()
 			session.close()
 			cleanupSession()
