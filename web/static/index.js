@@ -7,7 +7,13 @@ function createProcessGraphs(json_data)
 	{
 		var day = (12 + i - 1) % 30 + 1;
 		var mon = Math.floor((12 + i - 1) / 30) + 6;
-		labels.push(day.toString() + "." + mon.toString() + ".");
+		if (i == 0 || day == 1 || i == max_day)
+			mon = mon.toString() + ".";
+		else
+		{
+			mon = "";
+		}
+		labels.push(day.toString() + "." + mon);
 	}
 	var colorstep = 360 / json_data.length;
 	var legend = false;
