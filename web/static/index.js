@@ -36,9 +36,9 @@ function createProcessGraphs(json_data)
 			if (team_index % 2 == 0) l = 50;
 			data.datasets.push({
 				data: series,
-				strokeColor : "hsla(" + clr + ",100%," + (l)/100 + "%,0.5)",
-				pointColor : "hsla(" + clr + ",75%," + (75*l)/100 + "%,0.5)",
-				pointStrokeColor : "hsla(" + clr + ",100%," + (75*l)/100 + "%,0.5)",
+				strokeColor : "hsla(" + clr + ",100%," + (50*l)/100 + "%,1.0)",
+				pointColor : "hsla(" + clr + ",75%," + (75*l)/100 + "%,1.0)",
+				pointStrokeColor : "hsla(" + clr + ",100%," + (75*l)/100 + "%,1.0)",
 				title: team.name
 				});
 		}
