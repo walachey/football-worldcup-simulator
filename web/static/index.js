@@ -46,7 +46,7 @@ function createProcessGraphs(json_data)
 		$("#" + graphs[i]).replaceWith('<canvas id="' + graphs[i] + '" width="600" height="100"></canvas>');
 		$("#" + graphs[i]).attr("width", $("#graph_" + graphs[i]).width());
 		var ctx = document.getElementById(graphs[i]).getContext("2d");
-		var chart = new Chart(ctx).Line(data, {datasetFill : false});
+		var chart = new Chart(ctx).Line(data, {datasetFill: false, datasetStrokeWidth: 4, pointDotRadius: 3});
 		
 		if (!legend)
 		{
