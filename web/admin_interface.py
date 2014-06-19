@@ -104,6 +104,7 @@ class EnterOddsView(BaseView):
 		result_entered = False
 		results = []
 		date = None
+		zero_point_teams = []
 		if "fetch" in request.form:
 			date = str(datetime.today().date())
 			if request.form["source"] == "bets":
@@ -134,7 +135,11 @@ class EnterOddsView(BaseView):
 				# we need data for all the teams
 				all_odds_data = []
 				for team in session.query(Team):
-					odds = request.form[team.country_code]
+					odds = 0.0
+					if team.country_code in request.form:
+						odds = request.form[team.country_code]
+					else:
+						zero_point_teams.append(team.name)
 					all_odds_data.append(OddsData(team, odds, date, source))
 				# now remove all old info for this date
 				old_odds = session.query(OddsData).filter_by(date=date, source=source).all()
@@ -147,7 +152,7 @@ class EnterOddsView(BaseView):
 				result_entered = True
 			
 		cleanupSession()
-		return self.render("admin_enter_odds.html", results=results, fetched=fetched, result_entered=result_entered, date=date)
+		return self.render("admin_enter_odds.html", results=results, fetched=fetched, result_entered=result_entered, date=date, zero_point_teams=zero_point_teams)
 	
 	def is_accessible(self):
 		return LoginView.is_logged_in()

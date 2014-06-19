@@ -41,7 +41,11 @@
 					</table>
 				{% endif %}
 				{% if result_entered %}
-				<span class="fakebtn btn-warning">{{ result_entered }} for {{ date }}</span>
+					<span class="fakebtn btn-success">{{ result_entered }} for {{ date }}</span>
+					{% if zero_point_teams %}
+						<br><hr>
+						Teams not found: {% for team in zero_point_teams %} <li>{{ team }}</li>{% endfor %}
+					{% endif %}
 				{% else %}
 				{% if fetched %}
 					<button class="btn btn-primary" type="submit" name="save" value="1">Save Data</button>
