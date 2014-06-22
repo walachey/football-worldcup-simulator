@@ -93,7 +93,7 @@ def documentation_view():
 @cache.cached()
 def matchtable_view():	
 	session = getSession()
-	all_database_matches = session.query(DatabaseMatchResult).order_by(DatabaseMatchResult.bof_round.desc()).all()
+	all_database_matches = session.query(DatabaseMatchResult).order_by(DatabaseMatchResult.bof_round, DatabaseMatchResult.id.desc()).all()
 	
 	database_matches = []
 	for db_match in all_database_matches:

@@ -158,7 +158,13 @@ function populatePlayedMatches(html)
 	$("#show_matches .spacer").hide();
 	$("#show_matches table").replaceWith(html);
 	
-	//$("#show_matches table")[0].scrollIntoView();
-	scroll("#show_matches table", "#show_matches");
+	var elem = "#show_matches table tr:nth-child(12)";
+	var parent = "#show_matches table tbody";
+	if (!$(elem).length)
+	{
+		elem = "#show_matches table";
+		parent = "#show_matches";
+	}
+	scroll(elem, parent);
 	setTimeout(function(){ $("#show_matches table").effect("highlight"); }, 1000);
 }
