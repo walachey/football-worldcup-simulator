@@ -28,17 +28,21 @@ function createProcessGraphs(json_data)
 		for (var team_index = 0; team_index < json_data.length; ++team_index)
 		{
 			var team = json_data[team_index];
-			var series = team[graphs[i]];
-			if (!series)
-				series = []
+			var series_data = team[graphs[i]];
+			if (!series_data) series_data = [];
+			
+			var first_null_index = 0, len = series_data.length;
+			for (;first_null_index < len; ++first_null_index)
+				if (series_data[first_null_index] == 0) break;
+			var series = series_data.slice(0, first_null_index);
 			var clr = ((colorstep * team_index + 120) % 360).toString();
 			var l = 100;
 			if (team_index % 2 == 0) l = 50;
 			data.datasets.push({
 				data: series,
-				strokeColor : "hsla(" + clr + ",100%," + (50*l)/100 + "%,1.0)",
-				pointColor : "hsla(" + clr + ",75%," + (75*l)/100 + "%,1.0)",
-				pointStrokeColor : "hsla(" + clr + ",100%," + (75*l)/100 + "%,1.0)",
+				strokeColor : "hsl(" + clr + ",100%," + (50*l)/100 + "%)",
+				pointColor : "hsl(" + clr + ",75%," + (20*l)/100 + "%)",
+				pointStrokeColor : "hsl(" + clr + ",100%," + (75*l)/100 + "%)",
 				title: team.name
 				});
 		}
@@ -46,7 +50,7 @@ function createProcessGraphs(json_data)
 		$("#" + graphs[i]).replaceWith('<canvas id="' + graphs[i] + '" width="600" height="100"></canvas>');
 		$("#" + graphs[i]).attr("width", $("#graph_" + graphs[i]).width());
 		var ctx = document.getElementById(graphs[i]).getContext("2d");
-		var chart = new Chart(ctx).Line(data, {datasetFill: false, datasetStrokeWidth: 4, pointDotRadius: 3});
+		var chart = new Chart(ctx).Line(data, {datasetFill: false, datasetStrokeWidth: 2, pointDotRadius: 1.5});
 		
 		if (!legend)
 		{
@@ -57,8 +61,8 @@ function createProcessGraphs(json_data)
 			{
 				var info = data.datasets[t];
 				legend_div.append(
-				'<li style="border:2px solid ' + info.pointStrokeColor + ';'
-				+ 'background: ' + info.pointColor + ';'
+				'<li style="border:2px solid ' + info.strokeColor + ';'
+				+ 'background: ' + info.pointStrokeColor + ';'
 				+ '"+">' 
 				+ info.title + '</li>'
 				); 
