@@ -547,7 +547,13 @@ def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_dat
 							"team": result.team_id,
 							"chance" : chance
 							});
-
+			
+			# sort for chance, does not necessarily have to be sorted already
+			# this only happens in the group phase, though, where the number of wins is not the only factor
+			if bracket == 16:
+				def get_chance(team_data):
+					return team_data["chance"]
+				team_list = sorted(team_list, key=get_chance, reverse=True)
 			match_dict["game_" + str(bracket) + "_" + str(game_in_round)] = team_list
 	
 	cleanupSession()
