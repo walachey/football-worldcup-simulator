@@ -5,7 +5,7 @@
 <tbody>
 # for match in matches
 	<tr>
-	<td class="matches_head"><span>{{ match.name }}</span></td>
+	<td class="matches_head"><span>{{ match.name|safe }}</span></td>
 	<td class="r">
 	<div class="teamflag">
 	<img class="flag" style="float:left" src="{{ url_for('static', filename='img/flags/'~match.teams[0].CC~'.png') }}">

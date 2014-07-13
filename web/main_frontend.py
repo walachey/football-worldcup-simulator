@@ -107,7 +107,7 @@ def matchtable_view():
 		elif db_match.bof_round == 2:
 			name = "Semi Finals"
 		elif db_match.bof_round == 1:
-			name = "Finals"
+			name = "Finals &amp; Third"
 			
 		db_match_data = {
 			"name": name,
