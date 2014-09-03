@@ -71,8 +71,33 @@ def index_view():
 	def betting_odds(team_data):
 		return team_data["bets"][-1]
 	all_team_data = sorted(all_team_data, key=betting_odds, reverse=True)
+	
+	# if the tournament is already over, the index page will display the tournament results
+	# at this point, this is hardcoded (todo)
+	rankings = []
+	groups = []
+	if config.show_tournament_results:
+		rankings = ["DE", "AR", "NL", "BR"]
+		groups = [
+				["BR", "MX"],
+				["NL", "CL"],
+				["CO", "GR"],
+				["CR", "UY"],
+				["FR", "CH"],
+				["AR", "NG"],
+				["DE", "US"],
+				["BE", "DZ"]
+				]
+		for i in range(len(rankings)):
+			team = session.query(Team).filter_by(country_code=rankings[i]).first()
+			rankings[i] = {"name": team.name, "country_code": team.country_code}
+		for group in groups:
+			for i in range(len(group)):
+				team = session.query(Team).filter_by(country_code=group[i]).first()
+				group[i] = {"name": team.name, "country_code": team.country_code}
+	
 	cleanupSession()
-	return render_template('index.html', run_count_max=config.simulation_max_run_count, team_data_json=json.dumps(all_team_data))
+	return render_template('index.html', run_count_max=config.simulation_max_run_count, team_data_json=json.dumps(all_team_data), show_tournament_results=config.show_tournament_results, tournament_results=json.dumps({"rankings": rankings, "groups": groups}))
 
 @app.route('/impressum')
 @cache.cached()

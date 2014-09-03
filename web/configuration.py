@@ -38,6 +38,9 @@ class WCSConfiguration:
 	# whether the "custom tournament" page will be visible
 	show_custom_tournament_page = False
 	
+	# whether the index page will show the results or only the progress graphs
+	show_tournament_results = False
+	
 	# this is the custom Google Analytics codeline that is unique for every webpage
 	# for example: "ga('create', 'UA-1234556-8', 'example.com');"
 	# can be set to None to disable GA

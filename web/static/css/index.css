@@ -105,3 +105,15 @@ text-shadow: 0px 0px 7px white;
 #graph_legend li a {
 display: block;
 }
+
+#result_tables {
+	min-height: 25em;
+	font-size:1.2em;
+}
+
+#result_tables table {
+	width: 100%;
+}
+
+#group_table .teamname {
+}

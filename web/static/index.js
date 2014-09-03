@@ -70,3 +70,58 @@ function createProcessGraphs(json_data)
 		}
 	}
 }
+
+function showProgress()
+{
+	$("#result_tables, #progress_graphs").fadeToggle("slow", function(){ $(window).trigger("resize")}); 
+}
+
+function fillResultTable()
+{
+	if (!window.tournament_results) return;
+	// fill the knockout results first
+	var ranks = ["Winner", "Second", "Third", "Fourth"];
+	var delay = 0;
+	var length = window.tournament_results.rankings.length;
+	var knockout_table = $("#knockout_table");
+	for (var i = 0; i < length; ++i)
+	{
+		var team = window.tournament_results.rankings[i];
+		var ko_id = "ko_" + i.toString();
+		var contents = '<tr id="' + ko_id + '"><td class="matches_head l"><span style="display:none;">' + ranks[i] + '</span></td><td class="r"><span style="display:none;"><img class="flag" src="/static/img/flags/' + team.country_code + '.png"></img></td><td><span class="teamname" style="display:none;float:right;">' + team.name + '</span></td></tr>';
+
+		setTimeout(appendToResultTableProxy(knockout_table, contents, ko_id), delay);
+		delay += 250;
+	}
+	
+	// and the groups
+	var group_table = $("#group_table");
+	length = window.tournament_results.groups.length;
+	delay /= 2;
+	for (var i = 0; i < length; ++i)
+	{
+		var group = String.fromCharCode(65 + i);
+		
+		var team1 = window.tournament_results.groups[i][0];
+		var team2 = window.tournament_results.groups[i][1];
+		var id = "gr_" + i.toString();
+		var contents = '<tr id="' + id + '"><td class="matches_head l"><span style="display:none;">Group&nbsp;' + group + '</span></td>' + 
+			'<td class="r"><span class="teamname" style="display:none;">' + team1.name + '</span></td>' + 
+			'<td class="l"><span style="display:none;"><img class="flag" src="/static/img/flags/' + team1.country_code + '.png"></img></td>' +
+			'<td class="r"><span style="display:none;"><img class="flag" src="/static/img/flags/' + team2.country_code + '.png"></img></td>' +
+			'<td class="l"><span class="teamname" style="display:none;">' + team2.name + '</span></td>' + 
+			'</tr>';
+
+		setTimeout(appendToResultTableProxy(group_table, contents, id), delay);
+		delay += 250;
+	}
+}
+
+function appendToResultTableProxy(knockout_table, contents, ko_id)
+{
+	return function()
+	{
+		knockout_table.append(contents);
+		$('#' + ko_id + " span").show("fade");
+	}
+}
