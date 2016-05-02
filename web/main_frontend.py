@@ -43,34 +43,37 @@ def define_globals():
 @app.route('/')
 @cache.cached()
 def index_view():
-	# get current odds
 	session = getSession()
-	date = session.query(func.max(OddsData.date)).filter_by(source="bets")
-	teams = []
-	# there is a set of default teams that are always displayed (even if out of tournament)
-	for country_code in ["BR", "ES", "AR", "DE", "NL"]:
-		team = session.query(Team).filter_by(country_code=country_code).first()
-		teams.append(team)
-	# get X highest teams
-	for odd in session.query(OddsData).filter_by(date=date, source="bets").order_by(OddsData.odds.desc()):
-		if len(teams) >= 7 or odd.odds <= 0.001:
-			break
-		team = session.query(Team).filter_by(id=odd.team_id).first()
-		if not (team in teams):
-			teams.append(team)
-	# and now just get all odds for those teams..
 	all_team_data = []
-	for team in teams:
-		team_data = {"name":team.name}
-		for odd in session.query(OddsData).filter_by(team_id=team.id).order_by(OddsData.date):
-			if not odd.source in team_data:
-				team_data[odd.source] = []
-			team_data[odd.source].append(odd.odds)
-		all_team_data.append(team_data)
-	# and then sort all teams for last betting odds
-	def betting_odds(team_data):
-		return team_data["bets"][-1]
-	all_team_data = sorted(all_team_data, key=betting_odds, reverse=True)
+	
+	if config.show_progress_graphs:
+		# get current odds
+		date = session.query(func.max(OddsData.date)).filter_by(source="bets")
+		teams = []
+		# there is a set of default teams that are always displayed (even if out of tournament)
+		for country_code in config.progress_graphs_force_teams:
+			team = session.query(Team).filter_by(country_code=country_code).first()
+			teams.append(team)
+		# get X highest teams
+		for odd in session.query(OddsData).filter_by(date=date, source="bets").order_by(OddsData.odds.desc()):
+			if len(teams) >= 7 or odd.odds <= 0.001:
+				break
+			team = session.query(Team).filter_by(id=odd.team_id).first()
+			if not (team in teams):
+				teams.append(team)
+		# and now just get all odds for those teams..
+		all_team_data = []
+		for team in teams:
+			team_data = {"name":team.name}
+			for odd in session.query(OddsData).filter_by(team_id=team.id).order_by(OddsData.date):
+				if not odd.source in team_data:
+					team_data[odd.source] = []
+				team_data[odd.source].append(odd.odds)
+			all_team_data.append(team_data)
+		# and then sort all teams for last betting odds
+		def betting_odds(team_data):
+			return team_data["bets"][-1]
+		all_team_data = sorted(all_team_data, key=betting_odds, reverse=True)
 	
 	# if the tournament is already over, the index page will display the tournament results
 	# at this point, this is hardcoded (todo)

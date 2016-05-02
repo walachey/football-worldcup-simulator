@@ -40,6 +40,8 @@ class WCSConfiguration:
 	
 	# whether the index page will show the results or only the progress graphs
 	show_tournament_results = False
+	show_progress_graphs = False
+	progress_graphs_force_teams = [] # ["BR", "ES", "AR", "DE", "NL"]
 	
 	# this is the custom Google Analytics codeline that is unique for every webpage
 	# for example: "ga('create', 'UA-1234556-8', 'example.com');"
