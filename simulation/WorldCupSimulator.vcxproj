@@ -92,6 +92,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Team.h" />
     <ClInclude Include="Tournament.h" />
+    <ClInclude Include="TournamentEURO.h" />
     <ClInclude Include="TournamentFIFA.h" />
   </ItemGroup>
   <ItemGroup>
@@ -105,6 +106,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Team.cpp" />
     <ClCompile Include="Tournament.cpp" />
+    <ClCompile Include="TournamentEURO.cpp" />
     <ClCompile Include="TournamentFIFA.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

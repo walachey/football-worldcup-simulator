@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Tournament.h"
 #include "TournamentFIFA.h"
+#include "TournamentEURO.h"
 
 #include "Simulation.h"
 #include "Match.h"
@@ -75,8 +76,10 @@ Tournament* Tournament::newOfType(std::string type, Simulation *sim, int runs)
 {
 	if (type == "1v1")
 		return new OneVersusOneTournament(sim, runs);
-	if (type == "worldcup") // TODO
+	if (type == "worldcup")
 		return new FIFAStyleTournament(sim, runs);
+	if (type == "eurocup")
+		return new EUROStyleTournament(sim, runs);
 	std::cerr << "Unknown tournament type: \"" << type << "\"" << std::endl;
 	return 0;
 }

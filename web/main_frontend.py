@@ -284,7 +284,7 @@ def new_tournament_view():
 @cache.cached()
 def simple_new_tournament_view():
 	session = getSession();
-	tournament_type = session.query(TournamentType).filter_by(internal_identifier="worldcup").first()
+	tournament_type = session.query(TournamentType).filter_by(internal_identifier="eurocup").first()
 	all_standard_rule_types = session.query(RuleType).filter_by(is_default_rule=True).all()
 	all_teams = session.query(Team).limit(tournament_type.team_count).all()
 	run_count_par = session.query(RuleParameterType).filter_by(internal_identifier="simulation_run_count").first()
@@ -547,6 +547,70 @@ def register_tournament_json():
 	
 	return json.dumps(return_value)
 
+# custom view function for UEFA Euro 2016 style tournament
+def eurocup_view(tournament_id, all_teams, all_result_place_types, all_team_data, general):
+	# get match data for this tournament
+	session = getSession()
+	run_count = general["run_count"]
+	# get all matches from that tournament
+	match_dict = {}
+	all_brackets = [16, 1, 2, 4, 8]
+	for bracket in all_brackets:
+		number_of_games = bracket
+		use_round_robin_scores = False
+		if bracket == 16:
+			number_of_games = 8
+			use_round_robin_scores = True
+		for game_in_round in range(1, number_of_games+1):
+			team_list = []
+			for result in session.query(BracketTeamResult)\
+				.filter(BracketTeamResult.tournament_id==tournament_id, BracketTeamResult.bof_round==bracket, BracketTeamResult.game_in_round==game_in_round)\
+				.order_by(BracketTeamResult.wins.desc()):
+				if result.matches > 0:
+					chance = (
+						(result.wins if not use_round_robin_scores else (3.0 * result.wins + 1.0 * result.draws))
+						/ float(run_count))
+					if chance >= 0.005 or bracket == 16:
+						team_list.append({
+							"team": result.team_id,
+							"chance" : chance
+							});
+			
+			# sort for chance, does not necessarily have to be sorted already
+			# this only happens in the group phase, though, where the number of wins is not the only factor
+			if use_round_robin_scores:
+				def get_chance(team_data):
+					return team_data["chance"]
+				team_list = sorted(team_list, key=get_chance, reverse=True)
+				# also it is possible that two teams finish with the exact same amount of goals.
+				# in that case, it is necessary to have a second sorting criteria - for example the success in the next round.
+				# (as the goal difference is currently not available here)
+				have_two_of_equal_points = False
+				for i in range(1, len(team_list)):
+					if team_list[i-1]["chance"] == team_list[i]["chance"]:
+						have_two_of_equal_points = True
+						break
+				if have_two_of_equal_points:
+					# get all victories in next round for participating teams
+					for team_data in team_list:
+						next_result = session.query(BracketTeamResult).filter_by(tournament_id=tournament_id, team_id=team_data["team"], bof_round=bracket/2).first()
+						team_data["next_wins"] = next_result.wins
+					# and sort again, for victories in next round
+					def better_round_robin_sorting_criteria(team_data):
+						return (team_data["chance"], team_data["next_wins"])
+					team_list = sorted(team_list, key=better_round_robin_sorting_criteria, reverse=True)
+			match_dict["game_" + str(bracket) + "_" + str(game_in_round)] = team_list
+	
+	cleanupSession()
+	
+	# create a quick lookup table for team names
+	team_lookup = {}
+	for team in all_teams:
+		team_lookup[team.id] = {"name": team.name, "country_code":team.country_code}
+	
+	return render_template('tournament_euro.html', teams=all_team_data, matches=json.dumps(match_dict), team_lookup=json.dumps(team_lookup), general=general)
+
+	
 # custom view function for FIFA style tournament
 def worldcup_view(tournament_id, all_teams, all_result_place_types, all_team_data, general):
 	# get match data for this tournament

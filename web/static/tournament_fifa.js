@@ -1,11 +1,5 @@
-function fillBrackets(json_data, team_lookup)
-{
-	// a fresh start!
-	$(".all_games tbody").replaceWith("<tbody></tbody>");
-	var table_body = $(".all_games tbody").first();
-	
-	var rounds = [16, 8, 4, 2, 1, 2, 4, 8, 16];
-	var games_in_rounds = [
+
+window.games_in_rounds = [
 			[1, 3, 5, 7],
 			[1, 2, 3, 4],
 			[1, 2],
@@ -16,11 +10,27 @@ function fillBrackets(json_data, team_lookup)
 			[5, 6, 7, 8],
 			[2, 4, 6, 8]
 		];
+/*
+	Sets the indices (starting at 1) of the games in the respective rounds.
+	This can be used to e.g. not display a certain group.
+*/
+function setDisplayedGamesInRounds(games)
+{
+	window.games_in_rounds = games;
+}
+
+function fillBrackets(json_data, team_lookup)
+{
+	// a fresh start!
+	$(".all_games tbody").replaceWith("<tbody></tbody>");
+	var table_body = $(".all_games tbody").first();
+	
+	var rounds = [16, 8, 4, 2, 1, 2, 4, 8, 16];
 	var round_count = rounds.length;
 	for (var round_index = 0; round_index < round_count; ++round_index)
 	{
 		var round = rounds[round_index];
-		var games_count = games_in_rounds[round_index].length;
+		var games_count = window.games_in_rounds[round_index].length;
 		var round_name = "round_" + round.toString();
 		table_body.append(
 			"<td id='column_" + round_index.toString() + "' style='z-index:100'><table class='round' name='" + round_name + "' id='round_index_" + round_index + "' style='z-index:" + (100-round) + "'>" +
@@ -34,7 +44,7 @@ function fillBrackets(json_data, team_lookup)
 		
 		for (var game_index = 0; game_index < games_count; ++game_index)
 		{
-			var game = games_in_rounds[round_index][game_index];
+			var game = window.games_in_rounds[round_index][game_index];
 			var name = "game_" + round.toString() + "_" + game.toString();
 			round_table.append(
 				"<table class='game' id='" + name + "'>" +
