@@ -246,4 +246,16 @@ void FIFAStyleTournament::doSanityChecks()
 	}
 }
 
+std::vector<RankData> FIFAStyleTournament::getRankDataAssignment() const
+{
+	return
+	{
+		RankData("first place", 1, 1),
+		RankData("second place", 2, 2),
+		RankData("third place", 3, 3),
+		RankData("fourth place", 4, 4),
+		RankData("rest", 5, 100)
+	};
+}
+
 } // namespace sim

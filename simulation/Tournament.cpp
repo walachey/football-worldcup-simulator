@@ -144,5 +144,15 @@ void OneVersusOneTournament::execRun()
 	addTeamPlace(teamTwo.id, places[1]);
 }
 
+std::vector<RankData> OneVersusOneTournament::getRankDataAssignment() const
+{
+	return
+	{
+		RankData("winner", 1, 1),
+		RankData("loser", 2, 2),
+		RankData("draw", 5, 100)
+	};
+}
+
 
 }; // namespace sim

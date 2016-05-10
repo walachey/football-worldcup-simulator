@@ -44,6 +44,9 @@ public:
 	// different tournament types can require different setups
 	// to catch possible errors with the data transmission, the setup can be checked and the simulation can be aborted here
 	virtual void doSanityChecks(){};
+	// returns a mapping between the numerical ranks and a semantic representation (e.g. 1 means 'winner' or 100 means 'rest').
+	virtual std::vector<RankData> getRankDataAssignment() const = 0;
+
 private:
 	// initializes certain values and prepares for the runs
 	void init();
@@ -57,6 +60,7 @@ class OneVersusOneTournament : public Tournament
 public:
 	OneVersusOneTournament(Simulation *sim, int runs) : Tournament(sim, runs) {}
 	virtual ~OneVersusOneTournament() {}
+	virtual std::vector<RankData> getRankDataAssignment() const override;
 private:
 	virtual void execRun();
 };

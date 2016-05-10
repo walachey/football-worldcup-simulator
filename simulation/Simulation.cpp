@@ -147,12 +147,11 @@ void Simulation::execute()
 	}
 
 	// setup rank data
-	ranks.push_back(RankData("first", 1, 1));
-	ranks.push_back(RankData("second", 2, 2));
-	ranks.push_back(RankData("third", 3, 3));
-	ranks.push_back(RankData("fourth", 4, 4));
-	ranks.push_back(RankData("rest", 5, 100));
-
+	{ // scope
+		std::unique_ptr<Tournament> tournament(Tournament::newOfType(tournamentType, this, 0));
+		for (RankData & const rank : tournament->getRankDataAssignment())
+			ranks.push_back(rank);
+	}
 
 	// and then join the results
 	for (Tournament* &tournament : tournaments)

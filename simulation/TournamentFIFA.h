@@ -27,6 +27,7 @@ public:
 	FIFAStyleTournament(Simulation *sim, int runs) : Tournament(sim, runs) {}
 	virtual ~FIFAStyleTournament() {}
 	virtual void doSanityChecks();
+	virtual std::vector<RankData> getRankDataAssignment() const override;
 private:
 	virtual void execRun();
 	// both functions will return the winner for the current stage

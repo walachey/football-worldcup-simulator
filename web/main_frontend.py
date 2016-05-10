@@ -221,8 +221,14 @@ def tournament_view(id):
 		
 	all_teams = Team.getAllTeamsForTournament(tournament.id, session)
 	all_result_place_types = session.query(ResultPlaceType).filter_by(tournament_id=tournament.id).order_by(ResultPlaceType.place).all()
-	
+	unique_different_outcomes = len(all_result_place_types)
+	# Prepare a few different colors for different possibilities (which mostly make the last rank always grey).
 	colors = ['#dddd00', '#eeeeee', '#ee9900', '#a4a4ff', '#cccccc', '#bbbbbb']
+	if unique_different_outcomes == 4:
+		colors = ['#dddd00', '#eeeeee', '#ee9900', '#cccccc']
+	elif unique_different_outcomes == 3:
+		colors = ['#dddd00', '#eeeeee', '#cccccc']
+	
 	color_count = len(colors)
 	max_used_place = 0
 	

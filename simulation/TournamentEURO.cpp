@@ -295,30 +295,15 @@ std::vector<Team*> EUROStyleTournament::runKnockout(int matches)
 		}
 	}
 
-	// in the semi finals, we will have to figure out the places with a match again
+	// in the semi finals, we will assign both the place '3', because there will not be a deciding match.
 	if (isSemiFinal)
 	{
 		assert(semiFinalists.size() == 2);
-		Team &teamOne = *semiFinalists.at(0);
-		Team &teamTwo = *semiFinalists.at(1);
-
-		std::string matchCluster = getMatchClusterName(1, 2); // second match of the "finale" cluster
-		MatchResult result(Match::execute(1, matchCluster, simulation, teamOne, teamTwo, true));
-		result.gameInRound = 2;
-		addMatchResult(result);
-
-		if (result.isWinner(0))
+		for (Team *team : semiFinalists)
 		{
-			addTeamPlace(teamOne.id, 3);
-			addTeamPlace(teamTwo.id, 4);
+			addTeamPlace(team->id, 3);
+			teamPlaceCounter += 1;
 		}
-		else
-		{
-			assert(!result.isDraw());
-			addTeamPlace(teamOne.id, 4);
-			addTeamPlace(teamTwo.id, 3);
-		}
-		teamPlaceCounter += 2;
 	}
 
 	assert(!isFinal || teamPlaceCounter == 2);
@@ -336,6 +321,17 @@ void EUROStyleTournament::doSanityChecks()
 		os << "Tournament has " << simulation->teams.size() << " teams. 24 are expected.\nThe simulation will be stopped.";
 		throw os.str();
 	}
+}
+
+std::vector<RankData> EUROStyleTournament::getRankDataAssignment() const
+{
+	return
+	{
+		RankData("first place", 1, 1),
+		RankData("second place", 2, 2),
+		RankData("third and fourth", 3, 3),
+		RankData("rest", 5, 100)
+	};
 }
 
 } // namespace sim
