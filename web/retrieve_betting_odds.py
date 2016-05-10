@@ -3,7 +3,7 @@ import re
 from bs4 import BeautifulSoup
 import urllib
 
-url = "http://www.oddschecker.com/football/world-cup/winner"
+url = "http://www.oddschecker.com/football/euro-2016/winner"
 
 try:
 	from urllib2 import urlopen, Request
@@ -33,8 +33,12 @@ class Team:
 
 def getResults():
 	names_repl = {
+	# For the world-cup.
 	"Bosnia-Herzegovina": "Bosnia and Herzegovina",
-	"South Korea": "Korea Republic"
+	"South Korea": "Korea Republic",
+	# For the Euro-2016.
+	"N Ireland": "Northern Ireland",
+	"Rep of Ireland": "Republic of Ireland",
 	}
 
 	opener = urllib2.build_opener()
@@ -63,14 +67,14 @@ def getResults():
 		team.name = name_field["data-name"]
 		if team.name in names_repl:
 			team.name = names_repl[team.name]
-		for odd_field in row.find_all("td", attrs={'class': re.compile(r".*\bbgc\b.*")}):
+		for odd_field in row.find_all("td", attrs={'class': re.compile(r".*\bbc\b.*")}):
 			odd = odd_field.renderContents().strip()
 			if odd.find("/") != -1:
 				s = odd.split("/")
 				odd = float(s[0]) / float(s[1])
 			else:
 				odd = float(odd)
-			# print "\t" + str(odd) + "\t <- " + odd_field.renderContents().strip() 
+			#print "\t" + str(odd) + "\t <- " + odd_field.renderContents().strip() 
 			team.addOdd(odd)
 		teams.append(team)
 	return teams
