@@ -140,6 +140,12 @@ double Rule::calc_age_binary(Team &left, Team &right, double *weight, double *cu
 
 double Rule::calc_spi_binary(Team &left, Team &right, double *weight, double *currentWinExpectancy)
 {
+#ifndef NDEBUG
+	if (probabilityLookupMatrix.empty())
+	{
+		throw("SPI rule: probability lookup matrix not initialized. This can happen if the rule data is provided before the team data.");
+	}
+#endif
 	return probabilityLookupMatrix[left.index][right.index];
 }
 
@@ -166,6 +172,7 @@ void Rule::generateExpectancyMatrix(double (*fun)(Team&, Team&))
 {
 	assert(probabilityLookupMatrix.empty());
 	size_t teamCount = Simulation::singleton->teams.size();
+	assert(teamCount >= 2 && "Team data must be provided before rule data.");
 
 	probabilityLookupMatrix.resize(teamCount);
 	for (size_t i = 0; i < teamCount; ++i)

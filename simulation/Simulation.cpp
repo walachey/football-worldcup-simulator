@@ -25,6 +25,10 @@ Simulation::Simulation(json_spirit::Value &jsonData)
 
 	json_spirit::Object jsonObject = jsonData.get_obj();
 	
+	// It is crucial that the teams are setup before the rules.
+	// To achieve that, we just delay rule initialization.
+	json_spirit::Array ruleData;
+
 	for (json_spirit::Pair &pair : jsonObject)
 	{
 		std::string &key = pair.name_;
@@ -34,11 +38,15 @@ Simulation::Simulation(json_spirit::Value &jsonData)
 		else if (key == "tournament_id") tournamentID = pair.value_.get_int();
 		else if (key == "tournament_type") tournamentType = pair.value_.get_str();
 		else if (key == "teams") setupTeams(pair.value_.get_array());
-		else if (key == "rules") setupRules(pair.value_.get_array());
+		else if (key == "rules") ruleData = pair.value_.get_array();
 		else if (key == "match_database") setupKnownMatches(pair.value_.get_array());
 		else
 			std::cerr << "sim::Simulation: invalid property \"" << key << "\"" << std::endl;
 	}
+
+	// Finally (after the teams are setup) init the rules.
+	if (!ruleData.empty())
+		setupRules(ruleData);
 }
 
 
