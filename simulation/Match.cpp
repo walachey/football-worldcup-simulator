@@ -206,6 +206,14 @@ MatchResult Match::execute(int bofRound, std::string cluster, Simulation *simula
 	// roll for draws first
 	// 0.33 * exp(-(x - 0.5) ^ 2 / (2 * 0.28 ^ 2))
 	double chanceForDraw = (1.0 / 3.0) * std::exp(-std::pow((normalizedChanceLeftVsRight - 0.5), 2.0) / (2.0 * std::pow(0.28, 2.0)));
+
+	/*
+	// This can be used to get raw prediction probabilities from matches.
+	// I used it to get them when controlling the simulator from python.
+	// This is borderline hacky - the 'best' way would be to just integrate that into the normal interface.
+	std::cerr << left.id << "\t" << right.id << "\t" << normalizedChanceLeftVsRight << "\t" << chanceForDraw << "\t" << (1.0 - normalizedChanceLeftVsRight) << std::endl;
+	*/
+
 	bool isDraw = false;
 	if (uniformRoller() < chanceForDraw)
 	{
