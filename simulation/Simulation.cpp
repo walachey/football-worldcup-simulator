@@ -157,7 +157,7 @@ void Simulation::execute()
 	// setup rank data
 	{ // scope
 		std::unique_ptr<Tournament> tournament(Tournament::newOfType(tournamentType, this, 0));
-		for (RankData & const rank : tournament->getRankDataAssignment())
+		for (RankData const & rank : tournament->getRankDataAssignment())
 			ranks.push_back(rank);
 	}
 
