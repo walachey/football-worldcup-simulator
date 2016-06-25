@@ -7,6 +7,7 @@
 namespace sim
 {
 
+// Used to sort the third places where no between-team-information is available.
 bool EUROStyleTournamentQualificationResult::operator<(EUROStyleTournamentQualificationResult &other)
 {
 	// std::cerr << "score " << this->score << "vs" << other.score << "\tgoaldif " << this->goalDifference << "vs" << other.goalDifference << "\tgoal " << this->goals << "vs" << other.goals << std::endl;
@@ -49,6 +50,9 @@ std::vector<Team*> EUROStyleTournament::runQualification()
 	{
 		// fresh results for every group
 		std::map<int, EUROStyleTournamentQualificationResult> results;
+		// Need a team, team -> result map, too, to solve stalemates on points.
+		std::map<int, std::map<int, EUROStyleTournamentQualificationResult>> opponentBasedResults;
+
 		++bracketNumber;
 		assert(bracketNumber <= 6);
 		for (size_t t = 0; t < 4; ++t)
@@ -73,24 +77,95 @@ std::vector<Team*> EUROStyleTournament::runQualification()
 						results[team.id] = EUROStyleTournamentQualificationResult(&team, bracketNumber);
 					EUROStyleTournamentQualificationResult &qualiResult = results[team.id];
 
-					qualiResult.goals += result.goals[resultIndex];
-					qualiResult.goalDifference += result.goals[resultIndex] - result.goals[1 - resultIndex];
+					const int goals = result.goals[resultIndex];
+					const int goalDifference = result.goals[resultIndex] - result.goals[1 - resultIndex];
+					qualiResult.goals += goals;
+					qualiResult.goalDifference += goalDifference;
+
+					opponentBasedResults[team.id][opposingTeam.id] = EUROStyleTournamentQualificationResult(&team, bracketNumber);
+					EUROStyleTournamentQualificationResult &qualiResultOpponentBased = opponentBasedResults[team.id][opposingTeam.id];
 
 					if (result.isWinner(resultIndex))
+					{
 						qualiResult.score += 3;
+						qualiResultOpponentBased.score += 3;
+					}
 					else if (result.isLoser(resultIndex))
+					{
 						qualiResult.score += 0;
-					else qualiResult.score += 1;
+						qualiResultOpponentBased.score += 0;
+					}
+					else
+					{
+						qualiResult.score += 1;
+						qualiResultOpponentBased.score += 1;
+					}
 				}
 			}
 		}
 
 		// play-offs for this group are through, now get the winner
-		std::list<EUROStyleTournamentQualificationResult> sortedResults;
+		std::vector<EUROStyleTournamentQualificationResult> sortedResults;
+		sortedResults.reserve(results.size());
 		for (auto &mapping : results)
 			sortedResults.push_back(mapping.second);
-		sortedResults.sort();
-		sortedResults.reverse();
+		// First, sort by points (descending).
+		std::sort(sortedResults.begin(), sortedResults.end(), [](const EUROStyleTournamentQualificationResult & a, const EUROStyleTournamentQualificationResult & b) -> bool { return a.score > b.score; });
+		// Then for every draw, resort the subentries in question for the secondary criteria.
+		{ // Scope.
+			auto resortSubscope = [&](const std::vector<EUROStyleTournamentQualificationResult>::iterator &begin, const std::vector<EUROStyleTournamentQualificationResult>::iterator &end)
+			{
+				std::sort(begin, end, [&opponentBasedResults](const EUROStyleTournamentQualificationResult & a, const EUROStyleTournamentQualificationResult & b) -> bool
+				{
+					const Team &teamLeft = *a.forTeam;
+					const Team &teamRight = *b.forTeam;
+					// Sort by score between the teams in question first (note: this here only looks at two teams at a time. That's a todo.).
+					const int teamLeftScore = opponentBasedResults[teamLeft.id][teamRight.id].score;
+					const int teamRightScore = opponentBasedResults[teamRight.id][teamLeft.id].score;
+					if (teamLeftScore > teamRightScore) return true;
+					if (teamLeftScore < teamRightScore) return false;
+
+					// Draw, look at total goal difference next.
+					if (a.goalDifference > b.goalDifference) return true;
+					if (a.goalDifference < b.goalDifference) return false;
+
+					// Total goals next.
+					if (a.goals > b.goals) return true;
+					if (a.goals < b.goals) return false;
+
+					// Fair play conduct? Meh.
+					return false;
+				});
+			};
+			auto stalemateBegin = sortedResults.begin();
+			auto current = std::next(stalemateBegin);
+
+			do
+			{
+				if (current->score == stalemateBegin->score)
+				{
+					++current;
+					if (current == sortedResults.end())
+					{
+						resortSubscope(stalemateBegin, current);
+						break;
+					}
+					continue;
+				}
+				assert(current->score < stalemateBegin->score);
+				// Difference in score, need to resort?
+				if (std::distance(stalemateBegin, current) == 1)
+				{
+					stalemateBegin = current;
+					++current;
+					continue;
+				}
+
+				resortSubscope(stalemateBegin, current);
+				stalemateBegin = current;
+				++current;
+			} while (current != sortedResults.end());
+		}
 
 		// the top two teams advance into the next stage
 		int teamCounter = 0;
@@ -204,7 +279,7 @@ std::vector<Team*> EUROStyleTournament::runQualification()
 		Match 5: wC vs 3A/B/F  4   14
 		Match 6: wE vs rD      8   7
 		Match 7: wA vs 3C/D/E  0   12
-		Match 8: rB vs rF      3   10
+		Match 8: rB vs rF      3   11
 	*/
 	int euroTeamIndexLayout[] = { 1, 5, 6, 15, 2, 13, 10, 9, 4, 14, 8, 7, 0, 12, 3, 11};
 	std::vector<Team*> scrambledWinners;
