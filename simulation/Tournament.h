@@ -34,6 +34,9 @@ public:
 	void addMatchResult(MatchResult &result);
 	// and once the place for a team is known, it should be added here, too
 	void addTeamPlace(int teamID, int place);
+	// Just for the group phase (in a EURO/WC style tournament), we need to remember the average rank for every team.
+	// This is just for the interface to be able to sort it later.
+	void addGroupPhaseRank(std::string cluster, int teamID, int rank);
 	// starts the tournament. Called asynchronously
 	void start();
 

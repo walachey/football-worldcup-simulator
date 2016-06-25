@@ -30,6 +30,11 @@ void Tournament::addTeamPlace(int teamID, int place)
 	clusterTeamResults["all"][teamID].addPlace(place);
 }
 
+void Tournament::addGroupPhaseRank(std::string cluster, int teamID, int rank)
+{
+	clusterTeamResults[cluster][teamID].addGroupPhaseRank(rank);
+}
+
 void Tournament::addMatchResult(MatchResult &result)
 {
 	// cluster the matches and calculate results based on that, again

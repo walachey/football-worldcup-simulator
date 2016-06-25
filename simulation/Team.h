@@ -40,6 +40,12 @@ public:
 		return (double)statisticalData[StatisticalDataKeys::TotalOwnGoals] / (double)statisticalData[StatisticalDataKeys::TotalMatches];
 	}
 
+	double getAvgGroupRank()
+	{
+		if (statisticalData[StatisticalDataKeys::TotalRankSum] == 0) return 0.0;
+		return (double)statisticalData[StatisticalDataKeys::TotalRankSum] / (double)statisticalData[StatisticalDataKeys::TotalMatches];
+	}
+
 	double getAvgPlace();
 
 	void addWin()
@@ -75,6 +81,11 @@ public:
 		placeHistogram[place] += 1;
 	}
 
+	void addGroupPhaseRank(int rank)
+	{
+		statisticalData[StatisticalDataKeys::TotalRankSum] += rank;
+	}
+
 	// returns the total number of places given to this team - for plausibility checks
 	int getTotalPlaceCount();
 private:
@@ -89,6 +100,7 @@ private:
 		TotalDraws,
 		TotalOwnGoals,
 		TotalReceivedGoals,
+		TotalRankSum, // For the group phase.
 		_LastKey
 	};
 	int statisticalData[StatisticalDataKeys::_LastKey];

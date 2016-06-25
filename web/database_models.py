@@ -470,10 +470,13 @@ class BracketTeamResult(db.Model):
 	draws = db.Column(db.Integer, unique=False)
 	matches = db.Column(db.Integer, unique=False)
 	
+	# Average rank in that bracket. This is only sensible for the group phase.
+	average_group_rank = db.Column(db.Float, unique=False)
+	
 	# optimization, the most frequent result will always be shown first
 	most_frequent = db.Column(db.Boolean, unique=False)
 	
-	def __init__(self, tournament_id, bof_round, game_in_round, team_id, wins, draws, matches):
+	def __init__(self, tournament_id, bof_round, game_in_round, team_id, wins, draws, matches, average_group_rank):
 		self.tournament_id = tournament_id
 		self.bof_round = bof_round
 		self.game_in_round = game_in_round
@@ -482,6 +485,8 @@ class BracketTeamResult(db.Model):
 		self.wins = wins
 		self.draws = draws
 		self.matches = matches
+		
+		self.average_group_rank = average_group_rank
 		
 		self.most_frequent = False
 	

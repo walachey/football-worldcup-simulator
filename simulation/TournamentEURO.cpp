@@ -55,6 +55,8 @@ std::vector<Team*> EUROStyleTournament::runQualification()
 
 		++bracketNumber;
 		assert(bracketNumber <= 6);
+		const std::string matchCluster = getMatchClusterName(0, bracketNumber);
+
 		for (size_t t = 0; t < 4; ++t)
 		{
 			for (size_t opponent = t + 1; opponent < 4; ++opponent)
@@ -63,7 +65,7 @@ std::vector<Team*> EUROStyleTournament::runQualification()
 				Team &teamTwo = simulation->teams.at(i + opponent);
 				matchCounter += 1;
 
-				std::string matchCluster = getMatchClusterName(0, bracketNumber);
+				
 				MatchResult result(Match::execute(16, matchCluster, simulation, teamOne, teamTwo, false));
 				result.gameInRound = bracketNumber;
 				addMatchResult(result);
@@ -166,6 +168,10 @@ std::vector<Team*> EUROStyleTournament::runQualification()
 				++current;
 			} while (current != sortedResults.end());
 		}
+
+		// We can assign group phase ranks now (for proper sorting in the interface).
+		for (size_t teamIndex = 0; teamIndex < sortedResults.size(); ++teamIndex)
+			addGroupPhaseRank(matchCluster, sortedResults[teamIndex].forTeam->id, teamIndex + 1);
 
 		// the top two teams advance into the next stage
 		int teamCounter = 0;

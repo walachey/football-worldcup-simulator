@@ -170,7 +170,10 @@ class Dispatcher():
 					# session.add(result)
 				bracket_team_results = []
 				for team in json_object["matches"][match_name]["teams"]:
-					result = BracketTeamResult(tournament.id, bof_round, game_in_round, team["id"], team["match_data"]["wins"], team["match_data"]["draws"], team["match_data"]["matches"])
+					result = BracketTeamResult(tournament.id, bof_round, game_in_round, team["id"], 
+									team["match_data"]["wins"], team["match_data"]["draws"], team["match_data"]["matches"],
+									team["match_data"]["average_group_rank"]
+									)
 					bracket_team_results.append(result)
 					session.add(result)
 				# figure out highest bracket result and mark as most_frequent
