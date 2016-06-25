@@ -1,12 +1,14 @@
 function createProcessGraphs(json_data)
 {
 	var graphs = ["bets", "elo", "spi", "fifa", "value"];
-	var max_day = 32;
+	var max_day = 15;
 	var labels = [];
+	var starting_day = 25;
+	var starting_month = 6;
 	for (var i = 0; i < max_day + 1; ++i)
 	{
-		var day = (12 + i - 1) % 30 + 1;
-		var mon = Math.floor((12 + i - 1) / 30) + 6;
+		var day = (starting_day + i - 1) % 30 + 1;
+		var mon = Math.floor((starting_day + i - 1) / 30) + starting_month;
 		if (i == 0 || day == 1 || i == max_day)
 			mon = mon.toString() + ".";
 		else
